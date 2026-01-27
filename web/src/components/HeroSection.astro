@@ -1,0 +1,92 @@
+---
+import AnimatedCode from './AnimatedCode';
+import PriceTracker from './PriceTracker';
+import CopyButton from './CopyButton';
+---
+
+<section class="relative min-h-screen flex flex-col items-center justify-center px-4 py-20 overflow-hidden bg-black">
+  
+  <div class="absolute inset-0 grid-pattern opacity-50"></div>
+  
+  <div class="absolute inset-0 bg-gradient-to-b from-zinc-900/20 via-transparent to-zinc-900/20"></div>
+
+  <div class="relative z-10 max-w-5xl mx-auto text-center">
+    
+    <div class="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full border border-zinc-800 bg-zinc-900/50 animate-fade-in-up" style="animation-delay: 0.1s;">
+      <span class="relative flex h-2 w-2">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+      </span>
+      <span class="text-sm text-zinc-400">Now in Beta • v1.0.0</span>
+    </div>
+
+    <h1 class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight mb-6 animate-fade-in-up text-balance" style="animation-delay: 0.2s;">
+      <span class="text-white">Aura OS</span>
+      <br />
+      <span class="text-zinc-500">Your AI Commander</span>
+      <br />
+      <span class="text-zinc-600 text-4xl sm:text-5xl md:text-6xl lg:text-7xl">for Web3</span>
+    </h1>
+
+    <p class="text-lg md:text-xl text-zinc-500 mb-12 max-w-2xl mx-auto leading-relaxed animate-fade-in-up" style="animation-delay: 0.3s;">
+      Unlock the full potential of <span class="text-white">decentralized finance</span> with 
+      intelligent automation and <span class="text-white">ironclad security</span>.
+    </p>
+
+    <div class="w-full max-w-2xl mx-auto mb-10 animate-fade-in-up" style="animation-delay: 0.4s;">
+      <div class="terminal">
+        <div class="terminal-header">
+          <div class="terminal-dot bg-red-500"></div>
+          <div class="terminal-dot bg-yellow-500"></div>
+          <div class="terminal-dot bg-green-500"></div>
+          <span class="ml-4 text-xs text-zinc-600 font-mono">aura-os ~ terminal</span>
+        </div>
+        <div class="p-6 font-mono text-sm md:text-base">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-start gap-3 flex-1 min-w-0">
+              <span class="text-zinc-500 select-none">$</span>
+              <AnimatedCode client:load 
+                sequence={[
+                  'npm install -g aura-os', 2000,
+                  'aura setup --master-password ********', 2000,
+                  'aura chat "Check my ETH balance"', 2500,
+                  '✓ Your balance: 2.847 ETH ($9,234.50)', 3000,
+                  'aura chat "Find new tokens with >$10k liquidity"', 3000,
+                  '✓ Found 12 tokens matching criteria...', 2500,
+                  'aura agent start --task "monitor whales"', 3000,
+                  '✓ Agent deployed. Monitoring 847 wallets...', 3000,
+                ]}
+              />
+            </div>
+            <CopyButton client:load text="npm install -g aura-os" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16 animate-fade-in-up" style="animation-delay: 0.5s;">
+      <a href="/docs/getting-started" class="btn-primary group">
+        <span>Get Started</span>
+        <svg class="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+        </svg>
+      </a>
+      <a href="https://github.com/aura-os" target="_blank" rel="noopener" class="btn-secondary group">
+        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"></path>
+        </svg>
+        <span>GitHub</span>
+      </a>
+    </div>
+
+    <div class="animate-fade-in-up" style="animation-delay: 0.6s;">
+      <PriceTracker client:load />
+    </div>
+  </div>
+
+  <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+    <div class="w-6 h-10 rounded-full border-2 border-zinc-800 flex items-start justify-center p-2">
+      <div class="w-1 h-2 bg-zinc-600 rounded-full animate-bounce"></div>
+    </div>
+  </div>
+</section>

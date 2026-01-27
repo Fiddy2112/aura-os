@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   AURA OS - Clean Dark Mode Design System
+   Style: Minimal Black & White Dark Theme
+   ============================================ */
+
+@layer base {
+  * {
+    @apply border-zinc-800;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    @apply bg-black text-zinc-100 font-sans;
+    min-height: 100vh;
+  }
+
+  ::selection {
+    @apply bg-white/20 text-white;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-zinc-950;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-800 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-700;
+  }
+}
+
+@layer components {
+  /* Glass Card - Minimal dark style */
+  .glass-card {
+    @apply relative bg-zinc-900/80 border border-zinc-800;
+    @apply rounded-2xl;
+  }
+
+  /* Subtle hover glow */
+  .glow-border {
+    @apply relative transition-all duration-300;
+  }
+
+  .glow-border:hover {
+    @apply border-zinc-700;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      135deg,
+      #fff 0%,
+      #a1a1aa 100%
+    );
+  }
+
+  .gradient-text-shimmer {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      90deg,
+      #fff 0%,
+      #71717a 50%,
+      #fff 100%
+    );
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Premium button styles */
+  .btn-primary {
+    @apply relative inline-flex items-center justify-center px-8 py-3;
+    @apply font-semibold text-black bg-white rounded-full;
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .btn-primary:hover {
+    @apply bg-zinc-200 transform -translate-y-0.5;
+    box-shadow: 0 10px 40px -10px rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-secondary {
+    @apply relative inline-flex items-center justify-center px-8 py-3;
+    @apply font-semibold text-white rounded-full;
+    @apply border border-zinc-700 bg-transparent;
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .btn-secondary:hover {
+    @apply border-zinc-500 bg-zinc-900 transform -translate-y-0.5;
+  }
+
+  /* Terminal/Code block styling */
+  .terminal {
+    @apply relative overflow-hidden;
+    @apply bg-zinc-950 border border-zinc-800 rounded-xl;
+  }
+
+  .terminal-header {
+    @apply flex items-center gap-2 px-4 py-3 border-b border-zinc-800/50;
+    @apply bg-zinc-900/50;
+  }
+
+  .terminal-dot {
+    @apply w-3 h-3 rounded-full;
+  }
+
+  /* Bento grid items */
+  .bento-card {
+    @apply glass-card glow-border p-6 md:p-8;
+    @apply transition-transform duration-300 ease-out;
+  }
+
+  .bento-card:hover {
+    @apply transform -translate-y-1;
+  }
+
+  /* Chat bubble styles */
+  .chat-bubble {
+    @apply relative px-4 py-3 rounded-2xl;
+    @apply max-w-[85%] break-words;
+  }
+
+  .chat-bubble-user {
+    @apply bg-white text-black;
+    @apply rounded-br-md;
+  }
+
+  .chat-bubble-bot {
+    @apply bg-zinc-800 border border-zinc-700;
+    @apply rounded-bl-md;
+  }
+
+  /* Floating elements animation */
+  .float-element {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  /* Fade in animation */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+
+  @keyframes fade-in-up {
+    0% { 
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    100% { 
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Section container */
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Divider */
+  .divider {
+    @apply border-t border-zinc-800/50;
+  }
+}
+
+@layer utilities {
+  /* Text balance for headings */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Grid pattern background */
+  .grid-pattern {
+    background-image: 
+      linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Dot pattern background */
+  .dot-pattern {
+    background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}

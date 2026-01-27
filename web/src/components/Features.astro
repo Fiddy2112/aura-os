@@ -1,0 +1,34 @@
+---
+import { Brain, Shield, Terminal } from 'lucide-react';
+const features = [
+  {
+    title: "AI Interpreter",
+    desc: "Understands commands in Vietnamese and English, automatically analyzes trade intent on-chain.",
+    icon: <Brain size={24} />
+  },
+  {
+    title: "Secure Vault",
+    desc: "Local AES-256 encryption. Your private key will never leave the device.",
+    icon: <Shield size={24} />
+  },
+  {
+    title: "CLI Power",
+    desc: "It runs in the background, automating complex tasks that the browser cannot handle.",
+    icon: <Terminal size={24} />
+  }
+];
+---
+<section class="py-24 bg-zinc-950">
+  <div class="max-w-6xl mx-auto px-4">
+    <h2 class="text-4xl font-bold text-center mb-16 text-white">Why choose Aura OS?</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      {features.map(f => (
+        <div class="p-8 border border-zinc-800 rounded-2xl bg-zinc-900/50 hover:border-blue-500/50 transition-all">
+          <div class="text-4xl mb-4">{f.icon}</div>
+          <h3 class="text-xl font-bold mb-2 text-white">{f.title}</h3>
+          <p class="text-zinc-400">{f.desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
