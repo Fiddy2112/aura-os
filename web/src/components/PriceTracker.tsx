@@ -46,7 +46,7 @@ export default function PriceTracker() {
       {/* ETH Price Card */}
       <div className="glass-card px-6 py-4 flex items-center gap-4 min-w-[180px]">
         <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-xl border border-zinc-700">
-          ⟠
+          <img src="/ethereum.svg" alt="ETH" className="w-6 h-6" />
         </div>
         <div>
           <p className="text-xs text-zinc-500 uppercase tracking-wider font-medium">ETH</p>
@@ -71,7 +71,7 @@ export default function PriceTracker() {
       {/* SUI Price Card */}
       <div className="glass-card px-6 py-4 flex items-center gap-4 min-w-[180px]">
         <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-xl border border-zinc-700">
-          🌊
+          <img src="/sui.svg" alt="SUI" className="w-6 h-6" />
         </div>
         <div>
           <p className="text-xs text-zinc-500 uppercase tracking-wider font-medium">SUI</p>

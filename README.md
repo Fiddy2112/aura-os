@@ -19,10 +19,14 @@
 
 ## ✨ Features
 
-- **🧠 AI Brain** — Powered by GPT-4, understands your commands in natural language (Vietnamese, English, and more)
+- **🧠 Multi-AI Brain** — Powered by OpenAI GPT-4, Groq, and Google Gemini for natural language understanding (Vietnamese, English, and more)
 - **🔐 Secure Vault** — Military-grade AES-256 encryption. Your private keys never leave your device
-- **⌨️ CLI Power** — Background automation that browsers can't handle
-- **🔗 Multi-Chain** — Ethereum, Sui, Base, Arbitrum, and more from a single interface
+- **⚡ CLI Power** — Background automation that browsers can't handle
+- **🌐 Multi-Chain** — Ethereum, Base, Arbitrum, and Sepolia testnet from a single interface
+- **📊 Real-time Dashboard** — Live activity stream synced via Supabase
+- **📰 Crypto Research** — AI-powered market research and news aggregation with Tavily
+
+---
 
 ## 🚀 Quick Start
 
@@ -31,6 +35,7 @@
 - Node.js v18.0 or higher
 - npm or pnpm
 - OpenAI API Key (for AI features)
+- Optional: Groq API Key, Gemini API Key for multi-model support
 
 ### Installation
 
@@ -44,10 +49,34 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
-# Add your OPENAI_API_KEY to .env
+# Add your API keys to .env
 
 # Run the CLI
 npm run cli:dev help
+```
+
+### Environment Variables
+
+Create a `.env` file with the following:
+
+```env
+# AI Providers (at least one required)
+OPENAI_API_KEY=your_openai_key
+GROQ_API_KEY=your_groq_key        # Optional
+GEMINI_API_KEY=your_gemini_key    # Optional
+
+# Blockchain RPC URLs (optional - defaults provided)
+ETH_RPC_URL=https://eth.llamarpc.com
+SEPOLIA_RPC_URL=https://rpc.sepolia.org
+BASE_RPC_URL=https://mainnet.base.org
+ARBITRUM_RPC_URL=https://arb1.arbitrum.io/rpc
+DEFAULT_CHAIN=sepolia
+
+# Supabase (for dashboard sync)
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_key
+SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_DATABASE_NAME=aura_os
 ```
 
 ### Setup Your Wallet
@@ -65,39 +94,55 @@ You'll be prompted to:
 ```bash
 npm run cli:dev chat "Check my ETH balance"
 npm run cli:dev chat "Send 0.1 ETH to 0x742d35Cc..."
-npm run cli:dev chat "Swap 100 USDC to ETH"
+npm run cli:dev chat "What's the current gas price?"
+npm run cli:dev chat "ETH price?"
 ```
+
+---
 
 ## 📂 Project Structure
 
 ```
 aura-os/
-├── src/                      # CLI Application
-│   ├── index.ts              # CLI entry point
+├── src/                          # CLI Application
+│   ├── index.ts                  # CLI entry point
 │   ├── commands/
-│   │   ├── setup.ts          # Wallet setup command
-│   │   └── chat.ts           # AI chat command
-│   └── core/
-│       ├── ai/
-│       │   └── interpreter.ts # GPT-4 powered intent parser
-│       └── security/
-│           └── vault.ts      # AES-256 encrypted key storage
+│   │   ├── setup.ts              # Wallet setup command
+│   │   ├── chat.ts               # AI chat command
+│   │   ├── research.ts           # Crypto research command
+│   │   └── login.ts              # Dashboard login command
+│   ├── core/
+│   │   ├── ai/
+│   │   │   ├── interpreter.ts    # Multi-model AI intent parser
+│   │   │   └── researcher.ts     # Tavily-powered crypto researcher
+│   │   ├── blockchain/
+│   │   │   ├── chains.ts         # Multi-chain configuration
+│   │   │   ├── executor.ts       # Blockchain transaction executor
+│   │   │   └── explorer.ts       # Block explorer utilities
+│   │   ├── security/
+│   │   │   └── vault.ts          # AES-256 encrypted key storage
+│   │   └── utils/
+│   │       └── supabase.ts       # Real-time activity sync
+│   └── ui/                       # Terminal UI components
 │
-├── web/                      # Astro Website
+├── web/                          # Astro Website
 │   ├── src/
-│   │   ├── components/       # React & Astro components
-│   │   ├── layouts/          # Page layouts
-│   │   ├── pages/            # Routes
-│   │   │   ├── index.astro   # Homepage
-│   │   │   ├── features.astro
-│   │   │   ├── chat.astro
-│   │   │   └── docs/         # Documentation
-│   │   └── styles/           # Global CSS
-│   └── public/               # Static assets
+│   │   ├── components/           # React & Astro components
+│   │   ├── layouts/              # Page layouts
+│   │   ├── pages/
+│   │   │   ├── index.astro       # Homepage
+│   │   │   ├── features.astro    # Features showcase
+│   │   │   ├── chat.astro        # Web chat interface
+│   │   │   ├── dashboard.astro   # Real-time activity dashboard
+│   │   │   └── docs/             # Documentation
+│   │   └── styles/               # Global CSS
+│   └── public/                   # Static assets
 │
 ├── package.json
 └── tsconfig.json
 ```
+
+---
 
 ## 🛠️ Tech Stack
 
@@ -105,10 +150,12 @@ aura-os/
 | Technology | Purpose |
 |------------|---------|
 | **TypeScript** | Type-safe development |
-| **OpenAI** | AI-powered intent parsing |
-| **Viem** | Ethereum interactions |
-| **Zod** | Schema validation |
+| **OpenAI / Groq / Gemini** | Multi-model AI intent parsing |
+| **Viem** | Ethereum & EVM chain interactions |
+| **Zod** | Schema validation for AI responses |
 | **CryptoJS** | AES-256 encryption |
+| **Tavily** | Real-time crypto research |
+| **Supabase** | Real-time activity sync |
 | **Inquirer** | Interactive prompts |
 | **Chalk** | Terminal styling |
 
@@ -120,6 +167,9 @@ aura-os/
 | **Tailwind CSS** | Styling |
 | **RainbowKit** | Wallet connections |
 | **Wagmi** | React hooks for Ethereum |
+| **Supabase Realtime** | Live dashboard updates |
+
+---
 
 ## 📖 CLI Commands
 
@@ -127,6 +177,8 @@ aura-os/
 |---------|-------------|
 | `aura setup` | Initialize your wallet with encrypted key storage |
 | `aura chat "message"` | Send a natural language command to Aura |
+| `aura research [topic]` | Research crypto market news and trends |
+| `aura login <address>` | Link your wallet to the dashboard |
 | `aura status` | Check configuration status |
 | `aura help` | Show available commands |
 
@@ -134,11 +186,62 @@ aura-os/
 
 | Action | Description | Example |
 |--------|-------------|---------|
-| `CHECK_BALANCE` | Query token balance | "Check my ETH" |
+| `CHECK_BALANCE` | Query token balance | "Check my ETH balance" |
 | `SEND_TOKEN` | Transfer tokens | "Send 0.5 ETH to 0x..." |
 | `SWAP_TOKEN` | Exchange tokens | "Swap 100 USDC to ETH" |
+| `GET_ADDRESS` | Show wallet address | "What's my wallet address?" |
+| `GET_GAS_PRICE` | Current gas price | "Current gas price?" |
+| `GET_PRICE` | Token price lookup | "ETH price?" |
+| `GET_TRANSACTIONS` | Transaction history | "Show recent transactions" |
 
-**Supported tokens:** ETH, SUI, USDT, USDC
+**Supported Tokens:** ETH, USDT, USDC, WETH
+
+### Supported Chains
+
+| Chain | Network ID | Status |
+|-------|------------|--------|
+| Ethereum Mainnet | 1 | ✅ Production |
+| Sepolia Testnet | 11155111 | ✅ Default |
+| Base | 8453 | ✅ Production |
+| Arbitrum One | 42161 | ✅ Production |
+
+---
+
+## 📊 Real-time Dashboard
+
+Aura OS includes a real-time dashboard that syncs your CLI activity:
+
+1. **Login from CLI:**
+   ```bash
+   npm run cli:dev login 0xYourWalletAddress
+   ```
+
+2. **Open the dashboard:**
+   ```bash
+   cd web && npm run dev
+   # Navigate to http://localhost:4321/dashboard
+   ```
+
+3. **See activity in real-time** — Every command you run in the CLI appears instantly on your dashboard via Supabase Realtime.
+
+---
+
+## 📰 Crypto Research
+
+Get AI-powered market research and news:
+
+```bash
+# Default research (market summary)
+npm run cli:dev research
+
+# Specific topic
+npm run cli:dev research "Bitcoin ETF news"
+npm run cli:dev research "Ethereum Layer 2 comparison"
+```
+
+The research command uses Tavily to fetch real-time data and AI to summarize findings with trusted source citations.
+
+---
 
 ## 🌐 Running the Website
 
@@ -157,16 +260,58 @@ npm run build
 
 The website will be available at `http://localhost:4321`
 
+---
+
 ## 🔒 Security
 
 Aura OS takes security seriously:
 
-- **Local-only storage**: Your private keys are encrypted and stored only on your device
-- **AES-256 encryption**: Military-grade encryption for all sensitive data
-- **Zero server dependency**: The CLI works completely offline for key operations
-- **Open source**: Full transparency in how your data is handled
+- **🔐 Local-only storage**: Your private keys are encrypted and stored only on your device
+- **🛡️ AES-256 encryption**: Military-grade encryption for all sensitive data
+- **📡 Zero server dependency**: The CLI works completely offline for key operations
+- **👁️ Open source**: Full transparency in how your data is handled
+- **🔑 Password protected**: Master password required to access your vault
 
 > ⚠️ **Important**: Always use a dedicated wallet for testing. Never use your main wallet with any new software.
+
+---
+
+## 🚦 CI/CD
+
+Aura OS uses GitHub Actions for continuous integration and deployment.
+
+### Workflows
+
+| Workflow | Trigger | Description |
+|----------|---------|-------------|
+| **CI** | Push/PR to `main`, `develop` | Type check, build, security audit |
+| **Preview** | PR to `main` | Deploy preview to Vercel with PR comment |
+| **Deploy** | Push to `main` | Deploy web to Vercel, publish CLI on version tags |
+
+### Required Secrets
+
+Configure these in your GitHub repository settings:
+
+| Secret | Description |
+|--------|-------------|
+| `VERCEL_TOKEN` | Vercel deployment token |
+| `NPM_TOKEN` | npm publish token (for CLI releases) |
+| `PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key |
+
+### Releasing a New Version
+
+```bash
+# Update version in package.json, then:
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+This will automatically:
+1. Publish the CLI to npm
+2. Create a GitHub release with auto-generated notes
+
+---
 
 ## 🤝 Contributing
 
@@ -178,9 +323,13 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+---
+
 ## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
 
 ## 🔗 Links
 

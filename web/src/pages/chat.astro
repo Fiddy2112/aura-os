@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Navbar from '../components/Navbar.astro';
 import ChatWrapper from '../components/ChatWrapper.tsx';
 import Footer from '../components/Footer.astro';
+import { Languages,Lock,Zap  } from 'lucide-react';
 ---
 
 <Layout title="Chat - Aura OS">
@@ -52,7 +53,7 @@ import Footer from '../components/Footer.astro';
       <div class="mt-24 grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
         <div class="text-center p-6">
           <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-2xl">
-            💬
+            <Languages size={24}/>
           </div>
           <h3 class="text-lg font-semibold text-white mb-2">Natural Language</h3>
           <p class="text-sm text-zinc-500">
@@ -62,7 +63,7 @@ import Footer from '../components/Footer.astro';
         
         <div class="text-center p-6">
           <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-2xl">
-            🔐
+            <Lock size={24}/>
           </div>
           <h3 class="text-lg font-semibold text-white mb-2">Secure by Design</h3>
           <p class="text-sm text-zinc-500">
@@ -72,7 +73,7 @@ import Footer from '../components/Footer.astro';
         
         <div class="text-center p-6">
           <div class="w-14 h-14 mx-auto mb-4 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-2xl">
-            ⚡
+            <Zap size={24}/>
           </div>
           <h3 class="text-lg font-semibold text-white mb-2">Instant Execution</h3>
           <p class="text-sm text-zinc-500">

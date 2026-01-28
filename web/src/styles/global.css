@@ -188,6 +188,28 @@
   .divider {
     @apply border-t border-zinc-800/50;
   }
+
+  .log-entry-glow {
+    animation: entry-glow 3s ease-out forwards;
+    position: relative;
+  }
+
+  @keyframes entry-glow {
+    0% {
+      background-color: rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: translateX(10px);
+    }
+    10% {
+      transform: translateX(0px);
+    }
+    100% {
+      background-color: transparent;
+      box-shadow: inset 0 0 0px rgba(255, 255, 255, 0);
+      border-color: rgba(39, 39, 42, 0.5); /* zinc-800 */
+    }
+  }
 }
 
 @layer utilities {
