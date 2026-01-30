@@ -3,7 +3,8 @@ import { setupCommand } from './commands/setup.js';
 import { chatCommand } from './commands/chat.js';
 import { Vault } from './core/security/vault.js';
 import { researchCommand } from './commands/research.js';
-import { loginCommand } from './commands/login.js';
+import { loginCommand, logoutCommand } from './commands/login.js';
+import { watchCommand } from './commands/watch.js';
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -16,19 +17,24 @@ function showHelp() {
   
   console.log(chalk.white('Commands:'));
   console.log(chalk.cyan('  setup') + chalk.gray('               Initialize Aura OS with your wallet'));
+  console.log(chalk.cyan('  login [method]') + chalk.gray('      Login via browser (google/metamask)'));
   console.log(chalk.cyan('  chat <message>') + chalk.gray('      Send a natural language command to Aura'));
   console.log(chalk.cyan('  research [topic]') + chalk.gray('    Research crypto market news and trends'));
+  console.log(chalk.cyan('  watch [minutes]') + chalk.gray('    Start auto-monitoring alpha news (default: 15m)'));
   console.log(chalk.cyan('  status') + chalk.gray('              Check Aura OS configuration status'));
   console.log(chalk.cyan('  help') + chalk.gray('                Show this help message\n'));
   
   console.log(chalk.white('Examples:'));
   console.log(chalk.gray('  aura setup'));
+  console.log(chalk.gray('  aura login google'));
+  console.log(chalk.gray('  aura login metamask'));
   console.log(chalk.gray('  aura chat "Check my ETH balance"'));
   console.log(chalk.gray('  aura chat "Send 0.1 ETH to 0x742d35Cc..."'));
   console.log(chalk.gray('  aura chat "What\'s my wallet address?"'));
+  console.log(chalk.gray('  aura chat "Show my portfolio"'));
   console.log(chalk.gray('  aura chat "ETH price?"'));
   console.log(chalk.gray('  aura chat "Current gas price?"'));
-  console.log(chalk.gray('  aura chat "Swap 100 USDC to ETH"\n'));
+  console.log(chalk.gray('  aura chat "Research Solana"\n'));
   
   console.log(chalk.white('Documentation:'));
   console.log(chalk.gray('  https://auraos.dev/docs\n'));
@@ -95,13 +101,18 @@ async function main() {
 
     case 'login':
     case '-l':
-      if (commandArgs.length === 0) {
-        console.log(chalk.red('\n  Error: Wallet address is required'));
-        console.log(chalk.gray('  Usage: aura login "Your wallet address"\n'));
-        process.exit(1);
-      }
-      const wallet = commandArgs.join(' ');
-      await loginCommand(wallet);
+      const loginMethod = commandArgs[0];
+      await loginCommand(loginMethod);
+      break;
+
+    case 'watch':
+    case '-w':
+      const intervalMinutes = parseInt(commandArgs[0]) || 15;
+      await watchCommand(intervalMinutes);
+      break;
+
+    case 'logout':
+      await logoutCommand();
       break;
       
     case undefined:

@@ -14,6 +14,17 @@ const IntentSchema = z.object({
     "GET_GAS",
     "GET_ADDRESS",
     "GET_TRANSACTIONS",
+    "RESEARCH",
+    "PORTFOLIO",
+    // Developer Actions
+    "TRACK_WALLET",
+    "NFT_INFO",
+    "READ_CONTRACT",
+    "DECODE_TX",
+    "ENS_LOOKUP",
+    "GET_CONTRACT",
+    "GENERATE_WALLET",
+    "SIGN_MESSAGE",
     "REJECTED"
   ]),
   token: z.string().nullable(),
@@ -22,6 +33,14 @@ const IntentSchema = z.object({
   chain: z.string().nullable(),
   reason: z.string().nullable(),
   topic: z.string().nullable(),
+  includePrice: z.boolean().nullable(),
+  // Developer fields
+  contract_address: z.string().nullable(),
+  function_name: z.string().nullable(),
+  tx_hash: z.string().nullable(),
+  ens_name: z.string().nullable(),
+  token_id: z.string().nullable(),
+  message: z.string().nullable(),
 });
 
 export type Intent = z.infer<typeof IntentSchema>;
@@ -40,100 +59,86 @@ export class AIInterpreter {
 
   async parse(userInput: string, walletContext?: WalletContext): Promise<Intent | null> {
     const systemPrompt = `
-      ═══════════════════════════════════════════════════════════
-        AURA OS - CORE AI INTELLIGENCE
-      ═══════════════════════════════════════════════════════════
-      
-      SYSTEM STATUS:
-      • Wallet: ${walletContext?.isConnected ? '🟢 Connected' : '🔴 Disconnected'}
+      You are Aura OS, a professional AI Agent specializing in Web3 and Research.
+
+      Task: Analyze user requests and convert them to JSON.
+
+      CURRENT CONTEXT:
+      • Wallet: ${walletContext?.isConnected ? 'Connected' : 'Disconnected'}
       • Address: ${walletContext?.address || 'Not configured'}
       • Balance: ${walletContext?.balance || 'Unknown'}
       • Network: ${walletContext?.chain || 'Default'}
 
-      ═══════════════════════════════════════════════════════════
-      ROLE & IDENTITY
-      ═══════════════════════════════════════════════════════════
-      You are Aura, the AI brain of Aura OS - a powerful Web3 CLI agent.
-      You understand commands in multiple languages (English, Vietnamese, etc.)
-      Your job is to parse user intent and return a structured JSON response.
+      SUPPORTED ACTIONS:
 
-      ═══════════════════════════════════════════════════════════
-      SUPPORTED ACTIONS
-      ═══════════════════════════════════════════════════════════
-      
-      1. CHECK_BALANCE
-         - Check wallet balance for any token
-         - Examples: "Check my ETH", "What's my USDC balance?", "Số dư của tôi"
-         - Required: token (default: ETH)
-      
-      2. SEND_TOKEN
-         - Transfer tokens to another address
-         - Examples: "Send 0.1 ETH to 0x123...", "Gửi 100 USDC cho 0xabc..."
-         - Required: amount, token, target_address
-      
-      3. SWAP_TOKEN
-         - Exchange one token for another
-         - Examples: "Swap 100 USDC to ETH", "Đổi 1 ETH sang USDT"
-         - Required: amount, token (from), target token in reason
-      
-      4. GET_PRICE
-         - Get current token price in USD
-         - Examples: "What's the price of ETH?", "Giá Bitcoin bao nhiêu?"
-         - Required: token
-      
-      5. GET_GAS
-         - Get current gas price on the network
-         - Examples: "What's the gas price?", "Gas fees now?"
-         - Required: none
-      
-      6. GET_ADDRESS
-         - Show the user's wallet address
-         - Examples: "What's my address?", "Show my wallet", "Địa chỉ của tôi"
-         - Required: none
+      1. GET_PRICE
+         - Token/crypto price
+         - Examples: "ETH price?", "giá Bitcoin"
 
-      7. REJECTED
-         - Use this when the request is NOT related to Web3/Crypto
-         - Examples: Cooking, jokes, general knowledge, coding non-web3 apps
-         - Required: reason (explain why in user's language)
+      2. RESEARCH
+         - News, Alpha, project analysis
+         - Examples: "Research Solana", "tin tức crypto"
+         - Set includePrice: true if user wants price too
 
-      ═══════════════════════════════════════════════════════════
-      SUPPORTED TOKENS & CHAINS
-      ═══════════════════════════════════════════════════════════
+      3. CHECK_BALANCE / SEND_TOKEN / SWAP_TOKEN / PORTFOLIO
+         - Wallet operations
+         - CHECK_BALANCE: "Check my ETH"
+         - PORTFOLIO: "Show my portfolio"
+
+      4. GET_GAS / GET_ADDRESS / GET_TRANSACTIONS
+         - Utility queries
+
+      5. DEVELOPER TOOLS:
+         - TRACK_WALLET: Track/monitor a wallet address
+           Example: "Track 0x123...", "theo dõi ví này"
+         - NFT_INFO: Get NFT metadata, owner, floor price
+           Example: "Check Bored Ape #1234", "NFT info 0x..."
+         - READ_CONTRACT: Read smart contract data
+           Example: "Read balanceOf on 0x... contract"
+         - DECODE_TX: Decode transaction calldata
+           Example: "Decode tx 0x..."
+         - ENS_LOOKUP: Resolve ENS name to address or vice versa
+           Example: "What's vitalik.eth address?", "ENS for 0x..."
+         - GET_CONTRACT: Get contract info (ABI, source, verified)
+           Example: "Show AAVE contract", "contract info 0x..."
+         - GENERATE_WALLET: Create new wallet keypair
+           Example: "Generate new wallet", "tạo ví mới"
+         - SIGN_MESSAGE: Sign a message with wallet
+           Example: "Sign message: Hello World"
+
+      6. REJECTED
+         - Non-Web3 requests
+
+      RULES:
+      - STRICTLY Web3 only. Reject general questions.
+      - Return valid JSON only. No apologies or explanations.
+      - Understand English and Vietnamese naturally.
+
+      EXAMPLES:
       
-      Tokens: ETH, USDT, USDC, WETH, BTC (for price only)
-      Chains: ethereum, sepolia, base, arbitrum
-      
-      ═══════════════════════════════════════════════════════════
-      RULES
-      ═══════════════════════════════════════════════════════════
-      
-      1. ONLY handle Web3/Crypto/Blockchain requests
-      2. If missing required info, set action and leave fields empty - the executor will handle validation
-      3. Always respond in valid JSON following the schema
-      4. Understand common typos and abbreviations (eth, ethereum, etc.)
-      5. When rejecting, explain in the USER's language
-      
-      ═══════════════════════════════════════════════════════════
-      EXAMPLES
-      ═══════════════════════════════════════════════════════════
-      
-      User: "Check my ETH"
-      → { "action": "CHECK_BALANCE", "token": "ETH" }
-      
-      User: "Send 0.5 ETH to 0x742d35Cc6634C0532925a3b844Bc9e7595f"
-      → { "action": "SEND_TOKEN", "amount": 0.5, "token": "ETH", "target_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f" }
-      
-      User: "What's the current gas price?"
-      → { "action": "GET_GAS" }
-      
-      User: "ETH price?"
+      User: "ETH price"
       → { "action": "GET_PRICE", "token": "ETH" }
       
-      User: "What's my wallet address?"
-      → { "action": "GET_ADDRESS" }
-      
-      User: "Làm sao để nấu cơm?"
-      → { "action": "REJECTED", "reason": "Xin lỗi! Aura OS chỉ hỗ trợ các tác vụ Web3 như kiểm tra số dư, chuyển token, và theo dõi giá. Tôi không thể giúp bạn nấu ăn." }
+      User: "Track 0x742d35Cc6634C0532925a3b844Bc9e7595f"
+      → { "action": "TRACK_WALLET", "target_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f" }
+
+      User: "Check Bored Ape #1234"
+      → { "action": "NFT_INFO", "token": "BAYC", "token_id": "1234" }
+
+      User: "What's vitalik.eth address?"
+      → { "action": "ENS_LOOKUP", "ens_name": "vitalik.eth" }
+
+      User: "Decode tx 0xabc123..."
+      → { "action": "DECODE_TX", "tx_hash": "0xabc123..." }
+
+      User: "Generate new wallet"
+      → { "action": "GENERATE_WALLET" }
+
+      User: "Sign message: Hello Aura"
+      → { "action": "SIGN_MESSAGE", "message": "Hello Aura" }
+
+      User: "Read totalSupply on 0x1234 contract"
+      → { "action": "READ_CONTRACT", "contract_address": "0x1234", "function_name": "totalSupply" }
     `;
 
     try {
@@ -144,7 +149,7 @@ export class AIInterpreter {
           { role: "user", content: userInput },
         ],
         response_format: zodResponseFormat(IntentSchema, "intent"),
-        temperature: 0.1, // Low temperature for more consistent parsing
+        temperature: 0.1,
       });
 
       return completion.choices[0].message.parsed;
@@ -185,41 +190,72 @@ export class AIInterpreter {
 
   quickParse(userInput: string, walletAddress?: string): Intent | null {
     const input = userInput.toLowerCase().trim();
+    const baseIntent = {
+      token: null, amount: null, target_address: null, chain: null, 
+      reason: null, topic: null, includePrice: null,
+      contract_address: null, function_name: null, tx_hash: null, 
+      ens_name: null, token_id: null, message: null
+    };
     
     const addrMatch = input.match(/0x[a-fA-F0-9]{40}/);
     const targetAddr = addrMatch ? addrMatch[0] : null;
 
-    if (targetAddr) {
-      if (walletAddress && targetAddr.toLowerCase() === walletAddress.toLowerCase()) {
-
-        if (input.includes('giao dịch') || input.includes('lịch sử') || input.includes('history')) {
-          return { 
-            action: 'GET_TRANSACTIONS', target_address: targetAddr, 
-            token: null, amount: null, chain: null, reason: null, topic: null 
-          };
-        }
-        return { 
-          action: 'CHECK_BALANCE', token: 'ETH', target_address: targetAddr, 
-          amount: null, chain: null, reason: null, topic: null 
-        };
-      }
-
-      return { 
-        action: 'GET_TRANSACTIONS', target_address: targetAddr, 
-        token: null, amount: null, chain: null, reason: null, topic: null 
-      };
+    // ENS lookup
+    const ensMatch = input.match(/([a-z0-9-]+\.eth)/i);
+    if (ensMatch) {
+      return { ...baseIntent, action: 'ENS_LOOKUP', ens_name: ensMatch[1] };
     }
 
-    if (input.includes('gas')) return { action: 'GET_GAS', token: null, amount: null, target_address: null, chain: null, reason: null, topic: null };
+    // Generate wallet
+    if (input.includes('generate') && input.includes('wallet') || 
+        input.includes('tạo') && input.includes('ví') ||
+        input.includes('new wallet')) {
+      return { ...baseIntent, action: 'GENERATE_WALLET' };
+    }
+
+    // Sign message
+    if (input.includes('sign message') || input.includes('ký')) {
+      const msgMatch = userInput.match(/sign message[:\s]+(.+)/i);
+      return { ...baseIntent, action: 'SIGN_MESSAGE', message: msgMatch ? msgMatch[1].trim() : null };
+    }
+
+    // Decode tx
+    const txMatch = input.match(/(?:decode|tx|transaction)\s*(0x[a-fA-F0-9]{64})/i);
+    if (txMatch) {
+      return { ...baseIntent, action: 'DECODE_TX', tx_hash: txMatch[1] };
+    }
+
+    // Track wallet
+    if (targetAddr && (input.includes('track') || input.includes('theo dõi') || input.includes('monitor'))) {
+      return { ...baseIntent, action: 'TRACK_WALLET', target_address: targetAddr };
+    }
+
+    // Contract info
+    if (targetAddr && (input.includes('contract') || input.includes('hợp đồng'))) {
+      return { ...baseIntent, action: 'GET_CONTRACT', contract_address: targetAddr };
+    }
+
+    // Address found - default to GET_TRANSACTIONS
+    if (targetAddr) {
+      if (walletAddress && targetAddr.toLowerCase() === walletAddress.toLowerCase()) {
+        if (input.includes('giao dịch') || input.includes('lịch sử') || input.includes('history')) {
+          return { ...baseIntent, action: 'GET_TRANSACTIONS', target_address: targetAddr };
+        }
+        return { ...baseIntent, action: 'CHECK_BALANCE', token: 'ETH', target_address: targetAddr };
+      }
+      return { ...baseIntent, action: 'GET_TRANSACTIONS', target_address: targetAddr };
+    }
+
+    if (input.includes('gas')) return { ...baseIntent, action: 'GET_GAS' };
     
-    if (input.includes('địa chỉ') || input.includes('my address')) return { action: 'GET_ADDRESS', token: null, amount: null, target_address: null, chain: null, reason: null, topic: null };
+    if (input.includes('địa chỉ') || input.includes('my address')) return { ...baseIntent, action: 'GET_ADDRESS' };
 
     const priceMatch = input.match(/(?:price|giá).*?(eth|btc|usdt|usdc)/i);
-    if (priceMatch) return { action: 'GET_PRICE', token: priceMatch[1].toUpperCase(), amount: null, target_address: null, chain: null, reason: null, topic: null };
+    if (priceMatch) return { ...baseIntent, action: 'GET_PRICE', token: priceMatch[1].toUpperCase() };
 
     const balanceMatch = input.match(/(?:balance|số dư).*?(eth|usdt|usdc)?/i);
     if (balanceMatch && !input.includes('send')) {
-      return { action: 'CHECK_BALANCE', token: balanceMatch[1]?.toUpperCase() || 'ETH', amount: null, target_address: null, chain: null, reason: null, topic: null };
+      return { ...baseIntent, action: 'CHECK_BALANCE', token: balanceMatch[1]?.toUpperCase() || 'ETH' };
     }
 
     return null;
@@ -227,26 +263,24 @@ export class AIInterpreter {
 
   async summarize(rawContext:string, topic?:string):Promise<string>{
     const systemPrompt = `
-      ═══════════════════════════════════════════════════════════
-        AURA OS - INTELLIGENCE RESEARCHER (Bilingual Mode)
-      ═══════════════════════════════════════════════════════════
+      You are Aura OS, a Crypto Intelligence Researcher.
 
-      ROLE:
-      You are an elite Crypto Intelligence Researcher for Aura OS. 
-      Your mission is to analyze and summarize raw crypto data/news from the internet.
+      Task: Analyze and summarize raw crypto data/news about "${topic || 'the market'}".
 
-      CORE REQUIREMENTS (YÊU CẦU CỐT LÕI):
-      1. Language (Ngôn ngữ): Detect user language. If Vietnamese, respond in Vietnamese. Otherwise, use English.
-      2. Tone (Phong cách): Professional, concise, focusing on Alpha (valuable insights) and metrics.
-      3. Structure (Cấu trúc phản hồi):
-         - Overview (Tổng quan): One powerful sentence about ${topic || 'the market'}.
-         - Key Insights (Ý chính): 3-5 bullet points covering trends, data, and news.
-         - Aura's Alpha (Nhận định): A short, sharp AI perspective or recommendation.
+      OUTPUT FORMAT:
+        Overview: One powerful sentence summarizing the topic.
+      
+        Key Insights:
+      • [3-5 bullet points covering trends, data, news]
+      
+        Aura's Alpha: A short, sharp perspective or recommendation.
 
-      STRICT RULES:
-      - Remove ads, spam, or irrelevant marketing fluff.
+      RULES:
+      - Detect user language. Vietnamese input → Vietnamese output. Otherwise English.
+      - Remove ads, spam, or marketing fluff.
       - Focus on factual data and actionable intelligence.
-      - Keep it readable for both Terminal (CLI) and Web interfaces.
+      - Keep it readable for Terminal (CLI) and Web.
+      - Be concise but insightful.
     `
 
     try {
@@ -261,7 +295,7 @@ export class AIInterpreter {
 
       return completion.choices[0].message.content || "This content cannot be summarized.";
     } catch (error) {
-      console.error('AI Summarizer error:', error);
+      // console.error('AI Summarizer error:', error);
       try {
         const groqCompletion = await this.groq.chat.completions.create({
           model: "llama-3.3-70b-versatile",

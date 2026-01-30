@@ -7,8 +7,11 @@ import {
   parseEther,
   parseUnits,
   type Address,
+  decodeFunctionData,
+  getContract,
 } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { privateKeyToAccount, generatePrivateKey } from 'viem/accounts';
+import { mainnet } from 'viem/chains';
 import chalk from 'chalk';
 import {
   SUPPORTED_CHAINS,
@@ -103,6 +106,31 @@ export class BlockchainExecutor {
 
         case 'GET_ADDRESS':
           return this.getWalletAddress();
+
+        // Developer Tools
+        case 'ENS_LOOKUP':
+          return await this.ensLookup(intent.ens_name || intent.target_address);
+
+        case 'GENERATE_WALLET':
+          return this.generateNewWallet();
+
+        case 'SIGN_MESSAGE':
+          return await this.signMessage(intent.message);
+
+        case 'DECODE_TX':
+          return await this.decodeTx(intent.tx_hash);
+
+        case 'READ_CONTRACT':
+          return await this.readContract(intent.contract_address, intent.function_name);
+
+        case 'GET_CONTRACT':
+          return await this.getContractInfo(intent.contract_address);
+
+        case 'TRACK_WALLET':
+          return await this.trackWallet(intent.target_address);
+
+        case 'NFT_INFO':
+          return await this.getNftInfo(intent.contract_address || intent.token, intent.token_id);
 
         case 'REJECTED':
           return {
@@ -314,7 +342,359 @@ export class BlockchainExecutor {
 
     return {
       success: true,
-      message: `🔑 Your wallet address: ${this.account.address}`,
+      message: `Your wallet address: ${this.account.address}`,
     };
+  }
+
+  // ========== DEVELOPER TOOLS ==========
+
+  private async ensLookup(nameOrAddress?: string | null): Promise<ExecutionResult> {
+    if (!nameOrAddress) {
+      return { success: false, message: 'Please provide an ENS name or address' };
+    }
+
+    try {
+      // Create mainnet client for ENS
+      const mainnetClient = createPublicClient({
+        chain: mainnet,
+        transport: http('https://eth.llamarpc.com'),
+      });
+
+      // If it's an address, reverse lookup
+      if (nameOrAddress.startsWith('0x')) {
+        const name = await mainnetClient.getEnsName({
+          address: nameOrAddress as Address,
+        });
+
+        return {
+          success: true,
+          message: name
+            ? `ENS: ${name}\nAddress: ${nameOrAddress}`
+            : `No ENS name found for ${nameOrAddress}`,
+        };
+      }
+
+      // Forward lookup (name to address)
+      const address = await mainnetClient.getEnsAddress({
+        name: nameOrAddress,
+      });
+
+      return {
+        success: true,
+        message: address
+          ? `${nameOrAddress} → ${address}`
+          : `No address found for ${nameOrAddress}`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `ENS lookup failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  }
+
+  private generateNewWallet(): ExecutionResult {
+    try {
+      const privateKey = generatePrivateKey();
+      const account = privateKeyToAccount(privateKey);
+
+      return {
+        success: true,
+        message: `NEW WALLET GENERATED\n\nAddress: ${account.address}\n\nPrivate Key: ${privateKey}\n\n⚠️  SAVE YOUR PRIVATE KEY SECURELY!\nNever share it with anyone.`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to generate wallet: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  }
+
+  private async signMessage(message?: string | null): Promise<ExecutionResult> {
+    if (!this.walletClient || !this.account) {
+      return {
+        success: false,
+        message: 'Wallet not configured. Run "aura setup" first.',
+      };
+    }
+
+    if (!message) {
+      return { success: false, message: 'Please provide a message to sign' };
+    }
+
+    try {
+      const signature = await this.walletClient.signMessage({
+        account: this.account,
+        message: message,
+      });
+
+      return {
+        success: true,
+        message: `MESSAGE SIGNED\n\nMessage: "${message}"\n\nSignature:\n${signature}`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to sign message: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  }
+
+  private async decodeTx(txHash?: string | null): Promise<ExecutionResult> {
+    if (!txHash) {
+      return { success: false, message: 'Please provide a transaction hash' };
+    }
+
+    try {
+      const tx = await this.publicClient.getTransaction({
+        hash: txHash as `0x${string}`,
+      });
+
+      if (!tx) {
+        return { success: false, message: 'Transaction not found' };
+      }
+
+      const receipt = await this.publicClient.getTransactionReceipt({
+        hash: txHash as `0x${string}`,
+      });
+
+      const status = receipt?.status === 'success' ? '✓ Success' : '✗ Failed';
+      const value = formatEther(tx.value);
+
+      return {
+        success: true,
+        message: `TRANSACTION DETAILS\n\nHash: ${txHash}\nStatus: ${status}\nFrom: ${tx.from}\nTo: ${tx.to}\nValue: ${value} ETH\nGas Used: ${receipt?.gasUsed?.toString() || 'N/A'}\nBlock: ${tx.blockNumber}\n\nInput Data: ${tx.input.slice(0, 66)}...`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to decode tx: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  }
+
+  private async readContract(
+    contractAddress?: string | null,
+    functionName?: string | null
+  ): Promise<ExecutionResult> {
+    if (!contractAddress) {
+      return { success: false, message: 'Please provide a contract address' };
+    }
+
+    if (!functionName) {
+      return { success: false, message: 'Please provide a function name to read' };
+    }
+
+    try {
+      // Common view functions with their ABIs
+      const viewFunctions: Record<string, any> = {
+        name: { inputs: [], outputs: [{ type: 'string' }], stateMutability: 'view', type: 'function', name: 'name' },
+        symbol: { inputs: [], outputs: [{ type: 'string' }], stateMutability: 'view', type: 'function', name: 'symbol' },
+        decimals: { inputs: [], outputs: [{ type: 'uint8' }], stateMutability: 'view', type: 'function', name: 'decimals' },
+        totalSupply: { inputs: [], outputs: [{ type: 'uint256' }], stateMutability: 'view', type: 'function', name: 'totalSupply' },
+        owner: { inputs: [], outputs: [{ type: 'address' }], stateMutability: 'view', type: 'function', name: 'owner' },
+      };
+
+      const funcAbi = viewFunctions[functionName.toLowerCase()];
+      if (!funcAbi) {
+        return {
+          success: false,
+          message: `Function "${functionName}" not in common ABI. Supported: name, symbol, decimals, totalSupply, owner`,
+        };
+      }
+
+      const result = await this.publicClient.readContract({
+        address: contractAddress as Address,
+        abi: [funcAbi],
+        functionName: functionName.toLowerCase(),
+      });
+
+      return {
+        success: true,
+        message: `CONTRACT READ\n\nContract: ${contractAddress}\nFunction: ${functionName}()\nResult: ${result?.toString()}`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to read contract: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  }
+
+  private async getContractInfo(contractAddress?: string | null): Promise<ExecutionResult> {
+    if (!contractAddress) {
+      return { success: false, message: 'Please provide a contract address' };
+    }
+
+    try {
+      // Check if it's a contract
+      const code = await this.publicClient.getBytecode({
+        address: contractAddress as Address,
+      });
+
+      if (!code || code === '0x') {
+        return {
+          success: false,
+          message: `${contractAddress} is not a contract (EOA or empty)`,
+        };
+      }
+
+      // Try to get basic token info
+      const results: string[] = [`CONTRACT INFO\n\nAddress: ${contractAddress}\nBytecode Size: ${(code.length - 2) / 2} bytes\nNetwork: ${this.chainConfig.name}`];
+
+      // Try common token reads
+      try {
+        const name = await this.publicClient.readContract({
+          address: contractAddress as Address,
+          abi: [{ inputs: [], outputs: [{ type: 'string' }], stateMutability: 'view', type: 'function', name: 'name' }],
+          functionName: 'name',
+        });
+        results.push(`Name: ${name}`);
+      } catch {}
+
+      try {
+        const symbol = await this.publicClient.readContract({
+          address: contractAddress as Address,
+          abi: [{ inputs: [], outputs: [{ type: 'string' }], stateMutability: 'view', type: 'function', name: 'symbol' }],
+          functionName: 'symbol',
+        });
+        results.push(`Symbol: ${symbol}`);
+      } catch {}
+
+      results.push(`\nExplorer: ${this.chainConfig.explorerUrl}/address/${contractAddress}`);
+
+      return {
+        success: true,
+        message: results.join('\n'),
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to get contract info: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  }
+
+  private async trackWallet(address?: string | null): Promise<ExecutionResult> {
+    if (!address) {
+      return { success: false, message: 'Please provide a wallet address to track' };
+    }
+
+    try {
+      // Get basic wallet info
+      const balance = await this.publicClient.getBalance({
+        address: address as Address,
+      });
+
+      const txCount = await this.publicClient.getTransactionCount({
+        address: address as Address,
+      });
+
+      const formattedBalance = formatEther(balance);
+
+      // Check if it's a contract
+      const code = await this.publicClient.getBytecode({
+        address: address as Address,
+      });
+      const isContract = code && code !== '0x';
+
+      return {
+        success: true,
+        message: `WALLET TRACKING\n\nAddress: ${address}\nType: ${isContract ? 'Contract' : 'EOA (Wallet)'}\nBalance: ${formattedBalance} ETH\nTransaction Count: ${txCount}\nNetwork: ${this.chainConfig.name}\n\nExplorer: ${this.chainConfig.explorerUrl}/address/${address}`,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to track wallet: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
+  }
+
+  private async getNftInfo(
+    contractOrName?: string | null,
+    tokenId?: string | null
+  ): Promise<ExecutionResult> {
+    if (!contractOrName) {
+      return { success: false, message: 'Please provide NFT contract address or collection name' };
+    }
+
+    // Common NFT collections
+    const collections: Record<string, string> = {
+      'bayc': '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D',
+      'boredape': '0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D',
+      'mayc': '0x60E4d786628Fea6478F785A6d7e704777c86a7c6',
+      'azuki': '0xED5AF388653567Af2F388E6224dC7C4b3241C544',
+      'doodles': '0x8a90CAb2b38dba80c64b7734e58Ee1dB38B8992e',
+      'cryptopunks': '0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB',
+      'pudgypenguins': '0xBd3531dA5CF5857e7CfAA92426877b022e612cf8',
+    };
+
+    let contractAddress = contractOrName.startsWith('0x')
+      ? contractOrName
+      : collections[contractOrName.toLowerCase()];
+
+    if (!contractAddress) {
+      return {
+        success: false,
+        message: `Unknown collection: ${contractOrName}\nSupported: BAYC, MAYC, Azuki, Doodles, CryptoPunks, PudgyPenguins\nOr provide contract address directly.`,
+      };
+    }
+
+    try {
+      // Use mainnet client for NFTs
+      const mainnetClient = createPublicClient({
+        chain: mainnet,
+        transport: http('https://eth.llamarpc.com'),
+      });
+
+      // Get collection info
+      let name = 'Unknown';
+      let symbol = 'N/A';
+
+      try {
+        name = await mainnetClient.readContract({
+          address: contractAddress as Address,
+          abi: [{ inputs: [], outputs: [{ type: 'string' }], stateMutability: 'view', type: 'function', name: 'name' }],
+          functionName: 'name',
+        }) as string;
+      } catch {}
+
+      try {
+        symbol = await mainnetClient.readContract({
+          address: contractAddress as Address,
+          abi: [{ inputs: [], outputs: [{ type: 'string' }], stateMutability: 'view', type: 'function', name: 'symbol' }],
+          functionName: 'symbol',
+        }) as string;
+      } catch {}
+
+      let result = `NFT INFO\n\nCollection: ${name} (${symbol})\nContract: ${contractAddress}`;
+
+      // If token ID provided, get owner
+      if (tokenId) {
+        try {
+          const owner = await mainnetClient.readContract({
+            address: contractAddress as Address,
+            abi: [{ inputs: [{ type: 'uint256' }], outputs: [{ type: 'address' }], stateMutability: 'view', type: 'function', name: 'ownerOf' }],
+            functionName: 'ownerOf',
+            args: [BigInt(tokenId)],
+          });
+          result += `\n\nToken #${tokenId}\nOwner: ${owner}`;
+        } catch {
+          result += `\n\nToken #${tokenId}: Not found or burned`;
+        }
+      }
+
+      result += `\n\nOpenSea: https://opensea.io/assets/ethereum/${contractAddress}${tokenId ? `/${tokenId}` : ''}`;
+
+      return {
+        success: true,
+        message: result,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Failed to get NFT info: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      };
+    }
   }
 }
