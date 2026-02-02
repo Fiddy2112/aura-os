@@ -15,6 +15,7 @@ const IntentSchema = z.object({
     "GET_ADDRESS",
     "GET_TRANSACTIONS",
     "RESEARCH",
+    "NEWS",
     "PORTFOLIO",
     // Developer Actions
     "TRACK_WALLET",
@@ -76,9 +77,16 @@ export class AIInterpreter {
          - Examples: "ETH price?", "giá Bitcoin"
 
       2. RESEARCH
-         - News, Alpha, project analysis
-         - Examples: "Research Solana", "tin tức crypto"
-         - Set includePrice: true if user wants price too
+         - Deep project analysis, structured reports, technical assessment
+         - Use for: "Research Solana", "Analyze Ethereum", "Tell me about Arbitrum"
+         - Keywords: research, analyze, deep dive, assessment, report
+         - Returns comprehensive 7-section research report
+
+      2.5. NEWS
+         - Quick news updates, latest headlines, current events
+         - Use for: "Crypto news today", "What's happening with ETH?", "Bitcoin news"
+         - Keywords: news, headlines, updates, happening, latest
+         - Returns quick news summary
 
       3. CHECK_BALANCE / SEND_TOKEN / SWAP_TOKEN / PORTFOLIO
          - Wallet operations
@@ -256,6 +264,14 @@ export class AIInterpreter {
     const balanceMatch = input.match(/(?:balance|số dư).*?(eth|usdt|usdc)?/i);
     if (balanceMatch && !input.includes('send')) {
       return { ...baseIntent, action: 'CHECK_BALANCE', token: balanceMatch[1]?.toUpperCase() || 'ETH' };
+    }
+
+    // News detection
+    const newsKeywords = ['news', 'tin tức', 'headline', 'happening', 'update', 'latest'];
+    if (newsKeywords.some(kw => input.includes(kw))) {
+      // Extract topic from input
+      const topicMatch = userInput.match(/(?:news|tin tức|headline|update|latest)\s+(?:about|on|for)?\s*(.+)/i);
+      return { ...baseIntent, action: 'NEWS', topic: topicMatch ? topicMatch[1].trim() : null };
     }
 
     return null;

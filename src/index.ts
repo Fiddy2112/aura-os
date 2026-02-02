@@ -3,6 +3,7 @@ import { setupCommand } from './commands/setup.js';
 import { chatCommand } from './commands/chat.js';
 import { Vault } from './core/security/vault.js';
 import { researchCommand } from './commands/research.js';
+import { newsCommand } from './commands/news.js';
 import { loginCommand, logoutCommand } from './commands/login.js';
 import { watchCommand } from './commands/watch.js';
 
@@ -19,22 +20,24 @@ function showHelp() {
   console.log(chalk.cyan('  setup') + chalk.gray('               Initialize Aura OS with your wallet'));
   console.log(chalk.cyan('  login [method]') + chalk.gray('      Login via browser (google/metamask)'));
   console.log(chalk.cyan('  chat <message>') + chalk.gray('      Send a natural language command to Aura'));
-  console.log(chalk.cyan('  research [topic]') + chalk.gray('    Research crypto market news and trends'));
-  console.log(chalk.cyan('  watch [minutes]') + chalk.gray('    Start auto-monitoring alpha news (default: 15m)'));
+  console.log(chalk.cyan('  research <project>') + chalk.gray('  Deep project analysis with structured report'));
+  console.log(chalk.cyan('  news [topic]') + chalk.gray('        Quick news headlines and summaries'));
+  console.log(chalk.cyan('  watch [minutes]') + chalk.gray('     Start auto-monitoring alpha news (default: 15m)'));
   console.log(chalk.cyan('  status') + chalk.gray('              Check Aura OS configuration status'));
   console.log(chalk.cyan('  help') + chalk.gray('                Show this help message\n'));
   
   console.log(chalk.white('Examples:'));
   console.log(chalk.gray('  aura setup'));
-  console.log(chalk.gray('  aura login google'));
-  console.log(chalk.gray('  aura login metamask'));
+  console.log(chalk.gray('  aura login'));
   console.log(chalk.gray('  aura chat "Check my ETH balance"'));
   console.log(chalk.gray('  aura chat "Send 0.1 ETH to 0x742d35Cc..."'));
   console.log(chalk.gray('  aura chat "What\'s my wallet address?"'));
   console.log(chalk.gray('  aura chat "Show my portfolio"'));
   console.log(chalk.gray('  aura chat "ETH price?"'));
   console.log(chalk.gray('  aura chat "Current gas price?"'));
-  console.log(chalk.gray('  aura chat "Research Solana"\n'));
+  console.log(chalk.gray('  aura chat "Research Solana"'));
+  console.log(chalk.gray('  aura news "Ethereum"'));
+  console.log(chalk.gray('  aura news "Bitcoin ETF"\n'));
   
   console.log(chalk.white('Documentation:'));
   console.log(chalk.gray('  https://auraos.dev/docs\n'));
@@ -85,8 +88,14 @@ async function main() {
       break;
 
     case 'research':
-      const topic = commandArgs.join(' ');
-      await researchCommand(topic || undefined);
+      const researchTopic = commandArgs.join(' ');
+      await researchCommand(researchTopic || undefined);
+      break;
+
+    case 'news':
+    case '-n':
+      const newsTopic = commandArgs.join(' ');
+      await newsCommand(newsTopic || undefined);
       break;
       
     case 'status':

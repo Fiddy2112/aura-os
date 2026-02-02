@@ -4,7 +4,8 @@ import { AIInterpreter, type Intent, type WalletContext } from '../core/ai/inter
 import { BlockchainExecutor } from '../core/blockchain/executor.js';
 import { Vault } from '../core/security/vault.js';
 import { BlockchainExplorer } from '../core/blockchain/explorer.js';
-import { CryptoResearcher } from '../core/ai/researcher.js';
+import { newsCommand } from './news.js';
+import { researchCommand } from './research.js';
 import { syncActivity } from '../core/utils/supabase.js';
 
 export async function chatCommand(userInput: string) {
@@ -88,38 +89,14 @@ export async function chatCommand(userInput: string) {
   }
 
   if (intent.action === 'RESEARCH') {
-    const topic = intent.topic || intent.token || 'crypto market';
-    console.log(chalk.gray(` Researching: "${topic}"...`));
-    
-    const researcher = new CryptoResearcher();
-    const data = await researcher.research(topic);
-    const rawText = data.map(d => d.content).join("\n");
-    
-    let summary = await interpreter.summarize(rawText, topic);
-    
-    // If includePrice is true, also fetch and append price
-    if (intent.includePrice && intent.token) {
-      const executor = new BlockchainExecutor();
-      const priceResult = await executor.execute({ 
-        ...intent, 
-        action: 'GET_PRICE' 
-      });
-      if (priceResult.success) {
-        summary += `\n\n${priceResult.message}`;
-      }
-    }
-    
-    console.log(chalk.cyan.bold('\n--- AURA RESEARCH ---'));
-    console.log(chalk.white(summary));
-    
-    if (data.length > 0) {
-      console.log(chalk.gray('\n Sources:'));
-      data.slice(0, 3).forEach(d => {
-        console.log(chalk.gray(` • ${d.title} - ${d.url}`));
-      });
-    }
-    
-    await syncActivity('RESEARCH', intent, summary);
+    const topic = intent.topic || intent.token || undefined;
+    await researchCommand(topic);
+    return;
+  }
+
+  if (intent.action === 'NEWS') {
+    const topic = intent.topic || intent.token || undefined;
+    await newsCommand(topic);
     return;
   }
 
