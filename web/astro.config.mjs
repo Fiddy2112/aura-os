@@ -7,4 +7,11 @@ export default defineConfig({
     react(), 
     tailwind()
   ],
+  vite: {
+    build: {
+      rollupOptions: {
+        external: ['openai', 'groq-sdk']
+      }
+    }
+  } 
 });

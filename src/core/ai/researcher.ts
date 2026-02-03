@@ -2,23 +2,27 @@ import OpenAI from "openai";
 import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NewsSearcher, type SearchResult } from "./news.js";
+import { PolymarketPlugin } from "./plugins/polymarket.js";
+import chalk from "chalk";
 
 /**
  * Deep Research Prompt for structured project analysis
  */
 function getDeepResearchPrompt(project: string): string {
-  return `You are a crypto research analyst.
+  return `You are a professional crypto research analyst and sentiment expert.
 
-  Your task is to produce a structured, evidence-driven research report about ${project}.
+  Your task is to produce a structured, evidence-driven research report about ${project}. 
   This task is analytical research, NOT news summarization and NOT investment advice.
 
   ========================
   STRICT BOUNDARIES
   ========================
-  - Use ONLY information explicitly present in the provided sources.
+  - Use ONLY information explicitly present in the provided sources and the [PREDICTION MARKET DATA].
+  - If Prediction Market data (Polymarket) is available, it MUST be used to contextualize market sentiment and speculative risk.
   - Do NOT rely on prior knowledge, common crypto narratives, or assumptions.
   - If evidence is missing or unclear, explicitly state: "insufficient data".
   - Do NOT infer intent, future outcomes, or motivations beyond what sources state.
+  - IF SOURCES CONFLICT: Explicitly note the discrepancy and cite both conflicting sources (e.g., "Source 1 claims X, while Source 2 indicates Y").
 
   ========================
   AUDIENCE
@@ -30,106 +34,63 @@ function getDeepResearchPrompt(project: string): string {
   ========================
   MANDATORY RESEARCH PRINCIPLES
   ========================
-  - Every factual claim MUST be supported by at least one source.
+  - Every factual claim MUST be supported by an inline citation to the source index, e.g., "Mainnet launched in Q1 [Source 1]."
   - If a claim cannot be fully supported, label it as "unsupported".
   - Clearly distinguish between:
     - FACTS (directly stated or observable)
     - CLAIMED PURPOSE (what the project says about itself)
     - INTERPRETATIONS (explicitly marked and evidence-based)
-  - Avoid vague qualifiers such as "strong", "significant", or "robust" unless quantified.
   - Market data MUST include a timestamp or reference date.
-    - If the date is missing, state: "date not specified".
 
   ========================
   RESEARCH FLOW (FOLLOW STRICTLY)
   ========================
 
   1. PROJECT DEFINITION
-  - FACTS:
-    - What is the project?
-    - When was it created? (if available)
-  - CLAIMED PURPOSE:
-    - What problem does the project claim to solve?
-  - CATEGORY:
-    - How the project is described or labeled by the sources
-      (e.g., meme coin, L1, L2, DeFi protocol).
+  - FACTS: What is the project? When was it created?
+  - CLAIMED PURPOSE: What problem does it claim to solve?
+  - CATEGORY: L1, L2, DeFi, AI Agent, etc.
 
-  2. TECHNOLOGY & PRODUCT
-  - IMPLEMENTATION:
-    - What components are actually implemented and live?
-    - What parts are inherited from other chains, protocols, or frameworks?
-  - MATURITY:
-    - idea / testnet / mainnet / production (state evidence).
-  - TECHNICAL TRADE-OFFS:
-    - What design choices introduce constraints or limitations?
-  - EVIDENCE:
-    - Repositories, deployments, audits, releases, or technical documentation.
+  2. TECHNOLOGY & SECURITY
+  - IMPLEMENTATION: What is live? What is inherited?
+  - MATURITY: idea / testnet / mainnet / production.
+  - SECURITY: Audit history, multisig setup, and bug bounties.
+  - TECHNICAL TRADE-OFFS: Design constraints or limitations.
+  - EVIDENCE: Repos, technical documentation.
 
   3. TEAM, GOVERNANCE & CONTROL
-  - FACTS:
-    - Who controls development, upgrades, or key decisions?
-  - GOVERNANCE MECHANISM:
-    - DAO, multisig, foundation, company, or informal process.
-  - CENTRALIZATION POINTS:
-    - Who has final authority or override power?
-  - EVIDENCE:
-    - Governance documents, public statements, or on-chain control.
+  - FACTS: Who controls upgrades/decisions?
+  - GOVERNANCE: DAO, multisig, or foundation.
+  - CENTRALIZATION POINTS: Who has final override power?
 
-  4. TOKEN MODEL & ECONOMICS (IF APPLICABLE)
-  - TOKEN ROLE:
-    - Is the token required for core protocol functionality?
-      (Yes / No / Partially)
-  - SUPPLY & DISTRIBUTION:
-    - Total supply, circulating supply, emission or unlocks (if available).
-  - INCENTIVES:
-    - Who benefits from token usage?
-    - Who bears economic risk?
-  - EVIDENCE:
-    - Token documentation, on-chain data, or official disclosures.
-  - If no token exists, explicitly state this.
+  4. TOKEN MODEL & ECONOMICS
+  - ROLE: Is the token required for core functionality?
+  - SUPPLY & DISTRIBUTION: Total/circulating supply, unlocks.
+  - INCENTIVES: Who benefits? Who bears economic risk?
 
-  5. ADOPTION, TRACTION & MARKET METRICS
-  - USAGE SIGNALS:
-    - Evidence of real usage (on-chain activity, protocol usage).
-  - MARKET METRICS:
-    - Market Capitalization (with date).
-    - Fully Diluted Valuation (FDV), if available (with date).
-    - 24h Trading Volume, if available (with date).
-  - SPECULATIVE SIGNALS:
-    - Exchange listings or trading-related signals (label clearly).
-  - DISTINCTION:
-    - Clearly separate organic usage from incentive-driven or speculative activity.
-  - EVIDENCE:
-    - Dashboards, analytics platforms, or cited metrics.
-
-  ⚠ Do NOT include price commentary unless explicitly required to contextualize market metrics.
-  ⚠ Do NOT describe price movement, trends, or predictions.
+  5. ADOPTION, TRACTION & MARKET SENTIMENT
+  - USAGE SIGNALS: On-chain activity (TVL, active users).
+  - MARKET METRICS: Cap, FDV, 24h Volume (with dates).
+  - PREDICTION MARKET SENTIMENT:
+    - Analyze 'Odds' and 'Volume' from [PREDICTION MARKET DATA].
+    - Does the market bet 'Yes' or 'No' on this project's success or specific milestones?
+    - High volume indicates high conviction or significant conflict in sentiment.
 
   6. RISK ANALYSIS
-  - HIGH RISK:
-    - Risks that could materially affect the project’s functionality,
-      governance, or economic model.
-  - MEDIUM RISK:
-    - Risks with moderate impact or likelihood.
-  - LOW RISK:
-    - Minor or mitigated risks.
-  - For EACH risk:
-    - Explain WHY it matters.
-    - Cite WHAT evidence supports it.
-  - Avoid generic market risks (e.g., price volatility) unless directly tied
-    to the project’s design.
+  - HIGH RISK: Risks materially affecting functionality, governance, or economics. 
+    - Integration: If Polymarket 'Yes' odds are < 30% for key milestones, evaluate as High Execution Risk.
+  - MEDIUM RISK: Risks with moderate impact.
+  - LOW RISK: Minor or mitigated risks.
+  - For EACH risk: Explain WHY and cite EVIDENCE.
 
   7. LIMITATIONS & UNKNOWNS
-  - Missing or unavailable data.
-  - Unverified or weakly supported claims.
-  - Conflicting information across sources.
+  - Missing data or unverified claims.
 
   ========================
   RULES
   ========================
-  - Do NOT speculate beyond the evidence.
-  - Do NOT predict price, adoption, or future success.
-  - Do NOT provide investment advice or recommendations.
+  - Do NOT speculate or predict price.
+  - Do NOT provide investment recommendations.
   - Maintain a neutral, analytical, research-only tone.
 
   ========================
@@ -141,9 +102,10 @@ function getDeepResearchPrompt(project: string): string {
   - CLAIMED PURPOSE:
   - CATEGORY:
 
-  TECHNOLOGY & PRODUCT:
+  TECHNOLOGY & SECURITY:
   - IMPLEMENTATION:
   - MATURITY:
+  - SECURITY:
   - TRADE-OFFS:
   - EVIDENCE:
 
@@ -158,10 +120,10 @@ function getDeepResearchPrompt(project: string): string {
   - INCENTIVES:
   - EVIDENCE:
 
-  ADOPTION, TRACTION & MARKET METRICS:
+  ADOPTION, TRACTION & MARKET SENTIMENT:
   - USAGE SIGNALS:
   - MARKET METRICS:
-  - SPECULATIVE SIGNALS:
+  - PREDICTION MARKET DATA:
   - EVIDENCE:
 
   RISKS:
@@ -175,8 +137,6 @@ function getDeepResearchPrompt(project: string): string {
   DATA SOURCES USED:
   - ...`;
 }
-
-
 
 export interface ResearchReport {
   project: string;
@@ -217,6 +177,16 @@ export class DeepResearcher {
       `${project} cryptocurrency risks analysis`,
     ];
 
+    const polyPlugin = new PolymarketPlugin();
+
+    let polyData: PolymarketPlugin[] = [];
+
+    try {
+      polyData = await polyPlugin.fetchMarkets(project);
+    } catch (error) {
+      console.log(chalk.gray(` [Polymarket] No data found or API issue.`));
+    }
+
     // Collect data from all queries
     const allResults: SearchResult[] = [];
     
@@ -244,6 +214,12 @@ export class DeepResearcher {
       };
     }
 
+    const polyContext = polyData.length > 0 
+    ? `\n[PREDICTION MARKET DATA (POLYMARKET)]:\n` + polyData.map(d => 
+        `- Market: ${d.title}\n  Volume: ${d.volume}\n  Odds (Yes): ${(d.price * 100).toFixed(1)}%`
+      ).join('\n')
+    : "";
+
     // Prepare source context for analysis
     const sourcesContext = uniqueResults
       .map(
@@ -252,8 +228,10 @@ export class DeepResearcher {
       )
       .join("\n\n---\n\n");
 
+    const combinedContext = sourcesContext + "\n\n" + polyContext;
+
     // Generate deep research report
-    const report = await this.generateReport(sourcesContext, project, language);
+    const report = await this.generateReport(combinedContext, project, language);
 
     return {
       project,
