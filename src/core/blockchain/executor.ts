@@ -77,7 +77,7 @@ export class BlockchainExecutor {
     try {
       switch (intent.action) {
         case 'CHECK_BALANCE':
-          return await this.checkBalance(intent.token);
+        return await this.checkBalance(intent.token, intent.target_address);
 
         case 'SEND_TOKEN':
           if (!intent.target_address || !intent.amount) {
@@ -95,7 +95,7 @@ export class BlockchainExecutor {
         case 'SWAP_TOKEN':
           return {
             success: false,
-            message: '🚧 Swap functionality coming soon! Will integrate with Uniswap/1inch.',
+            message: ' Swap functionality coming soon! Will integrate with Uniswap/1inch.',
           };
 
         case 'GET_PRICE':
@@ -153,15 +153,15 @@ export class BlockchainExecutor {
     }
   }
 
-  private async checkBalance(token?: string): Promise<ExecutionResult> {
-    if (!this.account) {
+  private async checkBalance(token?: string, targetAddress?: string | null): Promise<ExecutionResult> {
+    const address = targetAddress ? (targetAddress as Address) : this.account?.address;
+
+    if (!address) {
       return {
         success: false,
-        message: 'Wallet not configured. Run "aura setup" first.',
+        message: 'No wallet configured or target address provided.',
       };
     }
-
-    const address = this.account.address;
 
     // Native token (ETH)
     if (!token || token.toUpperCase() === 'ETH') {
@@ -293,17 +293,91 @@ export class BlockchainExecutor {
     }
   }
 
+  async getPortfolio(): Promise<{ token: string; balance: string; usdValue: number; chain: string }[]> {
+    if (!this.account) return [];
+
+    const portfolio: { token: string; balance: string; usdValue: number; chain: string }[] = [];
+    const chainsToCheck = Object.keys(SUPPORTED_CHAINS);
+
+    for (const chainKey of chainsToCheck) {
+      const chainConfig = SUPPORTED_CHAINS[chainKey];
+      // Create a temporary public client for this specific chain
+      const client = createPublicClient({
+        chain: chainConfig.chain,
+        transport: http(chainConfig.rpcUrl),
+      });
+
+      const address = this.account.address;
+
+      // 1. Native Token (ETH) on this chain
+      try {
+        const balance = await client.getBalance({ address });
+        const formattedBalance = parseFloat(formatEther(balance));
+        
+        if (formattedBalance > 0) {
+          const priceRes = await this.getTokenPrice('ETH');
+          const price = priceRes.data?.price || 0;
+          portfolio.push({
+            token: chainConfig.nativeCurrency.symbol,
+            balance: formattedBalance.toFixed(4),
+            usdValue: formattedBalance * price,
+            chain: chainConfig.name
+          });
+        }
+      } catch (e) {
+        // Silently fail for specific chain errors to keep the loop going
+      }
+
+      // 2. ERC-20 Tokens on this chain
+      const tokens = TOKEN_ADDRESSES[chainKey] || {};
+      for (const [symbol, tokenAddress] of Object.entries(tokens)) {
+        try {
+          const [balance, decimals] = await Promise.all([
+            client.readContract({
+              address: tokenAddress,
+              abi: ERC20_ABI,
+              functionName: 'balanceOf',
+              args: [address],
+            }),
+            client.readContract({
+              address: tokenAddress,
+              abi: ERC20_ABI,
+              functionName: 'decimals',
+            }),
+          ]);
+
+          const formatted = parseFloat(formatUnits(balance as bigint, decimals as number));
+          
+          if (formatted > 0) {
+            const priceRes = await this.getTokenPrice(symbol);
+            const price = priceRes.data?.price || 0;
+            portfolio.push({
+              token: symbol,
+              balance: formatted.toFixed(2),
+              usdValue: formatted * price,
+              chain: chainConfig.name
+            });
+          }
+        } catch (e) {
+          // Ignore token errors
+        }
+      }
+    }
+
+    return portfolio;
+  }
+
   private async getGasPrice(): Promise<ExecutionResult> {
     const gasPrice = await this.publicClient.getGasPrice();
     const gasPriceGwei = formatUnits(gasPrice, 9);
 
     return {
       success: true,
-      message: `⛽ Current gas price on ${this.chainConfig.name}: ${parseFloat(gasPriceGwei).toFixed(2)} Gwei`,
+      message: ` Current gas price on ${this.chainConfig.name}: ${parseFloat(gasPriceGwei).toFixed(2)} Gwei`,
     };
   }
 
-  private async getTokenPrice(token: string): Promise<ExecutionResult> {
+  private async getTokenPrice(token: string): Promise<ExecutionResult & { data?: { price: number } }> {
     try {
       // Using CoinGecko API (free tier)
       const tokenId = token.toLowerCase() === 'eth' ? 'ethereum' : token.toLowerCase();
@@ -316,7 +390,8 @@ export class BlockchainExecutor {
       if (price) {
         return {
           success: true,
-          message: `💵 ${token.toUpperCase()} Price: $${price.toLocaleString()}`,
+          message: `${token.toUpperCase()} Price: $${price.toLocaleString()}`,
+          data: { price }
         };
       }
 

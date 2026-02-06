@@ -1,6 +1,9 @@
 import chalk from "chalk";
 import { DeepResearcher } from "../core/ai/researcher.js";
 import { syncActivity } from "../core/utils/supabase.js";
+import inquirer from "inquirer";
+import { SocialAgent } from "../core/ai/social.js";
+import clipboardy from "clipboardy";
 
 export async function researchCommand(topic?: string) {
   const researcher = new DeepResearcher();
@@ -23,8 +26,24 @@ export async function researchCommand(topic?: string) {
   console.log(chalk.gray(`\n Deep Research: "${topic}"...`));
   console.log(chalk.gray(" Gathering data from multiple sources..."));
 
+  // Check for --share flag in command line args
+  let shouldShare = false;
+  if (topic && topic.includes("--share")) {
+    shouldShare = true;
+    topic = topic.replace("--share social", "").replace("--share", "").trim();
+  }
+
+  const { share } = shouldShare 
+    ? { share: true }
+    : await inquirer.prompt([{
+        type: 'confirm',
+        name: 'share',
+        message: chalk.magenta('Do you want to share this research on social media?'),
+        default: false
+      }]);
+
+
   try {
-    // Perform deep project analysis
     const result = await researcher.analyzeProject(topic, {
       language: isVietnamese ? "vi" : "en",
     });
@@ -34,6 +53,20 @@ export async function researchCommand(topic?: string) {
       return null;
     }
 
+    if (share) {
+      const social = new SocialAgent();
+      const thread = await social.generateThread(topic || 'Crypto Project', result.report);
+
+      console.log(chalk.gray('\n──────────────────────────────────────────'));
+      console.log(chalk.bold.blue(' X PREVIEW:'));
+      console.log(chalk.gray('──────────────────────────────────────────\n'));
+      thread.forEach((tweet, i) => {
+        console.log(chalk.yellow(`[X ${i + 1}/${thread.length}]`));
+        console.log(chalk.white(tweet));
+        console.log(chalk.gray('---'));
+      });
+    }
+
     console.log(chalk.gray(` Found ${result.sources.length} sources. Generating report...`));
 
     // Sync to dashboard
@@ -41,6 +74,43 @@ export async function researchCommand(topic?: string) {
 
     // Display structured research report
     displayResearchReport(result.report, result.sources, topic, isVietnamese);
+
+    const { action } = await inquirer.prompt([{
+      type: 'list',
+      name: 'action',
+      message: chalk.cyan(' What next?'),
+      choices: [
+        { name: 'Generate Twitter Thread', value: 'thread' },
+        { name: 'Save Report to File', value: 'save' },
+        { name: 'Exit', value: 'exit' }
+      ]
+    }]);
+
+    if (action === 'thread') {
+      const social = new SocialAgent();
+      const thread = await social.generateThread(topic || "Crypto Gem", result.report);
+
+      console.log(chalk.bold.blue('\n PREVIEW THREAD:\n'));
+
+      thread.forEach((tweet, index) => {
+        console.log(chalk.yellow(`[${index + 1}/${thread.length}]`));
+        console.log(chalk.white(tweet));
+        console.log(chalk.gray('---'));
+      });
+
+      const { copy } = await inquirer.prompt([{
+        type: 'confirm',
+        name: 'copy',
+        message: chalk.green(' 📋 Copy full thread to clipboard?'),
+        default: true
+      }]);
+
+      if (copy) {
+        const fullText = thread.join('\n\n---\n\n');
+        clipboardy.writeSync(fullText);
+        console.log(chalk.green(' ✓ Copied! Ready to paste on X.'));
+      }
+    }
 
     return result.report;
   } catch (error) {

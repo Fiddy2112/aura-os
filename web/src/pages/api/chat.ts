@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { AIInterpreter } from '../../../../src/core/ai/interpreter.ts';
+import { AIInterpreter } from '../../lib/ai/interpreter.ts';
 
 export const POST: APIRoute = async ({ request }) => {
   try {

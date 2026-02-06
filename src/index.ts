@@ -1,4 +1,6 @@
 import chalk from 'chalk';
+import gradient from 'gradient-string';
+import boxen from 'boxen';
 import { setupCommand } from './commands/setup.js';
 import { chatCommand } from './commands/chat.js';
 import { Vault } from './core/security/vault.js';
@@ -6,65 +8,82 @@ import { researchCommand } from './commands/research.js';
 import { newsCommand } from './commands/news.js';
 import { loginCommand, logoutCommand } from './commands/login.js';
 import { watchCommand } from './commands/watch.js';
+import { dashboardCommand } from './commands/dashboard.js';
+import { walletCommand } from './commands/wallet.js';
+import { runCommand } from './commands/run.js';
 
 const args = process.argv.slice(2);
 const command = args[0];
 const commandArgs = args.slice(1);
 
+const auraGradient = gradient(['#06b6d4', '#8b5cf6', '#ec4899']); // Cyan -> Purple -> Pink
+
+export function showBanner() {
+  const banner = `
+   █████╗ ██╗   ██╗██████╗  █████╗      ██████╗ ███████╗
+  ██╔══██╗██║   ██║██╔══██╗██╔══██╗    ██╔═══██╗██╔════╝
+  ███████║██║   ██║██████╔╝███████║    ██║   ██║███████╗
+  ██╔══██║██║   ██║██╔══██╗██╔══██║    ██║   ██║╚════██║
+  ██║  ██║╚██████╔╝██║  ██║██║  ██║    ╚██████╔╝███████║
+  ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝     ╚═════╝ ╚══════╝
+  `;
+  console.log(auraGradient(banner));
+  console.log(chalk.cyan(' ▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚▚'));
+}
+
 function showHelp() {
-  console.log(chalk.blue.bold('\n Aura OS - Your AI Commander for Web3\n'));
-  console.log(chalk.white('Usage:'));
-  console.log(chalk.gray('  aura <command> [options]\n'));
+  showBanner();
   
-  console.log(chalk.white('Commands:'));
-  console.log(chalk.cyan('  setup') + chalk.gray('               Initialize Aura OS with your wallet'));
-  console.log(chalk.cyan('  login [method]') + chalk.gray('      Login via browser (google/metamask)'));
-  console.log(chalk.cyan('  chat <message>') + chalk.gray('      Send a natural language command to Aura'));
-  console.log(chalk.cyan('  research <project>') + chalk.gray('  Deep project analysis with structured report'));
-  console.log(chalk.cyan('  news [topic]') + chalk.gray('        Quick news headlines and summaries'));
-  console.log(chalk.cyan('  watch [minutes]') + chalk.gray('     Start auto-monitoring alpha news (default: 15m)'));
-  console.log(chalk.cyan('  status') + chalk.gray('              Check Aura OS configuration status'));
-  console.log(chalk.cyan('  help') + chalk.gray('                Show this help message\n'));
-  
-  console.log(chalk.white('Examples:'));
-  console.log(chalk.gray('  aura setup'));
-  console.log(chalk.gray('  aura login'));
-  console.log(chalk.gray('  aura chat "Check my ETH balance"'));
-  console.log(chalk.gray('  aura chat "Send 0.1 ETH to 0x742d35Cc..."'));
-  console.log(chalk.gray('  aura chat "What\'s my wallet address?"'));
-  console.log(chalk.gray('  aura chat "Show my portfolio"'));
-  console.log(chalk.gray('  aura chat "ETH price?"'));
-  console.log(chalk.gray('  aura chat "Current gas price?"'));
-  console.log(chalk.gray('  aura chat "Research Solana"'));
-  console.log(chalk.gray('  aura news "Ethereum"'));
-  console.log(chalk.gray('  aura news "Bitcoin ETF"\n'));
-  
-  console.log(chalk.white('Documentation:'));
-  console.log(chalk.gray('  https://auraos.dev/docs\n'));
+  const helpContent = `
+  ${chalk.bold.white('MAIN COMMANDS')}
+    ${chalk.magenta('setup')}       ${chalk.gray('Initialize your encrypted Web3 vault')}
+    ${chalk.magenta('research')}    ${chalk.gray('Deep project analysis & Sentiment')}
+    ${chalk.magenta('watch')}       ${chalk.gray('Automated AI alpha hunting mode')}
+
+  ${chalk.bold.white('INTERACTION')}
+    ${chalk.cyan('chat')}        ${chalk.gray('Natural language AI interaction')}
+    ${chalk.cyan('news')}        ${chalk.gray('Real-time crypto alpha aggregator')}
+
+  ${chalk.bold.white('SYSTEM')}
+    ${chalk.gray('wallet')}      ${chalk.gray('Manage accounts (show, export)')}
+    ${chalk.gray('dashboard')}   ${chalk.gray('Launch the real-time Web UI')}
+    ${chalk.gray('login')}       ${chalk.gray('Login via browser (google/metamask)')}
+    ${chalk.gray('status')}      ${chalk.gray('Check Aura OS configuration status')}
+    ${chalk.gray('help')}        ${chalk.gray('Show this help message')}
+  `;
+
+  console.log(boxen(helpContent, {
+    padding: 1,
+    borderColor: 'cyan',
+    borderStyle: 'round',
+    title: chalk.bold.cyan(' ⬢ Aura Menu '),
+    titleAlignment: 'center'
+  }));
 }
 
 function showStatus() {
-  console.log(chalk.blue.bold('\n Aura OS Status\n'));
+  showBanner();
   
   const isSetup = Vault.isSetup();
-  
-  if (isSetup) {
-    console.log(chalk.green('  ✓ Wallet configured'));
-    console.log(chalk.green('  ✓ Vault encrypted (AES-256)'));
-  } else {
-    console.log(chalk.yellow('  ⚠ Wallet not configured'));
-    console.log(chalk.gray('    Run: aura setup'));
-  }
-  
   const hasApiKey = !!process.env.OPENAI_API_KEY;
-  if (hasApiKey) {
-    console.log(chalk.green('  ✓ OpenAI API key configured'));
-  } else {
-    console.log(chalk.yellow('  ⚠ OpenAI API key not found'));
-    console.log(chalk.gray('    Set OPENAI_API_KEY in your .env file'));
-  }
-  
-  console.log('');
+
+  const statusInfo = `
+  ${chalk.bold('VAULT:')}    ${isSetup ? chalk.green('ACTIVE') : chalk.red('INACTIVE')}
+  ${chalk.bold('NETWORK:')}  ${chalk.cyan('SUI_MAINNET')}
+  ${chalk.bold('AI_CORE:')}  ${hasApiKey ? chalk.green('ONLINE') : chalk.red('OFFLINE')}
+
+  ${chalk.gray('──────────────────────────────────────')}
+
+  ${isSetup ? chalk.gray('Security: AES-256 Encryption active.') : chalk.yellow('Action: Run "aura setup" to begin.')}
+  `;
+
+  console.log(boxen(statusInfo, {
+    padding: 1,
+    borderColor: isSetup && hasApiKey ? 'green' : 'yellow',
+    borderStyle: 'double',
+    title: chalk.bold(' SYSTEM_DIAGNOSTICS '),
+    titleAlignment: 'left'
+  }));
 }
 
 async function main() {
@@ -74,10 +93,12 @@ async function main() {
 
   switch (command) {
     case 'setup':
+    case '-sp':
       await setupCommand();
       break;
       
     case 'chat':
+    case '-c':
       if (commandArgs.length === 0) {
         console.log(chalk.red('\n  Error: Message is required'));
         console.log(chalk.gray('  Usage: aura chat "Your message here"\n'));
@@ -88,6 +109,7 @@ async function main() {
       break;
 
     case 'research':
+    case '-r':
       const researchTopic = commandArgs.join(' ');
       await researchCommand(researchTopic || undefined);
       break;
@@ -99,11 +121,13 @@ async function main() {
       break;
       
     case 'status':
+    case '-s':
       showStatus();
       break;
       
     case 'help':
     case '--help':
+    case '--h':
     case '-h':
       showHelp();
       break;
@@ -118,6 +142,23 @@ async function main() {
     case '-w':
       const intervalMinutes = parseInt(commandArgs[0]) || 15;
       await watchCommand(intervalMinutes);
+      break;
+
+    case 'dashboard':
+    case '-d':
+      await dashboardCommand();
+      break;
+
+    case 'wallet':
+    case '-w':
+      const walletAction = commandArgs[0];
+      await walletCommand(walletAction);
+      break;
+
+    case 'run':
+      const scriptName = commandArgs[0];
+      const scriptArgs = commandArgs.slice(1);
+      await runCommand(scriptName, scriptArgs);
       break;
 
     case 'logout':

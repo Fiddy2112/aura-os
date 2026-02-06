@@ -154,6 +154,52 @@ Built-in support for:
 
 ---
 
+## Scripting & Automation
+
+Aura OS allows you to extend the CLI by writing your own scripts in TypeScript.
+
+### Running Scripts
+```bash
+# Run a script from the ./scripts folder
+npm run cli:dev run whale-watch
+```
+
+### Creating Custom Scripts
+Create a `.ts` file in the `./scripts` folder (e.g., `scripts/my-bot.ts`):
+
+```typescript
+import { type ScriptContext } from '../src/core/scripting/types.js';
+
+export default async function(context: ScriptContext) {
+  const { ui, executor } = context;
+  
+  ui.log('🚀 Starting my bot...');
+  
+  // Interact with blockchain
+  const result = await executor.execute({
+    action: 'CHECK_BALANCE',
+    target_address: '0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045', // Vitalik
+    token: 'ETH',
+    amount: null,
+    chain: null,
+    reason: null,
+    topic: null, 
+    includePrice: null
+  });
+
+  if (result.success) {
+    ui.log(`Vitalik's Balance: ${result.data.balance} ETH`);
+  }
+}
+```
+
+Scripts have access to:
+- **executor**: Blockchain interaction tools (read/write)
+- **ai**: AI Interpreter for processing text
+- **ui**: Terminal UI tools (inquirer, ora, chalk)
+
+---
+
 ## Supported Chains
 
 | Chain | Network ID | Status |
@@ -270,12 +316,12 @@ aura-os/
 ---
 
 ## Security
+- **Local-only storage** — Private keys encrypted locally on your device (`%APPDATA%` / `~/.config`).
+- **AES-256 encryption** — Keys are encrypted with your Master Password before saving.
+- **Zero-Knowledge** — Your private key is NEVER sent to any server (OpenAI, AuraOS, etc.).
+- **Password protected** — Master password required for every sensitive action.
 
-- **Local-only storage** — Private keys encrypted on your device only
-- **AES-256 encryption** — Military-grade protection
-- **Offline capable** — Key operations work without internet
-- **Open source** — Full transparency
-- **Password protected** — Master password required
+> **Note**: Your project files (code) are safe to save anywhere. Your *secrets* (keys) are stored separately by the system in a secure configuration file, not in your project folder.
 
 > **Important**: Always use a dedicated wallet for testing. Never use your main wallet with any new software.
 

@@ -177,7 +177,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.href, // Redirect back here to handle callback
+        redirectTo: window.location.href,
       }
     });
     if (error) showStatus(error.message, 'error');
