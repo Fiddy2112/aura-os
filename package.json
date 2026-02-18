@@ -6,6 +6,7 @@
   "bin": {
     "aura": "bin/run"
   },
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",

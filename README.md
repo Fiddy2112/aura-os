@@ -30,10 +30,10 @@ Military-grade AES-256 encryption. Your private keys never leave your device.
 Background automation that browsers can't handle. Perfect for power users and developers.
 
 ### Multi-Chain
-Ethereum, Base, Arbitrum, and Sepolia testnet from a single interface.
+Ethereum, Base, Arbitrum, Optimism, BSC, Polygon, Avalanche, and Sepolia testnet from a single interface. Easy chain switching with `aura chain`.
 
 ### Developer Tools
-ENS lookup, wallet tracking, NFT info, contract reading, transaction decoding, and more.
+ENS lookup, wallet tracking, NFT info, contract reading, transaction decoding, contract analysis (proxy detection, bytecode hash, code size), and more. Use `aura info` for detailed contract inspection.
 
 ### Real-time Dashboard
 Live activity stream synced via Supabase. See everything in one place.
@@ -85,7 +85,11 @@ ETH_RPC_URL=https://eth.llamarpc.com
 SEPOLIA_RPC_URL=https://rpc.sepolia.org
 BASE_RPC_URL=https://mainnet.base.org
 ARBITRUM_RPC_URL=https://arb1.arbitrum.io/rpc
-DEFAULT_CHAIN=sepolia
+OPTIMISM_RPC_URL=https://optimism.llamarpc.com
+BSC_RPC_URL=https://bsc.llamarpc.com
+POLYGON_RPC_URL=https://polygon.llamarpc.com
+AVALANCHE_RPC_URL=https://avalanche.llamarpc.com
+DEFAULT_CHAIN=ethereum
 
 # Supabase (for dashboard sync)
 SUPABASE_URL=your_supabase_url
@@ -103,10 +107,21 @@ SUPABASE_DATABASE_NAME=aura_os
 | `aura login` | Login via browser (MetaMask/Google/GitHub) |
 | `aura chat "message"` | Send a natural language command to Aura |
 | `aura research [topic]` | Research crypto market news and trends |
+| `aura news [topic]` | Get real-time crypto news and headlines |
 | `aura watch [minutes]` | Start auto-monitoring alpha news (default: 15m) |
 | `aura status` | Check configuration status |
 | `aura logout` | Disconnect from dashboard |
+| `aura wallet [action]` | Manage accounts (show, export) |
+| `aura dashboard` | Launch the real-time Web UI |
 | `aura help` | Show available commands |
+
+### Developer Commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `aura info <address> [--json] [--explain]` | Get contract information (proxy detection, code size, bytecode hash) | `aura info 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |
+| `aura chain [current\|list\|<chain-name>]` | Manage blockchain chain (view current, list all, or switch) | `aura chain base` |
+| `aura run <script>` | Run custom TypeScript scripts | `aura run whale-watch` |
 
 ---
 
@@ -140,7 +155,33 @@ SUPABASE_DATABASE_NAME=aura_os
 | **NFT Info** | `"Check Bored Ape #1234"` |
 | **Decode TX** | `"Decode tx 0xabc123..."` |
 | **Read Contract** | `"Read totalSupply on 0x..."` |
-| **Contract Info** | `"Contract 0x1234..."` |
+| **Contract Info** | `"Contract 0x1234..."` or `aura info 0x1234...` |
+
+#### Contract Info Command
+
+The `info` command provides detailed contract analysis:
+
+```bash
+# Basic contract info
+aura info 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+
+# JSON output for scripting
+aura info 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --json
+
+# AI-powered security analysis
+aura info 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 --explain
+```
+
+**Features:**
+- ✅ Address validation
+- ✅ Contract detection (EOA vs Contract)
+- ✅ Code size calculation
+- ✅ Proxy detection (EIP-1967)
+- ✅ Implementation address extraction
+- ✅ Bytecode hash (keccak256)
+- ✅ Chain information
+- ✅ JSON output mode
+- ✅ AI security analysis
 
 ### NFT Collections
 
@@ -208,6 +249,24 @@ Scripts have access to:
 | Sepolia Testnet | 11155111 | ✅ Default |
 | Base | 8453 | ✅ Production |
 | Arbitrum One | 42161 | ✅ Production |
+| Optimism | 10 | ✅ Production |
+| BSC (Binance Smart Chain) | 56 | ✅ Production |
+| Polygon | 137 | ✅ Production |
+| Avalanche | 43114 | ✅ Production |
+
+**Switching Chains:**
+```bash
+# View current chain
+aura chain current
+
+# List all supported chains
+aura chain list
+
+# Switch to a specific chain
+aura chain base
+aura chain arbitrum
+aura chain polygon
+```
 
 ---
 
@@ -284,8 +343,15 @@ aura-os/
 │   │   ├── setup.ts              # Wallet setup
 │   │   ├── chat.ts               # AI chat command
 │   │   ├── research.ts           # Crypto research
+│   │   ├── news.ts               # Real-time news aggregator
 │   │   ├── login.ts              # Browser OAuth login
-│   │   └── watch.ts              # Auto-monitoring
+│   │   ├── watch.ts              # Auto-monitoring
+│   │   ├── wallet.ts             # Wallet management
+│   │   ├── dashboard.ts          # Dashboard launcher
+│   │   ├── info.ts               # Contract info command
+│   │   ├── chain.ts              # Chain management
+│   │   ├── run.ts                # Script runner
+│   │   └── registry.ts           # Command registry
 │   └── core/
 │       ├── ai/
 │       │   ├── interpreter.ts    # Multi-model AI parser
@@ -294,6 +360,8 @@ aura-os/
 │       │   ├── chains.ts         # Multi-chain config
 │       │   ├── executor.ts       # TX executor + dev tools
 │       │   └── explorer.ts       # Block explorer utils
+│       ├── engine/
+│       │   └── info.ts           # Contract analysis engine
 │       ├── security/
 │       │   └── vault.ts          # AES-256 encrypted storage
 │       └── utils/

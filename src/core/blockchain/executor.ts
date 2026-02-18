@@ -602,8 +602,7 @@ export class BlockchainExecutor {
     }
 
     try {
-      // Check if it's a contract
-      const code = await this.publicClient.getBytecode({
+      const code = await this.publicClient.getCode({
         address: contractAddress as Address,
       });
 
@@ -668,7 +667,7 @@ export class BlockchainExecutor {
       const formattedBalance = formatEther(balance);
 
       // Check if it's a contract
-      const code = await this.publicClient.getBytecode({
+      const code = await this.publicClient.getCode({
         address: address as Address,
       });
       const isContract = code && code !== '0x';

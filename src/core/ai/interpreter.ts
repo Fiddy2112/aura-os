@@ -336,4 +336,70 @@ export class AIInterpreter {
       }
     }
   }
+
+  async explainContract(info:any):Promise<string>{
+    const prompt = `
+      You are Aura OS, a smart contract security analyst specializing in Web3 security.
+
+      Task: Analyze the provided contract metadata (address, isContract, codeSize, isProxy, implementation) and provide a security-focused explanation.
+
+      OUTPUT FORMAT:
+        Contract Type: [EOA/Contract/Proxy] - Brief classification
+        
+        Analysis:
+        • Code Size: Explain what the bytecode size indicates (small = simple/minimal, large = complex)
+        • Proxy Pattern: If isProxy=true, explain EIP-1967 proxy pattern and security implications
+        • Implementation Address: If proxy detected, note that logic is in separate contract
+        
+        Security Assessment:
+        • [2-3 bullet points on security considerations]
+        • [Any red flags or concerns]
+        
+        Aura's Verdict: A concise security recommendation or warning.
+
+      RULES:
+      - Be technical but accessible
+      - Focus on actionable security insights
+      - Highlight proxy risks if applicable (upgradeability, admin controls, implementation contract verification)
+      - If isContract=false, explain it's an EOA (Externally Owned Account)
+      - Keep it readable for Terminal (CLI) and Web
+      - Be concise but thorough
+    `;
+
+    try{
+      const completion = await this.openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: prompt },
+          { role: "user", content: `Analyze and explain this contract information: ${JSON.stringify(info, null, 2)}` },
+        ],
+        temperature: 0.3,
+      });
+
+      return completion.choices[0].message.content || "Unable to explain this contract information.";
+    }catch{
+      try {
+        const groqCompletion = await this.groq.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: prompt },
+            { role: "user", content: `Analyze and explain this contract: ${JSON.stringify(info, null, 2)}` },
+          ],
+        });
+        return groqCompletion.choices[0].message.content || "";
+      } catch (groqError) {
+        console.log("Groq error, switching to Gemini...");
+
+        try {
+          const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+          const fullPrompt = `${prompt}\n\nAnalyze and explain this contract: ${JSON.stringify(info, null, 2)}`;
+          const result = await model.generateContent(fullPrompt);
+          return result.response.text();
+        } catch (geminiError) {
+          console.error("All AI models failed.");
+          return "All AI models failed.";
+        }
+      }
+    }
+  }
 }

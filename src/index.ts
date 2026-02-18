@@ -11,6 +11,7 @@ import { watchCommand } from './commands/watch.js';
 import { dashboardCommand } from './commands/dashboard.js';
 import { walletCommand } from './commands/wallet.js';
 import { runCommand } from './commands/run.js';
+import { devCommands } from './commands/registry.js';
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -50,6 +51,10 @@ function showHelp() {
     ${chalk.gray('login')}       ${chalk.gray('Login via browser (google/metamask)')}
     ${chalk.gray('status')}      ${chalk.gray('Check Aura OS configuration status')}
     ${chalk.gray('help')}        ${chalk.gray('Show this help message')}
+
+    ${chalk.bold.white('DEV')}
+    ${chalk.gray('info')}      ${chalk.gray('Get contract info (address, proxy, code size)')}
+    ${chalk.gray('chain')}     ${chalk.gray('Manage blockchain chain (current/list/set)')}
   `;
 
   console.log(boxen(helpContent, {
@@ -90,6 +95,11 @@ async function main() {
   // Load environment variables
   const dotenv = await import('dotenv');
   dotenv.config();
+
+  if (command && command in devCommands) {
+    await devCommands[command as keyof typeof devCommands](commandArgs);
+    return;
+  }
 
   switch (command) {
     case 'setup':
@@ -150,7 +160,7 @@ async function main() {
       break;
 
     case 'wallet':
-    case '-w':
+    case '-wl':
       const walletAction = commandArgs[0];
       await walletCommand(walletAction);
       break;
