@@ -1,106 +1,183 @@
 import { PrivilegeResult } from "./privilege.js";
 
-export interface RiskResult  {
+  export interface RiskBreakdown {
+    upgrade: number;
+    supply: number;
+    control: number;
+    operational: number;
+  }
+
+  export interface RiskResult {
     score: number;
     level: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    breakdown: RiskBreakdown;
     reasons: string[];
-}
+  }
 
-export function computeRisk(priv: PrivilegeResult):RiskResult {
-    let score = 0;
-    const reasons: string[] = [];
+  function clamp(value: number) {
+    return Math.max(0, Math.min(100, value));
+  }
 
+  export function computeRisk(priv: PrivilegeResult): RiskResult {
     if (!priv.isContract) {
-        return {
-          score: 0,
-          level: "LOW",
-          reasons: ["Address is EOA (not a smart contract)"],
-        };
+      return {
+        score: 0,
+        level: "LOW",
+        breakdown: {
+          upgrade: 0,
+          supply: 0,
+          control: 0,
+          operational: 0,
+        },
+        reasons: ["Address is EOA (not a smart contract)"],
+      };
     }
-
-    const {
-        signals,
-        ownerType,
-        owner,
-        isRenounced,
-        isProxy,
-    }= priv;
-
-    // ===== Upgradeable =====
-    if (signals.hasUpgrade || isProxy) {
-        score += 20;
-        reasons.push("Upgradeable contract");
-    
-        if (owner && !isRenounced) {
-          score += 15;
-          reasons.push("Upgradeable + active owner");
-        }
-    
-        if (ownerType === "EOA") {
-          score += 10;
-          reasons.push("Upgradeable controlled by EOA");
-        }
+  
+    const { signals, ownerType, owner, isRenounced, isProxy } = priv;
+  
+    let upgradeRisk = 0;
+    let supplyRisk = 0;
+    let controlRisk = 0;
+    let operationalRisk = 0;
+  
+    const reasons: string[] = [];
+  
+    // ======================
+    // UPGRADE RISK
+    // ======================
+  
+    if (signals.hasUpgrade) {
+      upgradeRisk += 40;
+      reasons.push("Upgradeable contract");
+  
+      if (ownerType === "EOA") {
+        upgradeRisk += 30;
+        reasons.push("Upgradeable controlled by EOA");
+      }
+  
+      if (!priv.hasTimelock) {
+        upgradeRisk += 20;
+        reasons.push("Upgradeable without timelock");
+      }
     }
-
-    // ===== Mint =====
-    if (signals.hasMint) {
-        score += 15;
-        reasons.push("Mint function present");
-
-        if (ownerType === "EOA") {
-        score += 10;
-        reasons.push("Mint controlled by EOA");
-        }
-
-        if (isRenounced) {
-        score -= 5;
-        reasons.push("Mint but ownership renounced");
-        }
+  
+    if (isProxy && !signals.hasUpgrade) {
+      upgradeRisk += 20;
+      reasons.push("Proxy detected but upgrade path unclear");
     }
-
-    // ===== Pausable =====
-    if (signals.hasPause) {
-        score += 10;
-        reasons.push("Pausable contract");
-
-        if (owner && !isRenounced) {
-        score += 5;
-        reasons.push("Pause controlled by active owner");
-        }
-    }
-
-    // ===== AccessControl =====
-    if (signals.hasAccessControl) {
-        score += 10;
-        reasons.push("Role-based access control");
-
-        if (ownerType === "CONTRACT") {
-        score -= 5;
-        reasons.push("Access control managed by contract");
-        }
-    }
-
-    // ===== Ownership mitigation =====
+  
     if (isRenounced) {
-        score -= 15;
-        reasons.push("Ownership renounced");
+      upgradeRisk -= 30;
+      reasons.push("Upgrade risk reduced (ownership renounced)");
     }
-
-    if (ownerType === "CONTRACT") {
-        score -= 10;
-        reasons.push("Owner is contract (likely multisig)");
+  
+    upgradeRisk = clamp(upgradeRisk);
+  
+    // ======================
+    // SUPPLY RISK
+    // ======================
+  
+    if (signals.hasMint) {
+      supplyRisk += 35;
+      reasons.push("Mint function present");
+  
+      if (!signals.hasSupplyCap) {
+        supplyRisk += 25;
+        reasons.push("Unlimited mint (no supply cap)");
+      }
+  
+      if (ownerType === "EOA") {
+        supplyRisk += 20;
+        reasons.push("Mint controlled by EOA");
+      }
     }
-
-    // clamp
-    if (score < 0) score = 0;
-    if (score > 100) score = 100;
-
+  
+    supplyRisk = clamp(supplyRisk);
+  
+    // ======================
+    // CONTROL RISK
+    // ======================
+  
+    if (ownerType === "EOA") {
+      controlRisk += 35;
+      reasons.push("Owner is EOA");
+    }
+  
+    if (ownerType === "UNKNOWN_CONTRACT") {
+      controlRisk += 25;
+      reasons.push("Owner is unknown contract");
+    }
+  
+    if (ownerType === "SAFE_MULTISIG") {
+      controlRisk += 10;
+      reasons.push("Owner is multisig");
+    }
+  
+    if (signals.hasAccessControl && priv.adminRoleCount === 1) {
+      controlRisk += 15;
+      reasons.push("Single admin role detected");
+    }
+  
+    if (isRenounced) {
+      controlRisk -= 25;
+      reasons.push("Ownership renounced");
+    }
+  
+    controlRisk = clamp(controlRisk);
+  
+    // ======================
+    // OPERATIONAL RISK
+    // ======================
+  
+    if (signals.hasPause) {
+      operationalRisk += 15;
+      reasons.push("Pausable contract");
+  
+      if (owner && !isRenounced) {
+        operationalRisk += 10;
+        reasons.push("Pause controlled by active owner");
+      }
+    }
+  
+    if (signals.hasBlacklist) {
+      operationalRisk += 20;
+      reasons.push("Blacklist capability detected");
+    }
+  
+    if (signals.hasTradingToggle) {
+      operationalRisk += 15;
+      reasons.push("Trading toggle detected");
+    }
+  
+    operationalRisk = clamp(operationalRisk);
+  
+    // ======================
+    // FINAL SCORE
+    // ======================
+  
+    const finalScore = clamp(
+      upgradeRisk * 0.35 +
+        supplyRisk * 0.30 +
+        controlRisk * 0.25 +
+        operationalRisk * 0.10
+    );
+  
     let level: RiskResult["level"];
-
-    if (score <= 25) level = "LOW";
-    else if (score <= 50) level = "MEDIUM";
-    else if (score <= 75) level = "HIGH";
+  
+    if (finalScore <= 25) level = "LOW";
+    else if (finalScore <= 50) level = "MEDIUM";
+    else if (finalScore <= 75) level = "HIGH";
     else level = "CRITICAL";
-
-    return { score, level, reasons };
-}
+  
+    return {
+      score: Math.round(finalScore),
+      level,
+      breakdown: {
+        upgrade: upgradeRisk,
+        supply: supplyRisk,
+        control: controlRisk,
+        operational: operationalRisk,
+      },
+      reasons,
+    };
+  }

@@ -4,29 +4,67 @@ import { getPublicClient } from "../blockchain/chains.js";
 const IMPLEMENTATION_SLOT =
   "0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC";
 
-export interface PrivilegeResult {
-  address: string;
-  isContract: boolean; 
-  owner: string | null;
-  isRenounced: boolean;
-  isProxy: boolean;
-  implementation?: string;
-  capabilities: string[];
-  ownerType: "EOA" | "CONTRACT" | "MULTISIG" | null;
-  signals: {
+  export type OwnerType =
+  | "EOA"
+  | "SAFE_MULTISIG"
+  | "TIMELOCK"
+  | "UNKNOWN_CONTRACT"
+  | "NONE";
+
+  interface CapabilitySignal {
+    detected: boolean;
+    confirmed: boolean;
+    confidence: number;
+  }
+
+  export interface PrivilegeSignals {
+    // ===== Core Capabilities =====
     hasMint: boolean;
     hasBurn: boolean;
     hasPause: boolean;
     hasAccessControl: boolean;
     hasUpgrade: boolean;
-  };
-  riskFlags: string[];
-}
+
+    // ===== Extended Control Surface =====
+    hasSupplyCap: boolean;
+    hasBlacklist: boolean;
+    hasTradingToggle: boolean;
+  }
+
+  export interface PrivilegeResult {
+    address: string;
+
+    // ===== Basic =====
+    isContract: boolean;
+    isProxy: boolean;
+    implementation?: string;
+
+    // ===== Ownership =====
+    owner: string | null;
+    ownerType: OwnerType;
+    isRenounced: boolean;
+    hasTimelock: boolean;
+    adminRoleCount: number;
+
+    // ===== Capabilities =====
+    capabilities: string[];
+    signals: PrivilegeSignals;
+
+    // ===== Legacy =====
+    riskFlags: string[];
+  }
+
+  const selectorCache = new Map<string, string>();
 
 // Compute 4-byte selector from function signature
-function selector(sig: string): string {
-    return keccak256(stringToHex(sig)).slice(0, 10); // "0x" + 8 hex chars
-}
+  function selector(sig: string): string {
+    if (selectorCache.has(sig)) {
+      return selectorCache.get(sig)!;
+    }
+    const sel = keccak256(stringToHex(sig)).slice(0, 10);
+    selectorCache.set(sig, sel);
+    return sel;
+  }
 
 // Check if bytecode contains a 4-byte selector
 function bytecodeHas(bytecode: string, sig: string): boolean {
@@ -86,24 +124,32 @@ export async function analyzePrivileges(
 
   // ===== Get bytecode of the proxy itself =====
   const proxyCode = await client.getCode({ address });
-  const isContract = proxyCode && proxyCode !== "0x";
+  const isContract = !!proxyCode && proxyCode !== "0x";
   if (!isContract) {
     return {
       address,
       isContract: false,
-      owner: null,
-      isRenounced: false,
       isProxy: false,
       implementation: undefined,
+  
+      owner: null,
+      ownerType: "NONE",
+      isRenounced: false,
+      hasTimelock: false,
+      adminRoleCount: 0,
+  
       capabilities: [],
-      ownerType: null,
       riskFlags: [],
+  
       signals: {
         hasMint: false,
         hasBurn: false,
         hasPause: false,
         hasAccessControl: false,
         hasUpgrade: false,
+        hasSupplyCap: false,
+        hasBlacklist: false,
+        hasTradingToggle: false,
       },
     };
   }
@@ -127,7 +173,7 @@ export async function analyzePrivileges(
     ? (implementation as `0x${string}`)
     : address;
 
-  const capabilities: string[] = [];
+  const capabilitySet = new Set<string>();
   const riskFlags: string[] = [];
 
   // ===== Bytecode-based capability detection =====
@@ -161,6 +207,12 @@ export async function analyzePrivileges(
 
   // ===== Build capabilities =====
 
+  let owner: string | null = null;
+  let ownerType: OwnerType = "NONE";
+  let isRenounced = false;
+  let hasTimelock = false;
+  let adminRoleCount = 0;
+
   let confirmedAccessControl = false;
 
   if (hasDefaultAdminRole || hasRoleCheck) {
@@ -182,77 +234,153 @@ export async function analyzePrivileges(
     }
   }
 
-  if (isProxy || hasUpgradeTo) {
-    capabilities.push("Upgradeable");
-    riskFlags.push("PROXY_PATTERN_DETECTED");
-  }
-
   if (confirmedAccessControl) {
-    capabilities.push("AccessControl");
-    const index = capabilities.indexOf("Ownable");
-    if (index !== -1) {
-      capabilities.splice(index, 1);
+    try {
+      const adminRole = await client.readContract({
+        address: targetAddress,
+        abi: [{
+          name: "DEFAULT_ADMIN_ROLE",
+          type: "function",
+          stateMutability: "view",
+          inputs: [],
+          outputs: [{ type: "bytes32" }],
+        }],
+        functionName: "DEFAULT_ADMIN_ROLE",
+      });
+  
+      const admin = await client.readContract({
+        address: targetAddress,
+        abi: [{
+          name: "getRoleMemberCount",
+          type: "function",
+          stateMutability: "view",
+          inputs: [{ type: "bytes32" }],
+          outputs: [{ type: "uint256" }],
+        }],
+        functionName: "getRoleMemberCount",
+        args: [adminRole],
+      });
+  
+      adminRoleCount = Number(admin);
+    } catch {
+      adminRoleCount = 0;
     }
   }
 
-  if (hasOwner && !confirmedAccessControl) {
-    capabilities.push("Ownable");
+  if (hasOwner) {
+    capabilitySet.add("Ownable");
   }
 
   if (hasPaused || hasPause) {
-    capabilities.push("Pausable");
+    capabilitySet.add("Pausable");
     riskFlags.push("PAUSABLE_CONTRACT");
   }
 
   if (hasMint) {
-    capabilities.push("Mintable");
+    capabilitySet.add("Mintable");
     riskFlags.push("MINT_FUNCTION_PRESENT");
   }
 
   if (hasBurn) {
-    capabilities.push("Burnable");
+    capabilitySet.add("Burnable");
   }
 
+  const hasUpgrade = isProxy || hasUpgradeTo;
+
+  if (hasUpgrade) {
+    capabilitySet.add("Upgradeable");
+    riskFlags.push("PROXY_PATTERN_DETECTED");
+  }
+
+  const capabilities = Array.from(capabilitySet);
+
   // ===== Owner probing (only if Ownable detected) =====
-  let owner: string | null = null;
-  let ownerType : "EOA" | "CONTRACT" | "MULTISIG" | null = null;
-  let isRenounced = false;
 
   if (hasOwner) {
     owner = await tryReadOwner(client, targetAddress);
   
     if (!owner || owner === zeroAddress) {
       isRenounced = true;
+      ownerType = "NONE";
       riskFlags.push("OWNERSHIP_RENOUNCED");
     } else {
-      riskFlags.push("OWNER_ACTIVE");
-  
       const code = await client.getCode({
         address: owner as `0x${string}`,
       });
   
-      ownerType = (!code || code === "0x") ? "EOA" : "CONTRACT";
+      const isContractOwner = !!code && code !== "0x";
+  
+      if (!isContractOwner) {
+        ownerType = "EOA";
+      } else {
+        // Try Timelock detection
+        try {
+          await client.readContract({
+            address: owner as `0x${string}`,
+            abi: [{
+              name: "getMinDelay",
+              type: "function",
+              stateMutability: "view",
+              inputs: [],
+              outputs: [{ type: "uint256" }],
+            }],
+            functionName: "getMinDelay",
+          });
+
+          ownerType = "TIMELOCK";
+          hasTimelock = true;
+        } catch {
+          // Try Safe detection
+          try {
+            await client.readContract({
+              address: owner as `0x${string}`,
+              abi: [{
+                name: "getThreshold",
+                type: "function",
+                stateMutability: "view",
+                inputs: [],
+                outputs: [{ type: "uint256" }],
+              }],
+              functionName: "getThreshold",
+            });
+    
+            ownerType = "SAFE_MULTISIG";
+          } catch {
+            ownerType = "UNKNOWN_CONTRACT";
+          }
+        }
+      }
+  
+      riskFlags.push("OWNER_ACTIVE");
     }
   }
 
-  const signals: PrivilegeResult["signals"] = {
+  const signals: PrivilegeSignals = {
     hasMint,
     hasBurn,
     hasPause: hasPaused || hasPause,
     hasAccessControl: confirmedAccessControl,
-    hasUpgrade: isProxy || hasUpgradeTo,
+    hasUpgrade,
+  
+    hasSupplyCap: false,
+    hasBlacklist: false,
+    hasTradingToggle: false,
   };
 
   return {
     address,
     isContract: true,
-    owner,
-    isRenounced,
     isProxy,
     implementation: implementation ?? undefined,
-    capabilities,
+  
+    owner,
     ownerType,
+    isRenounced,
+    hasTimelock,
+    adminRoleCount,
+  
+    capabilities,
+    signals,
     riskFlags,
-    signals
   };
 }

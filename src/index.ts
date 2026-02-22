@@ -55,8 +55,8 @@ function showHelp() {
     ${chalk.bold.white('DEV')}
     ${chalk.gray('info')}      ${chalk.gray('Get contract info (address, proxy, code size)')}
     ${chalk.gray('chain')}     ${chalk.gray('Manage blockchain chain (current/list/set)')}
-    ${chalk.gray('privilege')} ${chalk.gray('Analyze contract control & administrative capabilities')}
     ${chalk.gray('privilege')} ${chalk.gray('Inspect ownership, roles, mint, pause & upgrade authority')}
+    ${chalk.gray('risk')}      ${chalk.gray('Evaluate centralization & upgrade risk score')}
   `;
 
   console.log(boxen(helpContent, {
