@@ -1,3 +1,4 @@
+import pkg from '../package.json' with { type: 'json' };
 import chalk from 'chalk';
 import gradient from 'gradient-string';
 import boxen from 'boxen';
@@ -52,11 +53,17 @@ function showHelp() {
     ${chalk.gray('status')}      ${chalk.gray('Check Aura OS configuration status')}
     ${chalk.gray('help')}        ${chalk.gray('Show this help message')}
 
-    ${chalk.bold.white('DEV')}
-    ${chalk.gray('info')}      ${chalk.gray('Get contract info (address, proxy, code size)')}
-    ${chalk.gray('chain')}     ${chalk.gray('Manage blockchain chain (current/list/set)')}
-    ${chalk.gray('privilege')} ${chalk.gray('Inspect ownership, roles, mint, pause & upgrade authority')}
-    ${chalk.gray('risk')}      ${chalk.gray('Evaluate centralization & upgrade risk score')}
+  ${chalk.bold.white('DEV / SECURITY')}
+    ${chalk.gray('info')}       ${chalk.gray('Contract identity & intelligence (use --dev for forensic view)')}
+    ${chalk.gray('privilege')}  ${chalk.gray('Ownership & control surface analysis')}
+    ${chalk.gray('risk')}       ${chalk.gray('Centralization & upgrade risk score (--dev for breakdown)')}
+    ${chalk.gray('chain')}      ${chalk.gray('Manage blockchain chain (current/list/set)')}
+
+  ${chalk.bold.white('FLAGS')}
+    ${chalk.gray('--dev')}      ${chalk.gray('Enable developer / forensic mode')}
+    ${chalk.gray('--json')}     ${chalk.gray('Output raw JSON')}
+    ${chalk.gray('-h, --help')} ${chalk.gray('Show help for command')}
+    ${chalk.gray('-v')}         ${chalk.gray('Show version')}
   `;
 
   console.log(boxen(helpContent, {
@@ -99,11 +106,20 @@ async function main() {
   dotenv.config();
 
   if (command && command in devCommands) {
-    await devCommands[command as keyof typeof devCommands](commandArgs);
+    if (commandArgs.includes('--help') || commandArgs.includes('-h')) {
+      await devCommands[command as keyof typeof devCommands](['--help']);
+    } else {
+      await devCommands[command as keyof typeof devCommands](commandArgs);
+    }
     return;
   }
 
   switch (command) {
+    case 'version':
+    case '--version':
+    case '-v':
+      console.log(chalk.cyan(`Aura OS v${pkg.version}`));
+      break;
     case 'setup':
     case '-sp':
       await setupCommand();
@@ -139,7 +155,6 @@ async function main() {
       
     case 'help':
     case '--help':
-    case '--h':
     case '-h':
       showHelp();
       break;
@@ -183,7 +198,7 @@ async function main() {
       
     default:
       console.log(chalk.red(`\n  Unknown command: ${command}`));
-      console.log(chalk.gray('  Run "aura help" for available commands\n'));
+      console.log(chalk.gray('  Run "aura --help" for available commands\n'));
       process.exit(1);
   }
 }

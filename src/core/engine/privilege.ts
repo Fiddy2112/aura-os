@@ -1,5 +1,6 @@
 import { getAddress, zeroAddress, zeroHash, keccak256, toHex, stringToHex } from "viem";
 import { getPublicClient } from "../blockchain/chains.js";
+import { safeRpcCall } from "../utils/helpers.js";
 
 const IMPLEMENTATION_SLOT =
   "0x360894A13BA1A3210667C828492DB98DCA3E2076CC3735A920A3CA505D382BBC";
@@ -123,7 +124,9 @@ export async function analyzePrivileges(
   const client = getPublicClient();
 
   // ===== Get bytecode of the proxy itself =====
-  const proxyCode = await client.getCode({ address });
+  const proxyCode = await safeRpcCall(() =>
+    client.getCode({ address })
+  );
   const isContract = !!proxyCode && proxyCode !== "0x";
   if (!isContract) {
     return {

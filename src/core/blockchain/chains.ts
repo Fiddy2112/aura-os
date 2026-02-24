@@ -5,7 +5,7 @@ export interface ChainConfig {
   id: number;
   name: string;
   chain: Chain;
-  rpcUrl: string;
+  rpcUrls: string[];
   explorerUrl: string;
   nativeCurrency: {
     name: string;
@@ -19,7 +19,12 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     id: 1,
     name: 'Ethereum Mainnet',
     chain: mainnet,
-    rpcUrl: process.env.ETH_RPC_URL || 'https://eth.llamarpc.com',
+    rpcUrls: [
+      process.env.ETH_RPC_URL ?? "",
+      "https://ethereum.publicnode.com",
+      "https://rpc.ankr.com/eth",
+      "https://eth.llamarpc.com"
+    ].filter(Boolean),
     explorerUrl: 'https://etherscan.io',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   },
@@ -27,7 +32,12 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     id: 11155111,
     name: 'Sepolia Testnet',
     chain: sepolia,
-    rpcUrl: process.env.SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com',
+    rpcUrls: [
+      process.env.SEPOLIA_RPC_URL ?? "" , 
+    "https://ethereum-sepolia-rpc.publicnode.com",
+    "https://1rpc.io/sepolia",
+    "https://0xrpc.io/sep"
+    ].filter(Boolean),
     explorerUrl: 'https://sepolia.etherscan.io',
     nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
   },
@@ -35,7 +45,13 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     id: 8453,
     name: 'Base',
     chain: base,
-    rpcUrl: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
+    rpcUrls: [
+      process.env.BASE_RPC_URL ?? "",
+       'https://mainnet.base.org',
+       "https://base.drpc.org",
+       "https://1rpc.io/base",
+       "https://base.meowrpc.com"
+    ].filter(Boolean),
     explorerUrl: 'https://basescan.org',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   },
@@ -43,7 +59,11 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     id: 42161,
     name: 'Arbitrum One',
     chain: arbitrum,
-    rpcUrl: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
+    rpcUrls: [
+      process.env.ARBITRUM_RPC_URL ?? "",
+      'https://arb1.arbitrum.io/rpc',
+      "https://arb-one.api.pocket.network",
+    ].filter(Boolean),
     explorerUrl: 'https://arbiscan.io',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   },
@@ -51,7 +71,12 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     id: 10,
     name: 'Optimism',
     chain: optimism,
-    rpcUrl: process.env.OPTIMISM_RPC_URL || 'https://optimism.llamarpc.com',
+    rpcUrls: [
+      process.env.OPTIMISM_RPC_URL ?? "" ,
+      'https://optimism.llamarpc.com',
+      "https://public-op-mainnet.fastnode.io",
+      "https://optimism.drpc.org",
+    ].filter(Boolean),
     explorerUrl: 'https://optimistic.etherscan.io',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   },
@@ -59,7 +84,12 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     id: 56,
     name: 'Binance Smart Chain',
     chain: bsc,
-    rpcUrl: process.env.BSC_RPC_URL || 'https://bsc.llamarpc.com',
+    rpcUrls: [
+      process.env.BSC_RPC_URL ?? "",
+      'https://bsc.llamarpc.com',
+      "https://bsc.drpc.org",
+      "https://public-bsc-mainnet.fastnode.io"
+    ].filter(Boolean),
     explorerUrl: 'https://bscscan.com',
     nativeCurrency: { name: 'Binance Coin', symbol: 'BNB', decimals: 18 },
   },
@@ -67,7 +97,13 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     id: 137,
     name: 'Polygon',
     chain: polygon,
-    rpcUrl: process.env.POLYGON_RPC_URL || 'https://polygon.llamarpc.com',
+    rpcUrls: [
+      process.env.POLYGON_RPC_URL ?? "",
+      'https://polygon.llamarpc.com',
+      "https://polygon.drpc.org",
+      "https://poly.api.pocket.network",
+      "https://polygon-bor-rpc.publicnode.com"
+    ].filter(Boolean),
     explorerUrl: 'https://polygonscan.com',
     nativeCurrency: { name: 'Polygon', symbol: 'MATIC', decimals: 18 },
   },
@@ -75,7 +111,12 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     id: 43114,
     name: 'Avalanche',
     chain: avalanche,
-    rpcUrl: process.env.AVALANCHE_RPC_URL || 'https://avalanche.llamarpc.com',
+    rpcUrls: [
+      process.env.AVALANCHE_RPC_URL ?? "",
+      'https://avalanche.llamarpc.com',
+      "https://avalanche.drpc.org",
+      "https://avax.api.pocket.network"
+    ].filter(Boolean),
     explorerUrl: 'https://snowtrace.io',
     nativeCurrency: { name: 'Avalanche', symbol: 'AVAX', decimals: 18 },
   },
@@ -172,8 +213,18 @@ export function getCurrentChain() {
 export function getPublicClient() {
   const chain = getCurrentChain();
 
-  return createPublicClient({
-    chain: chain.chain,
-    transport: http(chain.rpcUrl),
-  });
+  for (const rpc of chain.rpcUrls) {
+    try {
+      return createPublicClient({
+        chain: chain.chain,
+        transport: http(rpc, {
+          timeout: 10_000,
+        }),
+      });
+    } catch {
+      continue;
+    }
+  }
+
+  throw new Error("All RPC endpoints failed.");
 }

@@ -1,5 +1,6 @@
 import { getAddress, zeroHash, keccak256, type Hex } from "viem";
 import { getCurrentChain, getPublicClient } from "../blockchain/chains.js";
+import { safeRpcCall } from "../utils/helpers.js";
 
   export interface ContractInfo {
     address: `0x${string}`;
@@ -58,6 +59,12 @@ import { getCurrentChain, getPublicClient } from "../blockchain/chains.js";
       hasMaxWalletFunction: boolean;
       hasTradingToggle: boolean;
       isTransferRestricted: boolean;
+    };
+
+    deployment?: {
+      blockNumber: bigint;
+      timestamp: number;
+      ageInDays: number;
     };
   }
 
@@ -312,13 +319,58 @@ import { getCurrentChain, getPublicClient } from "../blockchain/chains.js";
     };
   }
 
+  async function findDeploymentBlock(client:any, address: `0x${string}`): Promise<bigint | null>{
+    const latestBlock = await client.getBlockNumber();
+
+    let low = 0n;
+    let high = latestBlock;
+    let found: bigint | null = null;
+
+    while(low <= high){
+      const mid = (low + high) / 2n;
+
+      const code = await client.getCode({
+        address,
+        blockNumber: mid,
+      });
+
+      const exists = code && code !== "0x";
+
+      if(exists){
+        found = mid;
+        high = mid -1n;
+      }else{
+        low = mid + 1n;
+      }
+    }
+
+    return found;
+  }
+
+  async function buildDeploymentInfo(client:any, address: `0x${string}`){
+    const blockNumber = await findDeploymentBlock(client, address);
+
+    if(!blockNumber) return undefined;
+
+    const block = await client.getBlock({blockNumber});
+
+    const timestamp = Number(block.timestamp);
+    const now = Math.floor(Date.now() / 1000);
+    const ageInDays = Math.floor((now - timestamp) / 86400); //86.400s -> 60s x 60m x 24hr -> 1 days
+    
+    return {
+      blockNumber,
+      timestamp,
+      ageInDays,
+    };
+  }
+
 export async function getContractInfo(address: `0x${string}`): Promise<ContractInfo> {
     const client = getPublicClient();
     const chain = getCurrentChain();
-    const code = await client.getCode({
-        address,
-    });
-
+    const code = await safeRpcCall(() =>
+      client.getCode({ address })
+    );
     const isContract = !!code && code !== "0x";
     
     if(!isContract){
@@ -386,6 +438,8 @@ export async function getContractInfo(address: `0x${string}`): Promise<ContractI
         tokenInfo = await detectTokenIdentity(client, address);
     }
 
+    const deployment = await buildDeploymentInfo(client, address);
+
     return {
         address,
         chain: chain.name,
@@ -406,5 +460,6 @@ export async function getContractInfo(address: `0x${string}`): Promise<ContractI
         standards,
         stablecoinProfile,
         antiWhaleProfile,
+        deployment
     };
 }
