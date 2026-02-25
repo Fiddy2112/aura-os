@@ -100,17 +100,44 @@ function showStatus() {
   }));
 }
 
+function resolveDevCommand(name: string) {
+  for (const [key, cmd] of Object.entries(devCommands)) {
+    if (key === name) return cmd;
+    if (cmd.aliases?.includes(name)) return cmd;
+  }
+  return null;
+}
+
 async function main() {
   // Load environment variables
   const dotenv = await import('dotenv');
   dotenv.config();
 
-  if (command && command in devCommands) {
-    if (commandArgs.includes('--help') || commandArgs.includes('-h')) {
-      await devCommands[command as keyof typeof devCommands](['--help']);
-    } else {
-      await devCommands[command as keyof typeof devCommands](commandArgs);
+  if (command === "dev") {
+    const sub = commandArgs[0];
+  
+    if (!sub || sub === "--help" || sub === "-h" ) {
+      console.log(chalk.bold.cyan("\n=== Dev Commands ===\n"));
+      Object.entries(devCommands).forEach(([name, cmd]) => {
+        const alias = cmd.aliases?.length
+          ? ` (${cmd.aliases.join(", ")})`
+          : "";
+        console.log(
+          ` - ${chalk.yellow(name)}${alias} : ${chalk.gray(cmd.description)}`
+        );
+      });
+      return;
     }
+  
+    const subArgs = commandArgs.slice(1);
+    const cmd = resolveDevCommand(sub);
+  
+    if (!cmd) {
+      console.log(chalk.red("\nUnknown dev command\n"));
+      process.exit(1);
+    }
+  
+    await cmd.handler(subArgs);
     return;
   }
 
