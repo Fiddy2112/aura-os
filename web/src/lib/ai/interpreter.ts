@@ -17,6 +17,7 @@ const IntentSchema = z.object({
     "RESEARCH",
     "NEWS",
     "PORTFOLIO",
+    "ANALYZE",
     // Developer Actions
     "TRACK_WALLET",
     "NFT_INFO",
@@ -268,9 +269,10 @@ export class AIInterpreter {
       return { ...baseIntent, action: 'TRACK_WALLET', target_address: targetAddr };
     }
 
-    // Contract info
-    if (targetAddr && (input.includes('contract') || input.includes('hợp đồng'))) {
-      return { ...baseIntent, action: 'GET_CONTRACT', contract_address: targetAddr };
+    // Contract info / Analyze
+    if (targetAddr && (input.includes('contract') || input.includes('hợp đồng') || input.includes('analyze') || input.includes('phân tích'))) {
+      const action = (input.includes('analyze') || input.includes('phân tích')) ? 'ANALYZE' : 'GET_CONTRACT';
+      return { ...baseIntent, action: action as any, contract_address: targetAddr, target_address: targetAddr };
     }
 
     // Address found - default to GET_TRANSACTIONS
@@ -294,6 +296,15 @@ export class AIInterpreter {
     const balanceMatch = input.match(/(?:balance|số dư).*?(eth|usdt|usdc)?/i);
     if (balanceMatch && !input.includes('send')) {
       return { ...baseIntent, action: 'CHECK_BALANCE', token: balanceMatch[1]?.toUpperCase() || 'ETH' };
+    }
+
+    if (input.includes('research') || input.includes('nghiên cứu') || input.includes('analyze') && !targetAddr) {
+      const topicMatch = userInput.match(/(?:research|nghiên cứu|analyze)\s+(?:about|on|for)?\s*(.+)/i);
+      return { ...baseIntent, action: 'RESEARCH', topic: topicMatch ? topicMatch[1].trim() : null };
+    }
+
+    if (input.includes('portfolio') || input.includes('tài sản') || input.includes('pnl')) {
+      return { ...baseIntent, action: 'PORTFOLIO' };
     }
 
     // News detection

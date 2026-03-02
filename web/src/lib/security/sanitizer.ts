@@ -1,5 +1,5 @@
 export class Sanitizer {
-  private static readonly PRIVATE_KEY_REGEX = /\b(0x)?[a-fA-F0-0]{64}\b/g;
+  private static readonly PRIVATE_KEY_REGEX = /\b(0x)?[a-fA-F0-9]{64}\b/g;
   private static readonly SUI_KEY_REGEX = /suiprivkey[a-zA-Z0-9]+/g;
 
   static sanitize(data: any): any {
@@ -29,7 +29,8 @@ export class Sanitizer {
     return data;
   }
 
-  private static sanitizeString(str: string): string {
+  private static sanitizeString(str: any): string {
+    if (typeof str !== 'string') return String(str);
     let sanitized = str;
     sanitized = sanitized.replace(this.PRIVATE_KEY_REGEX, (match) => {
       return `${match.slice(0, 4)}...[REDACTED]...${match.slice(-4)}`;
