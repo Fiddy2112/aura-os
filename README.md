@@ -1,45 +1,39 @@
 <div align="center">
-  <img src="web/public/logo.svg" alt="Aura OS Logo" width="80" height="80" />
+  <img src="web/public/logo.svg" alt="Aura OS Logo" width="100" height="100" />
   
-  # Aura OS
+  # AURA_OS
   
-  **Your AI Commander for Web3**
+  **The Sovereign AI Commander for Web3**
   
-  The most powerful AI-native CLI for blockchain developers and crypto enthusiasts.  
-  Natural language commands. Multi-chain support. Developer tools built-in.
+  A premium, AI-native operating system for your terminal and cloud dashboard.  
+  Natural language command execution. Military-grade vault. Real-time alpha synchronization.
+  
+  [![License](https://img.shields.io/badge/license-MIT-6366f1.svg)](LICENSE)
+  [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-06b6d4.svg)](https://nodejs.org)
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-8b5cf6.svg)](https://www.typescriptlang.org/)
+  [![Web3](https://img.shields.io/badge/Web3-EVM--Sui-ec4899.svg)](https://auraos.dev)
 
-  [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-  [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
-
-  [Website](https://auraos.dev) · [Documentation](https://auraos.dev/docs) · [Discord](https://discord.gg/auraos)
-
+  [Website](https://auraos.dev) · [Dashboard](https://auraos.dev/dashboard) · [Documentation](https://auraos.dev/docs)
 </div>
 
 ---
 
 ## Features
 
-### Multi-AI Brain
-Powered by OpenAI GPT-4, Groq, and Google Gemini with automatic fallback. Understands Vietnamese, English, and more.
+### Multi-AI Brain (BYOK)
+Fully personalizable. Input your own keys for OpenAI, Groq, and Google Gemini. Experience automatic fallback logic and multi-language support (English, Vietnamese, etc.).
 
-### Secure Vault
-Military-grade AES-256 encryption. Your private keys never leave your device.
+### Military-Grade Security
+Built with **Aura Vault (AES-256)**. Features **Silent Security** (Linux-style hidden input) and a built-in **Privacy Sanitizer** that redacts secrets before they ever leave your machine.
 
-### CLI Power
-Background automation that browsers can't handle. Perfect for power users and developers.
+### Premium Experience
+Stunning high-end aesthetics across terminal and web. Glassmorphism, neon accents, and micro-animations for a first-class developer experience.
 
-### Multi-Chain
-Ethereum, Base, Arbitrum, Optimism, BSC, Polygon, Avalanche, and Sepolia testnet from a single interface. Easy chain switching with `aura chain`.
+### Real-time Ledger Sync
+Every terminal interaction is instantly synchronized to your **AURA_STREAM** cloud dashboard via Supabase Realtime, tagged with your wallet identity.
 
-### Developer Tools
-ENS lookup, wallet tracking, NFT info, contract reading, transaction decoding, contract analysis (proxy detection, bytecode hash, code size), and more. Use `aura info` for detailed contract inspection.
-
-### Real-time Dashboard
-Live activity stream synced via Supabase. See everything in one place.
-
-### Crypto Research
-AI-powered market research with 25+ trusted sources including Messari, The Block, CoinDesk, and more.
+### Pro-Grade Analysis
+AI-powered contract security analysis with specialized **Trader** (Risk/Verdict) and **Developer** (Forensic/Bytecode) modes.
 
 ---
 
@@ -103,17 +97,18 @@ SUPABASE_DATABASE_NAME=aura_os
 
 | Command | Description |
 |---------|-------------|
-| `aura setup` | Initialize your wallet with encrypted key storage |
-| `aura login` | Login via browser (MetaMask/Google/GitHub) |
-| `aura chat "message"` | Send a natural language command to Aura |
-| `aura research [topic]` | Research crypto market news and trends |
-| `aura news [topic]` | Get real-time crypto news and headlines |
-| `aura watch [minutes]` | Start auto-monitoring alpha news (default: 15m) |
-| `aura status` | Check configuration status |
-| `aura logout` | Disconnect from dashboard |
-| `aura wallet [action]` | Manage accounts (show, export) |
-| `aura dashboard` | Launch the real-time Web UI |
-| `aura help` | Show available commands |
+| `aura setup` | Interactive onboarding: Wallet Vault + BYOK AI Key setup |
+| `aura login` | Sync your CLI with the cloud dashboard via browser OAuth |
+| `aura chat "msg"` | Natural language commander (Send, Swap, Check Portfolio) |
+| `aura analyze` | Security triage for smart contracts (Trader/Dev modes) |
+| `aura research` | Deep ecosystem analysis with 25+ trusted sources |
+| `aura news` | Real-time global crypto alpha aggregator |
+| `aura watch` | Background alpha hunting mode (auto-refreshing news) |
+| `aura wallet` | Manage encrypted accounts (show, export, portfolio) |
+| `aura reset-password`| Securely change or recover vault master password |
+| `aura dashboard` | Launch your AURA_STREAM real-time web interface |
+| `aura status` | Diagnostic check of vault and AI system health |
+| `aura help` | Show available commands and shortcuts |
 
 ### Developer Commands
 
@@ -311,15 +306,14 @@ Every command you run syncs to your personal dashboard:
 
 | Technology | Purpose |
 |------------|---------|
-| TypeScript | Type-safe development |
-| OpenAI / Groq / Gemini | Multi-model AI with fallback |
-| Viem | Ethereum & EVM chain interactions |
-| Zod | Schema validation for AI responses |
-| CryptoJS | AES-256 encryption |
-| Tavily | Real-time crypto research |
-| Supabase | Real-time activity sync |
-| Inquirer | Interactive prompts |
-| Chalk | Terminal styling |
+| Multi-AI Engine | OpenAI, Groq, & Gemini with intelligent fallback |
+| Aura Vault | AES-256 local encryption for private keys |
+| Silent Security | Invisible terminal input for all passwords |
+| Privacy Sanitizer| Auto-redaction of secrets before cloud sync |
+| Viem | Core blockchain interaction engine |
+| Supabase | Real-time history & identity synchronization |
+| Tavily AI | Deep research and market data gathering |
+| Inquirer/Chalk | Premium interactive CLI terminal experience |
 
 ### Website
 
@@ -363,17 +357,24 @@ aura-os/
 │       ├── engine/
 │       │   └── info.ts           # Contract analysis engine
 │       ├── security/
-│       │   └── vault.ts          # AES-256 encrypted storage
+│       │   ├── vault.ts          # AES-256 encrypted storage
+│       │   └── sanitizer.ts      # Privacy redaction engine
 │       └── utils/
-│           └── supabase.ts       # Real-time sync
+│           └── supabase.ts       # Real-time sync & fallback
 │
-├── web/                          # Astro Website
+├── web/                          # Astro Website (AURA_STREAM)
 │   ├── src/
 │   │   ├── components/           # React & Astro components
+│   │   ├── lib/
+│   │   │   ├── security/
+│   │   │   │   ├── ratelimit.ts  # API protection mechanism
+│   │   │   │   └── sanitizer.ts  # Web-side privacy scrub
+│   │   │   └── ai/
+│   │   │       └── interpreter.ts # Web-side AI logic
 │   │   ├── pages/
-│   │   │   ├── index.astro       # Homepage
-│   │   │   ├── chat.astro        # Web chat interface
-│   │   │   └── dashboard.astro   # Real-time dashboard
+│   │   │   ├── index.astro       # Premium Landing Page
+│   │   │   ├── login.astro       # Unified Authentication
+│   │   │   └── dashboard.astro   # AURA_STREAM UI
 │   │   └── styles/               # Global CSS
 │   └── public/                   # Static assets
 │
@@ -384,12 +385,12 @@ aura-os/
 ---
 
 ## Security
-- **Local-only storage** — Private keys encrypted locally on your device (`%APPDATA%` / `~/.config`).
-- **AES-256 encryption** — Keys are encrypted with your Master Password before saving.
-- **Zero-Knowledge** — Your private key is NEVER sent to any server (OpenAI, AuraOS, etc.).
-- **Password protected** — Master password required for every sensitive action.
-
-> **Note**: Your project files (code) are safe to save anywhere. Your *secrets* (keys) are stored separately by the system in a secure configuration file, not in your project folder.
+- **Local-only storage** — Private keys never leave your device, encrypted in machine-specific config folders.
+- **AES-256 encryption** — Industry-standard encryption with a user-defined Master Password.
+- **Silent Security** — All password/key inputs are invisible in the terminal (Linux-style) to prevent shoulder surfing.
+- **Privacy Sanitizer** — Automatically redacts private keys and passwords before syncing history to the dashboard.
+- **Rate Limiting** — Intelligent API protection on web endpoints to prevent abuse and protect AI credits.
+- **Zero-Knowledge Sync** — Sync only results and intents, never your raw decrypted secrets.
 
 > **Important**: Always use a dedicated wallet for testing. Never use your main wallet with any new software.
 

@@ -9,21 +9,21 @@ export async function setupCommand() {
   console.log(chalk.blue.bold('\n Welcome to Aura OS - AI Agent Manager\n'));
   console.log(chalk.gray(' Configuring your personal AI Commander...\n'));
 
-  // 1. Ask for Wallet Information
+  // Ask for Wallet Information
   const answers = await inquirer.prompt([
     {
       type: 'password',
       name: 'privateKey',
       message: chalk.cyan(' Enter your private key (EVM/Sui):'),
       validate: (value) => value.length > 32 ? true : 'Invalid private key format',
-      mask: '*'
+      mask: ''
     },
     {
       type: 'password',
       name: 'masterPassword',
       message: chalk.cyan(' Set Master Password to encrypt your storage:'),
       validate: (value) => value.length >= 6 ? true : 'Master password must be at least 6 characters',
-      mask: '*'
+      mask: ''
     }
   ]);
 
@@ -31,7 +31,7 @@ export async function setupCommand() {
   Vault.saveKey(answers.privateKey, answers.masterPassword);
   console.log(chalk.green('\n ✓ Wallet encrypted and saved to Secure Vault.'));
 
-  // 2. Ask for AI Keys
+  // Ask for AI Keys
   console.log(chalk.gray('\n Now, configure your personal AI providers:'));
   
   const aiKeys = await inquirer.prompt([
@@ -55,7 +55,7 @@ export async function setupCommand() {
     }
   ]);
 
-  // 3. Save AI Keys to .env
+  // Save AI Keys to .env
   const envPath = path.resolve(process.cwd(), '.env');
   let envContent = '';
   
@@ -77,7 +77,7 @@ export async function setupCommand() {
   
   console.log(chalk.green(' ✓ AI API keys synchronized with local environment.'));
 
-  // 4. Connect to Cloud (Sync with Dashboard)
+  // Connect to Cloud (Sync with Dashboard)
   console.log(chalk.gray('\n Recommended: Connect to Cloud to sync your activities and manage plans.'));
   const { sync } = await inquirer.prompt([
     {

@@ -1,46 +1,66 @@
-# Astro Starter Kit: Basics
+<div align="center">
+  <img src="public/logo.svg" alt="Aura OS Logo" width="80" height="80" />
+  
+  # AURA_STREAM
+  
+  **The Cloud Intelligence Dashboard for Aura OS**
+  
+  A premium, real-time interface to monitor your terminal activity, manage wallets, and track decentralized intelligence.
+</div>
 
-```sh
-npm create astro@latest -- --template basics
+---
+
+## 🚀 Overview
+
+**AURA_STREAM** is the web component of the Aura OS ecosystem. It provides a high-fidelity, real-time visualization of everything happening in your CLI.
+
+- **Real-time Sync**: Powered by Supabase Realtime logic.
+- **Trader Mode**: High-level risk scores and sentiment analysis.
+- **Developer Mode**: Forensic bytecode analysis and deep contract intelligence.
+- **Unified Auth**: Secure connection via MetaMask, Google, or GitHub.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Astro](https://astro.build/) (v5.x)
+- **UI Components**: React + Tailwind CSS
+- **Authentication**: RainbowKit + Supabase Auth
+- **Real-time Engine**: Supabase PostgREST + Realtime
+- **Design System**: Custom **Aura Glassmorphism** (Neon accents, Backdrop blurs)
+
+## 🧞 Getting Started
+
+Navigate to the `web` directory and install dependencies:
+
+```bash
+cd web
+npm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+### Environment Setup
 
-## 🚀 Project Structure
+Create a `.env` file in the `web` folder:
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```env
+PUBLIC_SUPABASE_URL=your_supabase_url
+PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+PUBLIC_WALLET_CONNECT_PROJECT_ID=your_project_id
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+### Development
 
-## 🧞 Commands
+```bash
+npm run dev
+```
+The dashboard will be available at `http://localhost:4321/dashboard`.
 
-All commands are run from the root of the project, from a terminal:
+## 🔒 Security
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+This dashboard handles sensitive Web3 data using a **Zero-Knowledge Sync** philosophy:
+- **Redaction**: Secrets (keys/passwords) are scrubbed on the CLI side before being synced.
+- **Rate Limiting**: Built-in protection to prevent AI credit abuse.
+- **RLS**: Row-Level Security in Supabase ensures you only see your own activity.
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+---
+<div align="center">
+  <sub>Aura OS - Built for the Sovereign Web3 Citizen</sub>
+</div>

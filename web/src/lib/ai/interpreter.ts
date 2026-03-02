@@ -59,9 +59,9 @@ export class AIInterpreter {
   private genAI: GoogleGenerativeAI | null = null;
 
   constructor() {
-    const openaiKey = import.meta.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY;
-    const groqKey = import.meta.env.GROQ_API_KEY || process.env.GROQ_API_KEY;
-    const geminiKey = import.meta.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    const openaiKey = import.meta.env.OPENAI_API_KEY;
+    const groqKey = import.meta.env.GROQ_API_KEY;
+    const geminiKey = import.meta.env.GEMINI_API_KEY;
 
     if (openaiKey) this.openai = new OpenAI({ apiKey: openaiKey });
     if (groqKey) this.groq = new Groq({ apiKey: groqKey });

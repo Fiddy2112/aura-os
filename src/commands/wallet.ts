@@ -16,7 +16,7 @@ export async function walletCommand(action: string = 'show') {
       type: 'password',
       name: 'masterPassword',
       message: chalk.cyan(' Enter master password to unlock your wallet:'),
-      mask: '*'
+      mask: ''
     }
   ]);
 

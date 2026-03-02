@@ -68,7 +68,7 @@ export async function runCommand(scriptName: string, args: string[]) {
             type:'password',
             name:'password',
             message: chalk.magenta('Script requests wallet access. Enter password:'),
-            mask: '*'
+            mask: ''
         }])
 
         const privateKey = Vault.getKey(password);

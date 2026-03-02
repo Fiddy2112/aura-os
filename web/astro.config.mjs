@@ -12,16 +12,7 @@ export default defineConfig({
   ],
   vite: {
     build: {
-      chunkSizeWarningLimit: 1500,
-      rollupOptions: {
-        external: ['openai', 'groq-sdk'],
-        onwarn(warning, warn) {
-          if (warning.code === 'MODULE_LEVEL_DIRECTIVE' || warning.message.includes('/*#__PURE__*/')) {
-            return;
-          }
-          warn(warning);
-        }
-      }
+      chunkSizeWarningLimit: 1500
     }
   } 
 });

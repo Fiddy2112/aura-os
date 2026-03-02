@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import Conf from 'conf';
 import inquirer from 'inquirer';
 import boxen from 'boxen';
 import Table from 'cli-table3';
@@ -50,19 +51,24 @@ export async function chatCommand(userInput: string) {
         type: 'password',
         name: 'masterPassword',
         message: chalk.cyan(' Enter master password to unlock your wallet:'),
-        mask: '*'
+        mask: ''
       }
     ]);
 
     privateKey = Vault.getKey(masterPassword);
     
     if (privateKey) {
-      const executor = new BlockchainExecutor(privateKey);
+      const identExecutor = new BlockchainExecutor(privateKey);
       walletContext = {
         isConnected: true,
-        address: executor.getAddress() || undefined,
-        chain: executor.getChainName(),
+        address: identExecutor.getAddress() || undefined,
+        chain: identExecutor.getChainName(),
       };
+      
+      // Save for sync identity
+      const config = new Conf({ projectName: 'aura-os' });
+      config.set('user_wallet', walletContext.address?.toLowerCase());
+
       console.log(chalk.green(` Wallet unlocked: ${walletContext.address?.slice(0, 10)}...`));
     } else {
       console.log(chalk.red(' Invalid password. Access denied for this action.'));

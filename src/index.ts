@@ -12,8 +12,9 @@ import { watchCommand } from './commands/watch.js';
 import { dashboardCommand } from './commands/dashboard.js';
 import { walletCommand } from './commands/wallet.js';
 import { runCommand } from './commands/run.js';
-import analyzeCommand from './commands/analyze.js';
 import { debankCommand } from './commands/debank.js';
+import analyzeCommand from './commands/analyze.js';
+import { resetPasswordCommand } from './commands/reset-password.js';
 import { devCommands } from './commands/registry.js';
 
 const args = process.argv.slice(2);
@@ -55,6 +56,7 @@ function showHelp() {
     ${chalk.gray('dashboard')}   ${chalk.gray('Launch the real-time Web UI')}
     ${chalk.gray('login')}       ${chalk.gray('Login via browser (google/metamask)')}
     ${chalk.gray('status')}      ${chalk.gray('Check Aura OS configuration status')}
+    ${chalk.gray('reset-password')} ${chalk.gray('Change or reset your master password')}
     ${chalk.gray('help')}        ${chalk.gray('Show this help message')}
 
   ${chalk.bold.white('DEV / SECURITY')}
@@ -232,6 +234,11 @@ async function main() {
 
     case 'logout':
       await logoutCommand();
+      break;
+
+    case 'reset-password':
+    case '-rp':
+      await resetPasswordCommand();
       break;
       
     case undefined:

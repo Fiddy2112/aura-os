@@ -26,6 +26,7 @@
     "aura:watch": "npm run cli:dev -- watch",
     "aura:wallet": "npm run cli:dev -- wallet",
     "aura:debank": "npm run cli:dev -- debank",
+    "aura:reset-password": "npm run cli:dev -- reset-password",
     "aura:dashboard": "npm run cli:dev -- dashboard",
     "aura:chain": "npm run cli:dev -- dev chain",
     "aura:info": "npm run cli:dev -- dev info",

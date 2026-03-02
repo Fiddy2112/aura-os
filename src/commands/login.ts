@@ -102,8 +102,30 @@ export async function loginCommand(method?: string) {
 
             if (authCompleted) {
               console.log(chalk.gray('\n Commands will now sync to your dashboard.\n'));
-              res.writeHead(200, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ success: true }));
+              
+              // Send a premium feedback page to the user
+              res.writeHead(200, { 'Content-Type': 'text/html' });
+              res.end(`
+                <html>
+                  <head>
+                    <title>Aura OS - Success</title>
+                    <style>
+                      body { background: #000; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                      .card { border: 1px solid #333; padding: 40px; border-radius: 20px; text-align: center; background: #050505; }
+                      .icon { font-size: 40px; margin-bottom: 20px; }
+                      .btn { background: #fff; color: #000; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 20px; display: inline-block; }
+                    </style>
+                  </head>
+                  <body>
+                    <div class="card">
+                      <div class="icon">✅</div>
+                      <h1>Aura OS Connected</h1>
+                      <p>Authentication successful. You can now close this tab and return to your terminal.</p>
+                      <a href="/" class="btn">Go to Dashboard</a>
+                    </div>
+                  </body>
+                </html>
+              `);
 
               setTimeout(() => {
                 server.close();
