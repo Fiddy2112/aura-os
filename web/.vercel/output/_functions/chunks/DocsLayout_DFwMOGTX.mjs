@@ -14,12 +14,20 @@ Introduction
 Installation
 </a> </li> <li> <a href="/docs/quickstart" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
 Quick Start
-</a> </li> </ul> </div> <div> <h4 class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3">CLI Commands</h4> <ul class="space-y-1"> <li> <a href="/docs/commands" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
-All Commands
+</a> </li> </ul> </div> <div> <h4 class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3">Core Commands</h4> <ul class="space-y-1"> <li> <a href="/docs/commands" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+All Commands Reference
 </a> </li> <li> <a href="/docs/commands/setup" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
 aura setup
 </a> </li> <li> <a href="/docs/commands/chat" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
 aura chat
+</a> </li> </ul> </div> <div> <h4 class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3">Research & Alpha</h4> <ul class="space-y-1"> <li> <a href="/docs/commands#research" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+aura research
+</a> </li> <li> <a href="/docs/commands#news" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+aura news / watch
+</a> </li> </ul> </div> <div> <h4 class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3">Security & Forensics</h4> <ul class="space-y-1"> <li> <a href="/docs/commands#analyze" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+aura analyze / info
+</a> </li> <li> <a href="/docs/commands#reset-password" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+aura reset-password
 </a> </li> </ul> </div> <div> <h4 class="text-xs font-semibold text-zinc-600 uppercase tracking-wider mb-3">Core Concepts</h4> <ul class="space-y-1"> <li> <a href="/docs/ai-interpreter" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
 AI Interpreter
 </a> </li> <li> <a href="/docs/vault" class="block py-2 px-3 rounded-lg text-sm text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">

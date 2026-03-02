@@ -1,0 +1,79 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"src": "^/_server-islands/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/_image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/chat/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/chat/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/dashboard/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/docs/ai-interpreter/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/docs/commands/chat/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/docs/commands/setup/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/docs/commands/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/docs/getting-started/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/docs/installation/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/docs/quickstart/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/docs/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/features/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/login/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/$",
+			"dest": "_render"
+		}
+	]
+}

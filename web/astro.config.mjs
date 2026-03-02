@@ -5,14 +5,24 @@ import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   output: 'server',
-  adapter: vercel(),
+  adapter: vercel({
+    speedInsights: { enabled: true }
+  }),
   integrations: [
     react(), 
     tailwind()
   ],
   vite: {
     build: {
-      chunkSizeWarningLimit: 1500
+      chunkSizeWarningLimit: 1500,
+      rollupOptions: {
+        onwarn(warning, warn) {
+          if (warning.code === 'MODULE_LEVEL_DIRECTIVE' || warning.message.includes('/*#__PURE__*/')) {
+            return;
+          }
+          warn(warning);
+        }
+      }
     }
   } 
 });

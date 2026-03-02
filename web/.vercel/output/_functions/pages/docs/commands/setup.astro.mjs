@@ -1,7 +1,7 @@
 /* empty css                                      */
 import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../../../chunks/astro/server_C4W-8AKg.mjs';
 import 'piccolore';
-import { $ as $$DocsLayout } from '../../../chunks/DocsLayout_C9akpxX7.mjs';
+import { $ as $$DocsLayout } from '../../../chunks/DocsLayout_DFwMOGTX.mjs';
 import { Lock, Save } from 'lucide-react';
 export { renderers } from '../../../renderers.mjs';
 

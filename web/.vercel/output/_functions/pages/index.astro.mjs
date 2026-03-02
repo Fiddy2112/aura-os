@@ -1,7 +1,7 @@
 /* empty css                                */
 import { e as createComponent, m as maybeRenderHead, k as renderComponent, r as renderTemplate } from '../chunks/astro/server_C4W-8AKg.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_D42uKeWZ.mjs';
+import { $ as $$Layout } from '../chunks/Layout_C2AiEcsN.mjs';
 import { $ as $$Navbar, a as $$Footer } from '../chunks/Footer_Dqj-grey.mjs';
 import { jsx, jsxs, Fragment } from 'react/jsx-runtime';
 import { TypeAnimation } from 'react-type-animation';

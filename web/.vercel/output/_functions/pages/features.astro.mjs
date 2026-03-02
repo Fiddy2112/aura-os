@@ -1,7 +1,7 @@
 /* empty css                                */
 import { e as createComponent, k as renderComponent, r as renderTemplate, m as maybeRenderHead } from '../chunks/astro/server_C4W-8AKg.mjs';
 import 'piccolore';
-import { $ as $$Layout } from '../chunks/Layout_D42uKeWZ.mjs';
+import { $ as $$Layout } from '../chunks/Layout_C2AiEcsN.mjs';
 import { $ as $$Navbar, a as $$Footer } from '../chunks/Footer_Dqj-grey.mjs';
 import { Brain, Lock, Shield, Terminal } from 'lucide-react';
 export { renderers } from '../renderers.mjs';
