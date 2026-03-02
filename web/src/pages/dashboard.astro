@@ -14,7 +14,13 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           <h1 class="text-4xl md:text-5xl font-bold gradient-text-shimmer tracking-tighter">AURA_STREAM</h1>
           <p class="text-zinc-500 font-mono text-xs mt-2 uppercase tracking-[0.3em]">Real-time Ledger Synchronization</p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-4">
+          <!-- Mode Toggle -->
+          <div class="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1 overflow-hidden">
+            <button id="btn-mode-trader" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-black">TRADER</button>
+            <button id="btn-mode-dev" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-zinc-500 hover:text-white">DEVELOPER</button>
+          </div>
+          
           <div id="connection-status" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800">
             <div class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" id="status-dot"></div>
             <span class="text-xs font-mono text-zinc-400" id="status-text">Connecting...</span>
@@ -109,9 +115,41 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
   const statToday = document.getElementById('stat-today');
   const statLive = document.getElementById('stat-live');
   const recentActions = document.getElementById('recent-actions');
+  const btnTrader = document.getElementById('btn-mode-trader');
+  const btnDev = document.getElementById('btn-mode-dev');
 
   let liveEventCount = 0;
   let totalCount = 0;
+  let currentMode = 'TRADER'; // Default mode
+  let historyData = [];
+
+  // Toggle Logic
+  btnTrader.addEventListener('click', () => setMode('TRADER'));
+  btnDev.addEventListener('click', () => setMode('DEVELOPER'));
+
+  function setMode(mode) {
+    currentMode = mode;
+    // Update UI
+    if (mode === 'TRADER') {
+      btnTrader.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-black';
+      btnDev.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-zinc-500 hover:text-white';
+    } else {
+      btnDev.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-black';
+      btnTrader.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-zinc-500 hover:text-white';
+    }
+    // Rerender stream
+    renderStream();
+  }
+
+  function renderStream() {
+    if (!streamContainer) return;
+    if (historyData.length === 0) return;
+    
+    streamContainer.innerHTML = '';
+    historyData.forEach(item => {
+      streamContainer.insertAdjacentHTML('beforeend', createLogEntry(item));
+    });
+  }
 
   // Initialize Supabase client
   if (!supabaseUrl || !supabaseKey) {
@@ -134,8 +172,10 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         return;
       }
 
-      if (data && data.length > 0 && streamContainer) {
-        streamContainer.innerHTML = '';
+      if (data && data.length > 0) {
+        historyData = data;
+        renderStream();
+        
         totalCount = data.length;
         if (statTotal) statTotal.textContent = String(totalCount);
 
@@ -166,16 +206,43 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       const borderColor = isError ? 'border-red-500/50' : 'border-white/10';
       const dotColor = isError ? 'bg-red-500' : 'bg-green-500';
 
+      // Advanced data for Developer mode
+      const payload = item.payload ? JSON.stringify(item.payload, null, 2) : '{}';
+      const address = item.wallet_address || '0x...';
+
+      if (currentMode === 'DEVELOPER') {
+        return `
+          <div class="log-entry-glow border-l-2 ${borderColor} pl-4 py-2 group hover:border-white/30 transition-all">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-3">
+                <div class="w-1.5 h-1.5 rounded-full ${dotColor}"></div>
+                <span class="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">${time}</span>
+                <span class="px-2 py-0.5 rounded bg-zinc-900 text-purple-400 text-[9px] border border-zinc-800 font-semibold font-mono">${item.command_type}</span>
+              </div>
+              <span class="text-[9px] text-zinc-700 font-mono">${address.slice(0, 10)}...</span>
+            </div>
+            <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-900 font-mono text-[10px] text-zinc-500 overflow-x-auto mb-2">
+              <pre>${payload}</pre>
+            </div>
+            <div class="text-zinc-400 leading-relaxed text-xs">
+              ${item.result || 'Executed successfully'}
+            </div>
+          </div>
+        `;
+      }
+
+      // Trader Mode: Simplified
       return `
         <div class="log-entry-glow border-l-2 ${borderColor} pl-4 py-2 group hover:border-white/30 transition-all">
           <div class="flex items-center gap-3 mb-2">
             <div class="w-1.5 h-1.5 rounded-full ${dotColor}"></div>
             <span class="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">${time}</span>
-            <span class="px-2 py-0.5 rounded bg-zinc-900 text-white text-[9px] border border-zinc-800 font-semibold">${item.command_type}</span>
+            <span class="px-2 py-0.5 rounded bg-white text-black text-[9px] font-bold">${item.command_type}</span>
           </div>
-          <div class="text-zinc-300 leading-relaxed text-xs">
-            ${item.result || 'Command executed successfully'}
+          <div class="text-zinc-300 leading-relaxed text-xs font-medium">
+            ${item.result || 'Command finished.'}
           </div>
+          <p class="text-[10px] text-zinc-600 mt-1">Transaction confirmed on chain.</p>
         </div>
       `;
     }
@@ -186,12 +253,8 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'aura_history' }, (payload) => {
         console.log('New activity:', payload);
         
-        if (!streamContainer) return;
-        
-        // Clear placeholder
-        if (streamContainer.innerHTML.includes('Waiting for commands')) {
-          streamContainer.innerHTML = '';
-        }
+        // Update local state
+        historyData.unshift(payload.new);
         
         // Update stats
         liveEventCount++;
@@ -202,8 +265,10 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         const todayEl = document.getElementById('stat-today');
         if (todayEl) todayEl.textContent = String(parseInt(todayEl.textContent || '0') + 1);
         
-        // Add new entry with animation
-        streamContainer.insertAdjacentHTML('afterbegin', createLogEntry(payload.new));
+        // Render new entry
+        if (streamContainer) {
+           streamContainer.insertAdjacentHTML('afterbegin', createLogEntry(payload.new));
+        }
       })
       .subscribe((status) => {
         console.log('Subscription status:', status);

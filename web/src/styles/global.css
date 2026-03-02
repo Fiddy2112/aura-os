@@ -49,8 +49,14 @@
 @layer components {
   /* Glass Card - Minimal dark style */
   .glass-card {
-    @apply relative bg-zinc-900/80 border border-zinc-800;
-    @apply rounded-2xl;
+    @apply relative bg-zinc-900/40 border border-zinc-800/50;
+    @apply rounded-2xl backdrop-blur-xl shrink-0;
+    box-shadow: 0 4px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  .glass-card-premium {
+     @apply glass-card bg-zinc-900/60 border-zinc-700/30;
+     box-shadow: inset 0 1px 1px 0 rgba(255,255,255,0.05);
   }
 
   /* Subtle hover glow */
@@ -196,9 +202,9 @@
 
   @keyframes entry-glow {
     0% {
-      background-color: rgba(255, 255, 255, 0.1);
-      box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.5);
+      background-color: rgba(168, 85, 247, 0.1);
+      box-shadow: inset 0 0 20px rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.5);
       transform: translateX(10px);
     }
     10% {
@@ -209,6 +215,15 @@
       box-shadow: inset 0 0 0px rgba(255, 255, 255, 0);
       border-color: rgba(39, 39, 42, 0.5); /* zinc-800 */
     }
+  }
+
+  .neon-pulse {
+    animation: neon-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes neon-pulse {
+    0%, 100% { box-shadow: 0 0 5px rgba(168, 85, 247, 0.2), inset 0 0 5px rgba(168, 85, 247, 0.1); }
+    50% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), inset 0 0 10px rgba(168, 85, 247, 0.2); }
   }
 }
 

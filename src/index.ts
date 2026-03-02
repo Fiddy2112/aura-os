@@ -12,6 +12,8 @@ import { watchCommand } from './commands/watch.js';
 import { dashboardCommand } from './commands/dashboard.js';
 import { walletCommand } from './commands/wallet.js';
 import { runCommand } from './commands/run.js';
+import analyzeCommand from './commands/analyze.js';
+import { debankCommand } from './commands/debank.js';
 import { devCommands } from './commands/registry.js';
 
 const args = process.argv.slice(2);
@@ -40,6 +42,7 @@ function showHelp() {
   ${chalk.bold.white('MAIN COMMANDS')}
     ${chalk.magenta('setup')}       ${chalk.gray('Initialize your encrypted Web3 vault')}
     ${chalk.magenta('research')}    ${chalk.gray('Deep project analysis & Sentiment')}
+    ${chalk.magenta('analyze')}     ${chalk.gray('Security analysis & Verdict (Trader/Dev modes)')}
     ${chalk.magenta('watch')}       ${chalk.gray('Automated AI alpha hunting mode')}
 
   ${chalk.bold.white('INTERACTION')}
@@ -48,6 +51,7 @@ function showHelp() {
 
   ${chalk.bold.white('SYSTEM')}
     ${chalk.gray('wallet')}      ${chalk.gray('Manage accounts (show, export)')}
+    ${chalk.gray('debank')}      ${chalk.gray('Open DeBank portfolio for an address')}
     ${chalk.gray('dashboard')}   ${chalk.gray('Launch the real-time Web UI')}
     ${chalk.gray('login')}       ${chalk.gray('Login via browser (google/metamask)')}
     ${chalk.gray('status')}      ${chalk.gray('Check Aura OS configuration status')}
@@ -58,6 +62,7 @@ function showHelp() {
     ${chalk.gray('privilege')}  ${chalk.gray('Ownership & control surface analysis')}
     ${chalk.gray('risk')}       ${chalk.gray('Centralization & upgrade risk score (--dev for breakdown)')}
     ${chalk.gray('chain')}      ${chalk.gray('Manage blockchain chain (current/list/set)')}
+    ${chalk.gray('analyze')}    ${chalk.gray('Contract security analysis summary')}
 
   ${chalk.bold.white('FLAGS')}
     ${chalk.gray('--dev')}      ${chalk.gray('Enable developer / forensic mode')}
@@ -213,6 +218,16 @@ async function main() {
       const scriptName = commandArgs[0];
       const scriptArgs = commandArgs.slice(1);
       await runCommand(scriptName, scriptArgs);
+      break;
+
+    case 'analyze':
+    case '-a':
+      await analyzeCommand(commandArgs);
+      break;
+
+    case 'debank':
+    case '-db':
+      await debankCommand(commandArgs);
       break;
 
     case 'logout':
