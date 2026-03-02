@@ -17,6 +17,7 @@ const IntentSchema = z.object({
     "RESEARCH",
     "NEWS",
     "PORTFOLIO",
+    "ANALYZE",
     // Developer Actions
     "TRACK_WALLET",
     "NFT_INFO",
@@ -242,8 +243,9 @@ User input: ${userInput}`);
     if (targetAddr && (input.includes("track") || input.includes("theo dõi") || input.includes("monitor"))) {
       return { ...baseIntent, action: "TRACK_WALLET", target_address: targetAddr };
     }
-    if (targetAddr && (input.includes("contract") || input.includes("hợp đồng"))) {
-      return { ...baseIntent, action: "GET_CONTRACT", contract_address: targetAddr };
+    if (targetAddr && (input.includes("contract") || input.includes("hợp đồng") || input.includes("analyze") || input.includes("phân tích"))) {
+      const action = input.includes("analyze") || input.includes("phân tích") ? "ANALYZE" : "GET_CONTRACT";
+      return { ...baseIntent, action, contract_address: targetAddr, target_address: targetAddr };
     }
     if (targetAddr) {
       if (walletAddress && targetAddr.toLowerCase() === walletAddress.toLowerCase()) {
@@ -261,6 +263,13 @@ User input: ${userInput}`);
     const balanceMatch = input.match(/(?:balance|số dư).*?(eth|usdt|usdc)?/i);
     if (balanceMatch && !input.includes("send")) {
       return { ...baseIntent, action: "CHECK_BALANCE", token: balanceMatch[1]?.toUpperCase() || "ETH" };
+    }
+    if (input.includes("research") || input.includes("nghiên cứu") || input.includes("analyze") && !targetAddr) {
+      const topicMatch = userInput.match(/(?:research|nghiên cứu|analyze)\s+(?:about|on|for)?\s*(.+)/i);
+      return { ...baseIntent, action: "RESEARCH", topic: topicMatch ? topicMatch[1].trim() : null };
+    }
+    if (input.includes("portfolio") || input.includes("tài sản") || input.includes("pnl")) {
+      return { ...baseIntent, action: "PORTFOLIO" };
     }
     const newsKeywords = ["news", "tin tức", "headline", "happening", "update", "latest"];
     if (newsKeywords.some((kw) => input.includes(kw))) {
@@ -357,7 +366,7 @@ function checkRateLimit(identifier, config = { windowMs: 6e4, max: 10 }) {
 }
 
 class Sanitizer {
-  static PRIVATE_KEY_REGEX = /\b(0x)?[a-fA-F0-0]{64}\b/g;
+  static PRIVATE_KEY_REGEX = /\b(0x)?[a-fA-F0-9]{64}\b/g;
   static SUI_KEY_REGEX = /suiprivkey[a-zA-Z0-9]+/g;
   static sanitize(data) {
     if (typeof data === "string") {
@@ -382,6 +391,7 @@ class Sanitizer {
     return data;
   }
   static sanitizeString(str) {
+    if (typeof str !== "string") return String(str);
     let sanitized = str;
     sanitized = sanitized.replace(this.PRIVATE_KEY_REGEX, (match) => {
       return `${match.slice(0, 4)}...[REDACTED]...${match.slice(-4)}`;
@@ -408,19 +418,24 @@ const POST = async ({ request, clientAddress }) => {
     }
     const interpreter = new AIInterpreter();
     console.log(`[Chat API] Processing message: "${message.slice(0, 50)}..."`);
-    const intent = await interpreter.parse(message, walletContext).catch((err) => {
-      console.error("[Chat API] Interpreter error:", err);
+    let intent = await interpreter.parse(message, walletContext).catch((err) => {
+      console.error("[Chat API] Interpreter error, falling back to quickParse:", err);
       return null;
     });
     if (!intent) {
+      intent = interpreter.quickParse(message, walletContext?.address);
+    }
+    if (!intent) {
       return new Response(JSON.stringify({
-        reply: "Aura's brain is offline. Check your API Key configuration in Vercel/Environment!",
-        debug: "AI_PARSE_FAILED"
+        reply: "Aura's brain is temporarily offline. Try a simpler command like 'price ETH' or 'gas'!",
+        debug: "AI_PARSE_FAILED_NO_FALLBACK"
       }), { status: 500 });
     }
     let reply = "";
     if (intent.action === "REJECTED") {
       reply = intent.reason || "I only handle Web3 tasks, bro!";
+    } else if (intent.action === "RESEARCH" || intent.action === "NEWS") {
+      reply = `Searching for latest intelligence on ${intent.topic || "the market"}... Please check the research tab for the full report!`;
     } else if (intent.action === "CHECK_BALANCE") {
       const balance = walletContext?.balance || "0";
       const isConnected = walletContext?.isConnected;
@@ -429,7 +444,8 @@ const POST = async ({ request, clientAddress }) => {
       const isConnected = walletContext?.isConnected;
       const status = isConnected ? "Do you want to execute?" : "Please connect wallet first.";
       const actionDesc = intent.action.replace(/_/g, " ").toLowerCase();
-      reply = `I understand. You want to ${actionDesc} ${intent.amount || ""} ${intent.token || ""}. ${status}`;
+      const target = intent.token || intent.topic || intent.target_address || "";
+      reply = `I understand. You want to ${actionDesc} ${intent.amount || ""} ${target}. ${status}`;
     }
     const sanitizedReply = Sanitizer.sanitize(reply);
     return new Response(JSON.stringify({ reply: sanitizedReply }), { status: 200 });
