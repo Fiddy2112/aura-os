@@ -48,7 +48,7 @@ export class BlockchainExecutor {
 
     this.publicClient = createPublicClient({
       chain: this.chainConfig.chain,
-      transport: http(this.chainConfig.rpcUrl),
+      transport: http(this.chainConfig.rpcUrls[0]),
     });
 
     if (privateKey) {
@@ -60,7 +60,7 @@ export class BlockchainExecutor {
       this.walletClient = createWalletClient({
         account: this.account,
         chain: this.chainConfig.chain,
-        transport: http(this.chainConfig.rpcUrl),
+        transport: http(this.chainConfig.rpcUrls[0]),
       });
     }
   }
@@ -304,7 +304,7 @@ export class BlockchainExecutor {
       // Create a temporary public client for this specific chain
       const client = createPublicClient({
         chain: chainConfig.chain,
-        transport: http(chainConfig.rpcUrl),
+        transport: http(chainConfig.rpcUrls[0]),
       });
 
       const address = this.account.address;
