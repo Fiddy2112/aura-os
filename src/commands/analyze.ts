@@ -1,7 +1,10 @@
 import chalk from 'chalk';
+import Conf from 'conf';
 import { isAddress } from 'viem';
 import { buildContext } from '../core/engine/context.js';
 import { classifyContract } from '../core/engine/classifier.js';
+
+const config = new Conf({ projectName: 'aura-os' });
 
 export default async function analyzeCommand(args: string[]) {
     const address = args[0];
@@ -23,8 +26,14 @@ export default async function analyzeCommand(args: string[]) {
 
     const { info, privilege, risk } = context;
 
+    // --- SESSION INFO ---
+    const user = (config.get('user_email') || config.get('user_wallet')) as string;
+    if (user) {
+        console.log(chalk.gray(`\nSession: ${chalk.green(user)}`));
+    }
+
     // --- SHARED HEADER ---
-    console.log(chalk.bold.cyan("\n=================== AURA INTELLIGENCE ==================="));
+    console.log(chalk.bold.cyan("=================== AURA INTELLIGENCE ==================="));
     
     // --- TRADER VIEW (HIGH LEVEL) ---
     console.log(`\n${chalk.bold("PROJECT VERDICT:")} ${chalk.yellow(classification.verdict)}`);

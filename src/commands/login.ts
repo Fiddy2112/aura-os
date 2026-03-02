@@ -7,18 +7,21 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const config = new Conf({
-  projectName: `${process.env.SUPABASE_DATABASE_NAME}`
+  projectName: 'aura-os'
 });
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_KEY || ''
-);
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_KEY || '';
+
+const supabase = (supabaseUrl && supabaseKey) 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 const PORT = 9876;
 
-// Aura OS Login Config - Web App URL
-const WEB_APP_URL = process.env.WEB_APP_URL || 'http://localhost:4321/login';
+// Aura OS Login Config - Prioritize production, fallback to local
+const PROD_WEB_APP = 'https://aura-os-phi.vercel.app/login';
+const WEB_APP_URL = process.env.WEB_APP_URL || (process.env.NODE_ENV === 'production' ? PROD_WEB_APP : 'http://localhost:4321/login');
 
 export async function loginCommand(method?: string) {
   console.log(chalk.white.bold('\n Aura OS\n'));

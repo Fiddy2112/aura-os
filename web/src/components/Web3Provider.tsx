@@ -5,9 +5,11 @@ import { mainnet, sepolia, arbitrum, optimism, polygon, base } from 'wagmi/chain
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 
+const walletConnectProjectId = import.meta.env.PUBLIC_WALLET_CONNECT_PROJECT_ID || '';
+
 const config = getDefaultConfig({
   appName: 'Aura OS',
-  projectId: process.env.PUBLIC_WALLET_CONNECT_PROJECT_ID || 'demo-project-id',
+  projectId: walletConnectProjectId || '7ca5e49339a67a060411ed0c7f212888', // Community fallback or empty
   chains: [mainnet, arbitrum, optimism, polygon, base, sepolia],
   ssr: true,
 });

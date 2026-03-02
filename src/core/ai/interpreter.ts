@@ -3,6 +3,7 @@ import { zodResponseFormat } from "openai/helpers/zod";
 import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
+import chalk from 'chalk';
 
 // Enhanced Intent Schema with more actions
 const IntentSchema = z.object({
@@ -54,11 +55,38 @@ export interface WalletContext {
 }
 
 export class AIInterpreter {
-  private openai = new OpenAI();
-  private groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  private genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+  private openai: OpenAI | null = null;
+  private groq: Groq | null = null;
+  private genAI: GoogleGenerativeAI | null = null;
+
+  constructor() {
+    const openaiKey = process.env.OPENAI_API_KEY;
+    const groqKey = process.env.GROQ_API_KEY;
+    const geminiKey = process.env.GEMINI_API_KEY;
+
+    if (openaiKey) {
+      this.openai = new OpenAI({ apiKey: openaiKey });
+    }
+    
+    if (groqKey) {
+      this.groq = new Groq({ apiKey: groqKey });
+    }
+
+    if (geminiKey) {
+      this.genAI = new GoogleGenerativeAI(geminiKey);
+    }
+
+    if (!openaiKey && !groqKey && !geminiKey) {
+      console.warn(chalk.yellow("\n [AI] Warning: No AI API keys detected in your .env file."));
+      console.warn(chalk.gray(" Run 'aura setup' to configure your personal AI providers.\n"));
+    }
+  }
 
   async parse(userInput: string, walletContext?: WalletContext): Promise<Intent | null> {
+    if (!this.openai && !this.groq && !this.genAI) {
+      console.error(chalk.red("\n [AI Error] No AI providers available. Please run 'aura setup'."));
+      return null;
+    }
     const systemPrompt = `
       You are Aura OS, a professional AI Agent specializing in Web3 and Research.
 
@@ -150,46 +178,58 @@ export class AIInterpreter {
     `;
 
     try {
-      const completion = await this.openai.beta.chat.completions.parse({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userInput },
-        ],
-        response_format: zodResponseFormat(IntentSchema, "intent"),
-        temperature: 0.1,
-      });
-
-      return completion.choices[0].message.parsed;
-    } catch (error) {
-      console.log("OpenAI Parse failed or ran out of Quota, moving to Groq...");
-      try {
-        const groqResponse = await this.groq.chat.completions.create({
-          model: "llama-3.3-70b-versatile",
+      if (this.openai) {
+        const completion = await this.openai.beta.chat.completions.parse({
+          model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: systemPrompt + "\nIMPORTANT: You must output ONLY valid JSON." },
+            { role: "system", content: systemPrompt },
             { role: "user", content: userInput },
           ],
-          response_format: { type: "json_object" },
+          response_format: zodResponseFormat(IntentSchema, "intent"),
           temperature: 0.1,
         });
-        
-        const content = groqResponse.choices[0].message.content;
-        return content ? JSON.parse(content) : null;
-      } catch (groqError) {
-        console.log("Groq Parse failed, moving to Gemini...");
 
-        try {
-          const model = this.genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            generationConfig: { responseMimeType: "application/json" }
+        return completion.choices[0].message.parsed;
+      } else {
+        throw new Error("OpenAI not initialized");
+      }
+    } catch (error) {
+      console.log(chalk.gray(" OpenAI Parse failed or incomplete, moving to Groq..."));
+      try {
+        if (this.groq) {
+          const groqResponse = await this.groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { role: "system", content: systemPrompt + "\nIMPORTANT: You must output ONLY valid JSON." },
+              { role: "user", content: userInput },
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.1,
           });
           
-          const result = await model.generateContent(`${systemPrompt}\n\nUser input: ${userInput}`);
-          const text = result.response.text();
-          return JSON.parse(text);
+          const content = groqResponse.choices[0].message.content;
+          return content ? JSON.parse(content) : null;
+        } else {
+          throw new Error("Groq not initialized");
+        }
+      } catch (groqError) {
+        console.log(chalk.gray(" Groq Parse failed, moving to Gemini..."));
+
+        try {
+          if (this.genAI) {
+            const model = this.genAI.getGenerativeModel({ 
+              model: "gemini-1.5-flash",
+              generationConfig: { responseMimeType: "application/json" }
+            });
+            
+            const result = await model.generateContent(`${systemPrompt}\n\nUser input: ${userInput}`);
+            const text = result.response.text();
+            return JSON.parse(text);
+          } else {
+            throw new Error("Gemini not initialized");
+          }
         } catch (geminiError) {
-          console.error("All AI models failed to parse the command.");
+          console.error(chalk.red(" All AI models failed to parse the command."));
           return null;
         }
       }
@@ -300,37 +340,45 @@ export class AIInterpreter {
     `
 
     try {
-      const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Let's summarize the following: ${rawContext}` },
-        ],
-        temperature: 0.3,
-      });
-
-      return completion.choices[0].message.content || "This content cannot be summarized.";
-    } catch (error) {
-      // console.error('AI Summarizer error:', error);
-      try {
-        const groqCompletion = await this.groq.chat.completions.create({
-          model: "llama-3.3-70b-versatile",
+      if (this.openai) {
+        const completion = await this.openai.chat.completions.create({
+          model: "gpt-4o-mini",
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: `Summarize this: ${rawContext}` },
+            { role: "user", content: `Let's summarize the following: ${rawContext}` },
           ],
+          temperature: 0.3,
         });
-        return groqCompletion.choices[0].message.content || "";
-      } catch (groqError) {
-        console.log("Groq error, switching to Gemini...");
 
+        return completion.choices[0].message.content || "This content cannot be summarized.";
+      } else {
+        throw new Error("OpenAI not initialized");
+      }
+    } catch (error) {
+      try {
+        if (this.groq) {
+          const groqCompletion = await this.groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: `Summarize this: ${rawContext}` },
+            ],
+          });
+          return groqCompletion.choices[0].message.content || "";
+        } else {
+          throw new Error("Groq not initialized");
+        }
+      } catch (groqError) {
         try {
-          const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-          const fullPrompt = `${systemPrompt}\n\nSummarize this: ${rawContext}`;
-          const result = await model.generateContent(fullPrompt);
-          return result.response.text();
+          if (this.genAI) {
+            const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const fullPrompt = `${systemPrompt}\n\nSummarize this: ${rawContext}`;
+            const result = await model.generateContent(fullPrompt);
+            return result.response.text();
+          } else {
+            throw new Error("Gemini not initialized");
+          }
         } catch (geminiError) {
-          console.error("All AI models failed.");
           return "All AI models failed.";
         }
       }
@@ -367,36 +415,45 @@ export class AIInterpreter {
     `;
 
     try{
-      const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: prompt },
-          { role: "user", content: `Analyze and explain this contract information: ${JSON.stringify(info, null, 2)}` },
-        ],
-        temperature: 0.3,
-      });
-
-      return completion.choices[0].message.content || "Unable to explain this contract information.";
-    }catch{
-      try {
-        const groqCompletion = await this.groq.chat.completions.create({
-          model: "llama-3.3-70b-versatile",
+      if (this.openai) {
+        const completion = await this.openai.chat.completions.create({
+          model: "gpt-4o-mini",
           messages: [
             { role: "system", content: prompt },
-            { role: "user", content: `Analyze and explain this contract: ${JSON.stringify(info, null, 2)}` },
+            { role: "user", content: `Analyze and explain this contract information: ${JSON.stringify(info, null, 2)}` },
           ],
+          temperature: 0.3,
         });
-        return groqCompletion.choices[0].message.content || "";
-      } catch (groqError) {
-        console.log("Groq error, switching to Gemini...");
 
+        return completion.choices[0].message.content || "Unable to explain this contract information.";
+      } else {
+        throw new Error("OpenAI not initialized");
+      }
+    }catch{
+      try {
+        if (this.groq) {
+          const groqCompletion = await this.groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { role: "system", content: prompt },
+              { role: "user", content: `Analyze and explain this contract: ${JSON.stringify(info, null, 2)}` },
+            ],
+          });
+          return groqCompletion.choices[0].message.content || "";
+        } else {
+          throw new Error("Groq not initialized");
+        }
+      } catch (groqError) {
         try {
-          const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-          const fullPrompt = `${prompt}\n\nAnalyze and explain this contract: ${JSON.stringify(info, null, 2)}`;
-          const result = await model.generateContent(fullPrompt);
-          return result.response.text();
+          if (this.genAI) {
+            const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const fullPrompt = `${prompt}\n\nAnalyze and explain this contract: ${JSON.stringify(info, null, 2)}`;
+            const result = await model.generateContent(fullPrompt);
+            return result.response.text();
+          } else {
+            throw new Error("Gemini not initialized");
+          }
         } catch (geminiError) {
-          console.error("All AI models failed.");
           return "All AI models failed.";
         }
       }
