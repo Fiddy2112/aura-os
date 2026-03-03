@@ -6,7 +6,7 @@ import { Sanitizer } from '../../lib/security/sanitizer';
 export const POST: APIRoute = async ({ request, clientAddress }) => {
   try {
     // Rate Limiting
-    const identifier = clientAddress || 'unknown';
+    const identifier = clientAddress ?? request.headers.get("x-forwarded-for") ?? "unknown";
     const rate = checkRateLimit(identifier, { windowMs: 60000, max: 5 }); // 5 messages per minute
 
     if (!rate.success) {
@@ -22,6 +22,12 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     if (!message) {
       return new Response(JSON.stringify({ reply: "Yo, you didn't send a message!" }), { status: 400 });
     }
+
+    console.log("ENV CHECK:", {
+      OPENAI: !!import.meta.env.OPENAI_API_KEY,
+      GROQ: !!import.meta.env.GROQ_API_KEY,
+      GEMINI: !!import.meta.env.GEMINI_API_KEY,
+    });
 
     const interpreter = new AIInterpreter();
     
