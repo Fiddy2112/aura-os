@@ -1,6 +1,6 @@
 {
 	"runtime": "nodejs22.x",
-	"handler": "web/dist/server/entry.mjs",
+	"handler": "dist/server/entry.mjs",
 	"launcherType": "Nodejs",
 	"maxDuration": 30,
 	"supportsResponseStreaming": true

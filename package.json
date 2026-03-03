@@ -7,9 +7,6 @@
     "aura": "bin/run"
   },
   "type": "module",
-  "workspaces": [
-    "web"
-  ],
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",
