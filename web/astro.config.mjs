@@ -12,6 +12,10 @@ export default defineConfig({
   integrations: [react(), tailwind()],
 
   vite: {
+    ssr: {
+      noExternal: ['@rainbow-me/rainbowkit'],
+      external: ['@vanilla-extract/css', '@vanilla-extract/sprinkles'],
+    },
     build: {
       chunkSizeWarningLimit: 1500,
       rollupOptions: {
