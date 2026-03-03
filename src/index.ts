@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import pkg from '../package.json' with { type: 'json' };
 import chalk from 'chalk';
 import gradient from 'gradient-string';

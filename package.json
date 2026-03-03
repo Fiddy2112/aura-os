@@ -2,12 +2,20 @@
   "name": "aura-os",
   "version": "0.1.0",
   "description": "Autonomous AI Agent Network Manager for Web3",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "bin": {
-    "aura": "bin/run"
+    "aura": "bin/aura"
   },
+  "files": [
+    "dist",
+    "bin",
+    "package.json",
+    "README.md",
+    "LICENSE"
+  ],
   "type": "module",
   "scripts": {
+    "prepublishOnly": "npm run build",
     "build": "tsc",
     "dev": "ts-node src/index.ts",
     "cli:dev": "tsx src/index.ts",

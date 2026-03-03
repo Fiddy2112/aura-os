@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
+import { existsSync, readFileSync } from 'fs';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const pkgPath = join(__dirname, '../package.json');
+const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'));
+
+// Path to the compiled entry point
+const distPath = join(__dirname, '../dist/src/index.js');
+
+if (!existsSync(distPath)) {
+  console.error('\n  Error: Built files not found.');
+  console.log('  Please run "npm install" or "npm run build" first.\n');
+  process.exit(1);
+}
+
+// Run the compiled JS with node
+const child = spawn('node', [distPath, ...process.argv.slice(2)], {
+  stdio: 'inherit',
+  env: process.env
+});
+
+child.on('exit', (code) => {
+  process.exit(code ?? 0);
+});
