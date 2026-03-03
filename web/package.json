@@ -1,5 +1,5 @@
 {
-  "name": "",
+  "name": "aura-os-web",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -11,13 +11,13 @@
   "dependencies": {
     "@astrojs/react": "^4.4.2",
     "@astrojs/tailwind": "^6.0.2",
+    "@astrojs/vercel": "^9.0.4",
     "@google/generative-ai": "^0.24.1",
     "@rainbow-me/rainbowkit": "^2.2.10",
     "@supabase/supabase-js": "^2.93.2",
     "@tanstack/react-query": "^5.90.20",
     "@types/react-dom": "^19.2.3",
     "astro": "^5.16.15",
-    "aura-os": "file:..",
     "groq-sdk": "^0.37.0",
     "lucide-react": "^0.563.0",
     "openai": "^4.104.0",
@@ -30,7 +30,6 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@astrojs/vercel": "^9.0.4",
     "@types/react": "^19.2.9"
   }
 }

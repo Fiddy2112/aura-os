@@ -3,5 +3,5 @@
   "buildCommand": "cd web && npm run build",
   "outputDirectory": "web/.vercel/output",
   "framework": "astro",
-  "installCommand": "npm install --prefix web"
+  "installCommand": "npm install"
 }
