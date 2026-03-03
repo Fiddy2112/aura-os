@@ -57,10 +57,13 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
-# Add your API keys to .env
+# Add your API keys to .env 
 
-# Run the CLI
-npm run cli:dev help
+# Install globally to your system
+npm install -g @felizz23/aura-os
+
+# Run the CLI from anywhere
+aura help
 ```
 
 ### Environment Variables
