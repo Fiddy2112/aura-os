@@ -14,5 +14,8 @@ yarn-error.log*
 .env.production
 .env.local
 
+# vercel
+.vercel
+
 # macOS-specific files
 .DS_Store
