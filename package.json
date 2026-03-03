@@ -5,6 +5,11 @@
   },
   "version": "0.1.0",
   "description": "Autonomous AI Agent Network Manager for Web3",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aura-os/aura-os.git"
+  },
   "main": "dist/src/index.js",
   "bin": {
     "aura": "bin/aura"

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="web/public/logo.svg" alt="Aura OS Logo" width="100" height="100" />
+  <img src="https://raw.githubusercontent.com/aura-os/aura-os/main/web/public/logo.svg" alt="Aura OS Logo" width="100" height="100" />
   
   # AURA_OS
   
@@ -11,9 +11,9 @@
   [![License](https://img.shields.io/badge/license-MIT-6366f1.svg)](LICENSE)
   [![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-06b6d4.svg)](https://nodejs.org)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-8b5cf6.svg)](https://www.typescriptlang.org/)
-  [![Web3](https://img.shields.io/badge/Web3-EVM--Sui-ec4899.svg)](https://auraos.dev)
+  [![Web3](https://img.shields.io/badge/Web3-EVM--Sui-ec4899.svg)](https://aura-os-self.vercel.app)
 
-  [Website](https://auraos.dev) · [Dashboard](https://auraos.dev/dashboard) · [Documentation](https://auraos.dev/docs)
+  [Website](https://aura-os-self.vercel.app) · [Dashboard](https://aura-os-self.vercel.app/dashboard) · [Documentation](https://aura-os-self.vercel.app/docs)
 </div>
 
 ---
