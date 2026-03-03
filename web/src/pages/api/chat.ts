@@ -23,12 +23,6 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
       return new Response(JSON.stringify({ reply: "Yo, you didn't send a message!" }), { status: 400 });
     }
 
-    console.log("ENV CHECK:", {
-      OPENAI: !!import.meta.env.OPENAI_API_KEY,
-      GROQ: !!import.meta.env.GROQ_API_KEY,
-      GEMINI: !!import.meta.env.GEMINI_API_KEY,
-    });
-
     const interpreter = new AIInterpreter();
     
     // Diagnostic logging
