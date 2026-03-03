@@ -1,0 +1,144 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { Shield, Lock, Key, Server, EyeOff, Zap } from 'lucide-react';
+---
+
+<DocsLayout title="Secure Vault">
+  <div class="mb-12">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-mono mb-4">
+      <Shield size={12} />
+      <span>SECURITY_LEVEL: MAXIMUM</span>
+    </div>
+    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Secure Vault</h1>
+    <p class="text-xl text-zinc-400">
+      Military-grade protection for your Web3 assets. Your keys never leave your device.
+    </p>
+  </div>
+
+  <section class="mb-16">
+    <div class="glass-card p-8 border-l-4 border-green-500">
+      <h2 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+        <Lock className="text-green-500" />
+        Zero-Knowledge Architecture
+      </h2>
+      <p class="text-zinc-400 leading-relaxed mb-6">
+        Aura OS is built on a "local-first" principle. Unlike many Web3 tools that store encrypted blobs in the cloud, Aura OS treats your machine as the only source of truth. The vault is an encrypted database stored directly on your hardware.
+      </p>
+      
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-zinc-900/50 p-6 rounded-xl border border-zinc-800">
+          <h4 class="text-white font-semibold mb-2 flex items-center gap-2">
+            <Server size={18} className="text-zinc-500" />
+            No Cloud Storage
+          </h4>
+          <p class="text-sm text-zinc-500">
+            Keys are never uploaded, backed up, or synced to any remote server. If your computer isn't on, your keys aren't accessible.
+          </p>
+        </div>
+        <div class="bg-zinc-900/50 p-6 rounded-xl border border-zinc-800">
+          <h4 class="text-white font-semibold mb-2 flex items-center gap-2">
+            <EyeOff size={18} className="text-zinc-500" />
+            Invisible Input
+          </h4>
+          <p class="text-sm text-zinc-500">
+            Aura uses Linux-style silent input for passwords. Nothing is echoed to the screen, preventing "shoulder surfing" attacks.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">Encryption Details</h2>
+    <div class="space-y-6">
+      <div class="flex gap-6">
+        <div class="flex-none w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-green-500">
+          <Key size={24} />
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-white mb-2">AES-256-GCM</h3>
+          <p class="text-zinc-400">
+            We use the industry-standard Advanced Encryption Standard with a 256-bit key in Galois/Counter Mode. This provides both confidentiality and data integrity (authentication).
+          </p>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-none w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-blue-500">
+          <Zap size={24} />
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold text-white mb-2">Argon2 Key Derivation</h3>
+          <p class="text-zinc-400">
+            Your master password isn't just used as-is. It's passed through a high-memory, high-CPU Argon2 function to derive the actual encryption key, making brute-force attacks extremely difficult.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">Vault Life Cycle</h2>
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="terminal-dot bg-red-500"></div>
+        <div class="terminal-dot bg-yellow-500"></div>
+        <div class="terminal-dot bg-green-500"></div>
+        <span class="ml-4 text-xs text-zinc-500 font-mono">vault_lifecycle.sh</span>
+      </div>
+      <div class="p-6 font-mono text-sm space-y-4">
+        <div class="flex gap-4">
+          <span class="text-zinc-600">01</span>
+          <span class="text-green-400"># On initialization</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-zinc-600">02</span>
+          <span class="text-white">Generate unique machine salt</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-zinc-600">03</span>
+          <span class="text-white">Derive key from Master Password</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-zinc-600">04</span>
+          <span class="text-green-400"># On command execution</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-zinc-600">05</span>
+          <span class="text-white">Prompt for Master Password (Silent)</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-zinc-600">06</span>
+          <span class="text-white">Load encrypted fragment into memory</span>
+        </div>
+        <div class="flex gap-4">
+          <span class="text-zinc-600">07</span>
+          <span class="text-white">Decrypt, Sign, then PURGE memory</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="bg-zinc-900/30 rounded-2xl p-8 border border-zinc-800">
+    <h3 class="text-xl font-bold text-white mb-4">Security Recommendation</h3>
+    <ul class="space-y-4">
+      <li class="flex items-start gap-3">
+        <div class="mt-1.5 w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+        <p class="text-zinc-400 italic">"Use a long passphrase instead of a short password. Entropy is your best friend."</p>
+      </li>
+      <li class="flex items-start gap-3">
+        <div class="mt-1.5 w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></div>
+        <p class="text-zinc-400">Never share your master password. Aura OS team will never ask for it.</p>
+      </li>
+    </ul>
+  </div>
+
+  <div class="mt-12 flex justify-between">
+    <a href="/docs/ai-interpreter" class="text-zinc-500 hover:text-white transition-colors flex items-center gap-2">
+      <span>←</span> AI Interpreter
+    </a>
+    <a href="/docs/commands" class="text-zinc-500 hover:text-white transition-colors flex items-center gap-2">
+      All Commands <span>→</span>
+    </a>
+  </div>
+</DocsLayout>
