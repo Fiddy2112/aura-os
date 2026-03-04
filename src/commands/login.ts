@@ -150,7 +150,14 @@ export async function loginCommand(method?: string) {
       console.log(chalk.gray(' Opening browser...\n'));
       console.log(chalk.gray(` Waiting for login at ${WEB_APP_URL}...`));
 
-      await open(WEB_APP_URL);
+      try {
+        await open(WEB_APP_URL);
+      } catch (err) {
+        console.log(chalk.red(`\n Failed to open browser. Closing setup so you can try again.\n`));
+        server.close();
+        resolve();
+        return;
+      }
 
       // Timeout
       setTimeout(() => {

@@ -32,6 +32,17 @@ import '../styles/global.css';
     <meta property="og:type" content="website" />
   </head>
   <body class="bg-black text-zinc-100 font-sans antialiased overflow-x-hidden">
+    <script>
+      /* 
+       * Global Auth Rescue
+       * If Supabase redirects to the root but includes an access token (often because /login 
+       * requires explicit whitelisting in the Supabase Redirect URLs), we catch it here 
+       * and shuttle the user to the /login page to finish the CLI connection process.
+       */
+      if (window.location.hash.includes('access_token=') && window.location.pathname !== '/login') {
+        window.location.replace('/login' + window.location.hash);
+      }
+    </script>
     <slot />
   </body>
 </html>
