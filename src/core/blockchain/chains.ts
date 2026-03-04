@@ -1,5 +1,5 @@
 import { createPublicClient, http, type Chain } from 'viem';
-import { mainnet, sepolia, base, arbitrum, optimism, bsc, polygon, avalanche } from 'viem/chains';
+import { mainnet, base, arbitrum, optimism, bsc, polygon, avalanche, zkSync } from 'viem/chains';
 
 export interface ChainConfig {
   id: number;
@@ -27,19 +27,6 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     ].filter(Boolean),
     explorerUrl: 'https://etherscan.io',
     nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-  },
-  sepolia: {
-    id: 11155111,
-    name: 'Sepolia Testnet',
-    chain: sepolia,
-    rpcUrls: [
-      process.env.SEPOLIA_RPC_URL ?? "" , 
-    "https://ethereum-sepolia-rpc.publicnode.com",
-    "https://1rpc.io/sepolia",
-    "https://0xrpc.io/sep"
-    ].filter(Boolean),
-    explorerUrl: 'https://sepolia.etherscan.io',
-    nativeCurrency: { name: 'Sepolia ETH', symbol: 'ETH', decimals: 18 },
   },
   base: {
     id: 8453,
@@ -120,6 +107,19 @@ export const SUPPORTED_CHAINS: Record<string, ChainConfig> = {
     explorerUrl: 'https://snowtrace.io',
     nativeCurrency: { name: 'Avalanche', symbol: 'AVAX', decimals: 18 },
   },
+  zksync:{
+    id: 324,
+    name: 'zkSync Era',
+    chain: zkSync,
+    rpcUrls: [
+      process.env.ZKSYNC_RPC_URL ?? "",
+      'https://mainnet.era.zksync.io',
+      "https://zksync-era.drpc.org",
+      "https://zksync.meowrpc.com"
+    ].filter(Boolean),
+    explorerUrl: 'https://explorer.zksync.io',
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  },
 };
 
 // Common ERC-20 token addresses
@@ -154,6 +154,9 @@ export const TOKEN_ADDRESSES: Record<string, Record<string, `0x${string}`>> = {
   },
   avalanche: {
     USDT: '0xc7198437980c041c805a1edcba50c1ce5db95118',
+  },
+  zksync: {
+    USDT: '0x5A7d6b2F92C77FAD6CCaBd7EE0624E64907Eaf3E',
   },
 };
 
@@ -195,7 +198,7 @@ let currentChainKey: keyof typeof SUPPORTED_CHAINS = "ethereum";
 
 export function getDefaultChain(): ChainConfig {
   const defaultChain = process.env.DEFAULT_CHAIN || 'ethereum';
-  return SUPPORTED_CHAINS[defaultChain] || SUPPORTED_CHAINS.sepolia;
+  return SUPPORTED_CHAINS[defaultChain] || SUPPORTED_CHAINS.ethereum;
 }
 
 export function setChain(chain: string) {

@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import chalk from 'chalk';
 import Conf from 'conf';
-import dotenv from 'dotenv';
 import { Sanitizer } from '../security/sanitizer.js';
-dotenv.config();
+
 
 // Use consistent project name 'aura-os'
 const config = new Conf({ projectName: 'aura-os' });

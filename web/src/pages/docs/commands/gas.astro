@@ -1,0 +1,95 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+---
+
+<DocsLayout title="aura gas">
+  <nav class="flex items-center gap-2 text-sm text-zinc-500 mb-8">
+    <a href="/docs" class="hover:text-white transition-colors">Docs</a>
+    <span>/</span>
+    <a href="/docs/commands" class="hover:text-white transition-colors">Commands</a>
+    <span>/</span>
+    <span class="text-white">aura gas</span>
+  </nav>
+
+  <div class="mb-12">
+    <div class="px-3 py-1 rounded-full bg-zinc-800 text-xs font-mono text-zinc-400 inline-block mb-4">command</div>
+    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-mono">aura gas</h1>
+    <p class="text-xl text-zinc-400">Real-time gas price monitoring across multiple networks.</p>
+  </div>
+
+  <div class="glass-card p-6 mb-12">
+    <h3 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-4">Synopsis</h3>
+    <div class="terminal">
+      <div class="p-4 font-mono text-sm">
+        <span class="text-green-400">aura gas</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">Description</h2>
+    <p class="text-zinc-300 leading-relaxed mb-4">
+      The <code class="px-2 py-1 bg-zinc-800 rounded text-green-400">aura gas</code> command fetches current gas prices from all supported blockchain networks. 
+      It's designed to help you time your transactions perfectly by comparing costs between Ethereum Mainnet and various L2s like Base or zkSync.
+    </p>
+    <p class="text-zinc-300 leading-relaxed">
+      Every successful query is automatically synchronized with your <strong>Aura Dashboard</strong>, allowing you to track gas trends over time.
+    </p>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">Output Breakdown</h2>
+    <div class="terminal mb-6">
+      <div class="terminal-header">
+        <div class="terminal-dot bg-red-500"></div>
+        <div class="terminal-dot bg-yellow-500"></div>
+        <div class="terminal-dot bg-green-500"></div>
+      </div>
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura gas</span></div>
+        <div class="text-zinc-500 mt-2">Fetching gas prices from multiple networks...</div>
+        <div class="text-zinc-300">Ethereum Mainnet: <span class="text-yellow-400">12.4501 Gwei</span></div>
+        <div class="text-zinc-300">Base: <span class="text-green-400">0.0052 Gwei</span></div>
+        <div class="text-zinc-300">Arbitrum One: <span class="text-green-400">0.0180 Gwei</span></div>
+        <div class="text-zinc-300">zkSync Era: <span class="text-green-400">0.0110 Gwei</span></div>
+      </div>
+    </div>
+    
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="glass-card p-5 border-l-4 border-green-500">
+        <h4 class="text-white font-bold mb-2">L2 Optimized</h4>
+        <p class="text-sm text-zinc-400">Displays up to 4 decimal places for Layer 2 networks where gas prices are often extremely low.</p>
+      </div>
+      <div class="glass-card p-5 border-l-4 border-blue-500">
+        <h4 class="text-white font-bold mb-2">Dashboard Sync</h4>
+        <p class="text-sm text-zinc-400">Sends the latest data to your web interface for central monitoring.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">Technical Details</h2>
+    <p class="text-zinc-300 mb-6">
+      Aura uses high-performance RPC endpoints defined in your configuration to query the <code>getGasPrice</code> method on each chain.
+    </p>
+    <div class="glass-card p-4">
+      <h4 class="text-xs font-mono uppercase mb-2 text-center text-zinc-200">Supported Networks</h4>
+      <div class="flex flex-wrap gap-2 justify-center">
+        <span class="px-3 py-1 bg-zinc-800 rounded-full text-xs">Ethereum</span>
+        <span class="px-3 py-1 bg-zinc-800 rounded-full text-xs">Base</span>
+        <span class="px-3 py-1 bg-zinc-800 rounded-full text-xs">Arbitrum</span>
+        <span class="px-3 py-1 bg-zinc-800 rounded-full text-xs">Optimism</span>
+        <span class="px-3 py-1 bg-zinc-800 rounded-full text-xs">zkSync Era</span>
+        <span class="px-3 py-1 bg-zinc-800 rounded-full text-xs">BSC</span>
+        <span class="px-3 py-1 bg-zinc-800 rounded-full text-xs">Polygon</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="pt-8 border-t border-zinc-800/50">
+    <div class="flex items-center justify-between text-sm text-zinc-500">
+      <a href="/docs/commands/chat" class="hover:text-white transition-colors">← aura chat</a>
+      <a href="/docs/commands/tx" class="hover:text-white transition-colors">aura tx →</a>
+    </div>
+  </footer>
+</DocsLayout>

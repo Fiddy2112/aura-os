@@ -1,0 +1,89 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+---
+
+<DocsLayout title="aura tx">
+  <nav class="flex items-center gap-2 text-sm text-zinc-500 mb-8">
+    <a href="/docs" class="hover:text-white transition-colors">Docs</a>
+    <span>/</span>
+    <a href="/docs/commands" class="hover:text-white transition-colors">Commands</a>
+    <span>/</span>
+    <span class="text-white">aura tx</span>
+  </nav>
+
+  <div class="mb-12">
+    <div class="px-3 py-1 rounded-full bg-zinc-800 text-xs font-mono text-zinc-400 inline-block mb-4">command</div>
+    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-mono">aura tx</h1>
+    <p class="text-xl text-zinc-400">Deep forensic analysis of any blockchain transaction.</p>
+  </div>
+
+  <div class="glass-card p-6 mb-12">
+    <h3 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-4">Synopsis</h3>
+    <div class="terminal">
+      <div class="p-4 font-mono text-sm">
+        <span class="text-green-400">aura tx</span> <span class="text-yellow-400">&lt;hash&gt;</span> <span class="text-cyan-400">[--json]</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">Description</h2>
+    <p class="text-zinc-300 leading-relaxed mb-4">
+      The <code class="px-2 py-1 bg-zinc-800 rounded text-cyan-400">aura tx</code> command provides a comprehensive breakdown of a given transaction hash. 
+      It's useful for verifying status, tracking value transfers, and auditing gas costs and event logs.
+    </p>
+    <p class="text-zinc-300">
+      Analysis includes from/to addresses, block number, exact gas consumed, and a preview of emitted event logs.
+    </p>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">Command Options</h2>
+    <div class="space-y-4">
+      <div class="flex gap-4 border-b border-zinc-800 pb-4">
+        <code class="text-yellow-400 text-xs font-mono shrink-0">&lt;hash&gt;</code>
+        <div>
+          <h4 class="text-white font-semibold text-sm mb-1 uppercase tracking-widest text-[10px]">Required</h4>
+          <p class="text-xs text-zinc-400">The 66-character transaction hash starting with 0x.</p>
+        </div>
+      </div>
+      <div class="flex gap-4 border-b border-zinc-800 pb-4">
+        <code class="text-cyan-400 text-xs font-mono shrink-0">--json</code>
+        <div>
+          <h4 class="text-white font-semibold text-sm mb-1 uppercase tracking-widest text-[10px]">Optional</h4>
+          <p class="text-xs text-zinc-400">Outputs the raw transaction and receipt data in JSON format for scripting.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">Analysis Terminal Output</h2>
+    <div class="terminal mb-6">
+      <div class="terminal-header">
+        <div class="terminal-dot bg-red-500"></div>
+        <div class="terminal-dot bg-yellow-500"></div>
+        <div class="terminal-dot bg-green-500"></div>
+      </div>
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura tx 0x4a7...0b5</span></div>
+        <div class="text-cyan-400 font-bold mt-2">=== Transaction Analysis ===</div>
+        <div class="text-zinc-300">Status:      <span class="text-green-400">SUCCESS</span></div>
+        <div class="text-zinc-300">Hash:        <span class="text-zinc-500">0x4a7b...0b5</span></div>
+        <div class="text-zinc-300">Block:       <span class="text-yellow-400">18,245,679</span></div>
+        <div class="text-zinc-300">Value:       <span class="text-yellow-400">0.156 ETH</span></div>
+
+        <div class="text-cyan-400 font-bold mt-2">Gas & Fees:</div>
+        <div class="text-zinc-400"> - Gas Used:  21,000</div>
+        <div class="text-zinc-400"> - Gas Price: <span class="text-yellow-400">14.1 Gwei</span></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="pt-8 border-t border-zinc-800/50">
+    <div class="flex items-center justify-between text-sm text-zinc-500">
+      <a href="/docs/commands/gas" class="hover:text-white transition-colors">← aura gas</a>
+      <a href="/docs/commands/script" class="hover:text-white transition-colors">aura script →</a>
+    </div>
+  </footer>
+</DocsLayout>

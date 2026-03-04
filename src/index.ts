@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import './env.js';
 import pkg from '../package.json' with { type: 'json' };
 import chalk from 'chalk';
 import gradient from 'gradient-string';
@@ -17,6 +18,9 @@ import { debankCommand } from './commands/debank.js';
 import analyzeCommand from './commands/analyze.js';
 import { resetPasswordCommand } from './commands/reset-password.js';
 import { devCommands } from './commands/registry.js';
+import { scriptCommand } from './commands/script.js';
+import txCommand from './commands/tx.js';
+import { gasCommand } from './commands/gas.js';
 
 const args = process.argv.slice(2);
 const command = args[0];
@@ -58,6 +62,10 @@ function showHelp() {
     ${chalk.gray('login')}       ${chalk.gray('Login via browser (google/metamask)')}
     ${chalk.gray('status')}      ${chalk.gray('Check Aura OS configuration status')}
     ${chalk.gray('reset-password')} ${chalk.gray('Change or reset your master password')}
+    ${chalk.gray('script')}      ${chalk.gray('Manage custom scripts (list, create)')}
+    ${chalk.gray('run')}         ${chalk.gray('Run a custom script by name')}
+    ${chalk.gray('tx')}          ${chalk.gray('Analyze a transaction by hash')}
+    ${chalk.gray('gas')}         ${chalk.gray('Real-time gas prices across all networks')}
     ${chalk.gray('help')}        ${chalk.gray('Show this help message')}
 
   ${chalk.bold.white('DEV / SECURITY')}
@@ -117,9 +125,6 @@ function resolveDevCommand(name: string) {
 }
 
 async function main() {
-  // Load environment variables
-  const dotenv = await import('dotenv');
-  dotenv.config();
 
   if (command === "dev") {
     const sub = commandArgs[0];
@@ -240,6 +245,19 @@ async function main() {
     case 'reset-password':
     case '-rp':
       await resetPasswordCommand();
+      break;
+
+    case 'script':
+      await scriptCommand(commandArgs);
+      break;
+
+    case 'tx':
+      await txCommand(commandArgs);
+      break;
+
+    case 'gas':
+    case '-g':
+      await gasCommand();
       break;
       
     case undefined:

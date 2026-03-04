@@ -27,11 +27,12 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
       <div class="p-4 font-mono text-sm space-y-1">
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">setup</span>            <span class="text-zinc-500"># Initialize wallet</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">chat</span> <span class="text-yellow-400">"message"</span>   <span class="text-zinc-500"># Send AI command</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">gas</span>             <span class="text-zinc-500"># Real-time gas prices</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">tx</span> <span class="text-yellow-400">&lt;hash&gt;</span>       <span class="text-zinc-500"># Analyze transaction</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">script</span> <span class="text-yellow-400">create</span>   <span class="text-zinc-500"># Build custom automations</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">research</span> <span class="text-yellow-400">"eth"</span>    <span class="text-zinc-500"># Deep project research</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">news</span> <span class="text-yellow-400">"solana"</span>      <span class="text-zinc-500"># Get market alpha</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">analyze</span> <span class="text-yellow-400">"0x..."</span>   <span class="text-zinc-500"># Smart contract audit</span></div>
-        <div><span class="text-purple-400">aura</span> <span class="text-green-400">status</span>          <span class="text-zinc-500"># Check configuration</span></div>
-        <div><span class="text-purple-400">aura</span> <span class="text-green-400">help</span>            <span class="text-zinc-500"># Show help</span></div>
       </div>
     </div>
   </section>
@@ -81,6 +82,75 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
         <div class="text-zinc-500 mt-2">Aura is thinking...</div>
         <div class="text-green-400">✓ Valid command: PORTFOLIO</div>
         <div class="text-cyan-400">  Fetching asset data across 8 chains...</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="gas">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-green-500/10 text-green-400 rounded-lg font-mono text-lg">aura gas</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Real-time gas price monitoring across all supported L1 and L2 networks. Results are automatically synced to your dashboard.
+    </p>
+
+    <div class="terminal mb-6">
+      <div class="terminal-header">
+        <div class="terminal-dot bg-red-500"></div>
+        <div class="terminal-dot bg-yellow-500"></div>
+        <div class="terminal-dot bg-green-500"></div>
+      </div>
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura gas</span></div>
+        <div class="text-zinc-400"> Ethereum Mainnet: <span class="text-yellow-400">12.4 Gwei</span></div>
+        <div class="text-zinc-400"> Base: <span class="text-green-400">0.0041 Gwei</span></div>
+        <div class="text-zinc-400"> zkSync Era: <span class="text-green-400">0.0120 Gwei</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="tx">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 rounded-lg font-mono text-lg">aura tx &lt;hash&gt; [--json]</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Forensic transaction analysis. Provides status, gas consumption, event logs, and detailed breakdown of any transaction.
+    </p>
+
+    <div class="terminal mb-6">
+      <div class="terminal-header">
+        <div class="terminal-dot bg-red-500"></div>
+        <div class="terminal-dot bg-yellow-500"></div>
+        <div class="terminal-dot bg-green-500"></div>
+      </div>
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura tx 0x4a7b...</span></div>
+        <div class="text-blue-400 font-bold">=== Transaction Analysis ===</div>
+        <div class="text-zinc-300">Status: <span class="text-green-400">SUCCESS</span></div>
+        <div class="text-zinc-300">Value: <span class="text-yellow-400">0.5 ETH</span></div>
+        <div class="text-cyan-400">Gas Used: 21,000</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="script">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg font-mono text-lg">aura script [list|create]</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      The automation engine. Create custom TypeScript scripts that have access to Aura's AI and Blockchain executors.
+    </p>
+
+    <div class="terminal mb-6">
+      <div class="terminal-header">
+        <div class="terminal-dot bg-red-500"></div>
+        <div class="terminal-dot bg-yellow-500"></div>
+        <div class="terminal-dot bg-green-500"></div>
+      </div>
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura script create</span> <span class="text-yellow-400">sweep-assets</span></div>
+        <div class="text-green-400">✓ Boilerplate created: ./scripts/sweep-assets.ts</div>
+        <div class="text-zinc-500">Use 'aura run sweep-assets' to execute.</div>
       </div>
     </div>
   </section>

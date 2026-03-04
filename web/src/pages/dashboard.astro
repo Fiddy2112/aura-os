@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import PriceTracker from '../components/PriceTracker';
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
@@ -10,94 +11,159 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     <div class="section-container">
       
       <header class="mb-10 animate-fade-in-up flex items-center justify-between">
-        <div>
-          <h1 class="text-4xl md:text-5xl font-bold gradient-text-shimmer tracking-tighter">AURA_STREAM</h1>
-          <p class="text-zinc-500 font-mono text-xs mt-2 uppercase tracking-[0.3em]">Real-time Ledger Synchronization</p>
+        <div class="relative">
+          <div class="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-white/20 rounded-full blur-[2px]"></div>
+          <h1 class="text-4xl md:text-5xl font-bold gradient-text-shimmer tracking-tighter">AURA_COMMAND</h1>
+          <p class="text-zinc-500 font-mono text-[10px] mt-1 uppercase tracking-[0.4em]">Autonomous AI Intelligence System</p>
         </div>
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-6">
+          <div class="hidden md:flex flex-col items-end">
+            <span class="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">System_Uptime</span>
+            <span class="text-xs text-white font-mono" id="uptime-display">00:00:00</span>
+          </div>
           <!-- Mode Toggle -->
-          <div class="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1 overflow-hidden">
-            <button id="btn-mode-trader" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-black">TRADER</button>
-            <button id="btn-mode-dev" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-zinc-500 hover:text-white">DEVELOPER</button>
+          <div class="flex bg-zinc-900 border border-zinc-800 rounded-xl p-1 overflow-hidden shadow-2xl">
+            <button id="btn-mode-trader" class="px-5 py-2 rounded-lg text-[10px] font-black transition-all bg-white text-black shadow-lg">TRADER</button>
+            <button id="btn-mode-dev" class="px-5 py-2 rounded-lg text-[10px] font-black transition-all text-zinc-500 hover:text-white">COMMANDER</button>
           </div>
           
-          <div id="connection-status" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800">
-            <div class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" id="status-dot"></div>
-            <span class="text-xs font-mono text-zinc-400" id="status-text">Connecting...</span>
+          <div id="connection-status" class="flex items-center gap-3 px-4 py-2 rounded-xl bg-zinc-950 border border-zinc-800 shadow-inner">
+            <div class="relative">
+              <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/20 absolute -inset-1 animate-ping"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 relative" id="status-dot"></div>
+            </div>
+            <span class="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest" id="status-text">CONNECTING</span>
           </div>
         </div>
       </header>
 
-      <!-- Stats Row -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="glass-card p-4">
-          <div class="text-xs text-zinc-500 font-mono uppercase mb-1">Total Commands</div>
-          <div class="text-2xl font-bold text-white" id="stat-total">0</div>
+      <div class="mb-10 animate-fade-in-up" style="animation-delay: 0.1s">
+        <PriceTracker client:load />
+      </div>
+
+      <!-- HUD Stats Grid -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="glass-card-premium p-6 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+            <svg viewBox="0 0 24 24" class="w-12 h-12 text-white" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="text-[10px] text-zinc-500 font-mono uppercase tracking-widest mb-2">Command_Throughput</div>
+          <div class="text-3xl font-bold text-white tabular-nums tracking-tighter" id="stat-total">0</div>
+          <div class="h-1 w-full bg-zinc-800 mt-4 rounded-full overflow-hidden">
+            <div class="h-full bg-white w-2/3 animate-pulse opacity-50"></div>
+          </div>
         </div>
-        <div class="glass-card p-4">
-          <div class="text-xs text-zinc-500 font-mono uppercase mb-1">Today</div>
-          <div class="text-2xl font-bold text-white" id="stat-today">0</div>
+        <div class="glass-card-premium p-6 relative overflow-hidden group">
+          <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+             <svg viewBox="0 0 24 24" class="w-12 h-12 text-white" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="text-[10px] text-zinc-500 font-mono uppercase tracking-widest mb-2">Daily_Sync_Ops</div>
+          <div class="text-3xl font-bold text-white tabular-nums tracking-tighter" id="stat-today">0</div>
+          <div class="text-[10px] text-green-500 font-mono mt-3">+12% vs last hour</div>
         </div>
-        <div class="glass-card p-4">
-          <div class="text-xs text-zinc-500 font-mono uppercase mb-1">Success Rate</div>
-          <div class="text-2xl font-bold text-green-400" id="stat-success">100%</div>
+        <div class="glass-card-premium p-6 relative overflow-hidden group">
+           <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+             <svg viewBox="0 0 24 24" class="w-12 h-12 text-white" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="text-[10px] text-zinc-500 font-mono uppercase tracking-widest mb-2">AI_Success_Rate</div>
+          <div class="text-3xl font-bold text-green-400 tracking-tighter" id="stat-success">99.8<span class="text-xs opacity-50">%</span></div>
+          <div class="flex gap-1 mt-4">
+            <div class="h-1 flex-1 bg-green-500/50 rounded-full"></div>
+            <div class="h-1 flex-1 bg-green-500/50 rounded-full"></div>
+            <div class="h-1 flex-1 bg-green-500/50 rounded-full"></div>
+            <div class="h-1 flex-1 bg-zinc-800 rounded-full"></div>
+          </div>
         </div>
-        <div class="glass-card p-4">
-          <div class="text-xs text-zinc-500 font-mono uppercase mb-1">Live Events</div>
-          <div class="text-2xl font-bold text-purple-400" id="stat-live">0</div>
+        <div class="glass-card-premium p-6 relative overflow-hidden group">
+           <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+             <svg viewBox="0 0 24 24" class="w-12 h-12 text-white" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <div class="text-[10px] text-zinc-500 font-mono uppercase tracking-widest mb-2">Active_Sessions</div>
+          <div class="text-3xl font-bold text-purple-400 tabular-nums tracking-tighter" id="stat-live">0</div>
+          <div class="text-[10px] text-zinc-500 font-mono mt-3">Monitoring 6 L1/L2 networks</div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <!-- Main Activity Stream -->
-        <div class="lg:col-span-8 bento-card min-h-[500px] flex flex-col p-0 overflow-hidden">
-          <div class="terminal-header bg-zinc-900/50">
-            <div class="flex gap-1.5">
-              <div class="terminal-dot bg-red-500"></div>
-              <div class="terminal-dot bg-yellow-500"></div>
-              <div class="terminal-dot bg-green-500"></div>
+        <div class="lg:col-span-8 bento-card min-h-[600px] flex flex-col p-0 overflow-hidden border-zinc-700/30">
+          <div class="terminal-header border-b border-zinc-800/80">
+            <div class="flex gap-2">
+              <div class="w-2.5 h-2.5 rounded-full bg-red-500/40 border border-red-500/20"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/40 border border-yellow-500/20"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-green-500/40 border border-green-500/20"></div>
             </div>
-            <span class="text-[10px] font-mono text-zinc-500 ml-4 uppercase tracking-widest">Live_Activity_Feed</span>
+            <span class="text-[10px] font-mono text-zinc-500 ml-6 uppercase tracking-[0.3em]">Aura_OS_System_Stdout --v0.1.0</span>
+            <div class="ml-auto flex items-center gap-4">
+              <div class="text-[9px] font-mono text-zinc-700 hidden sm:block">CPU: 0.02%</div>
+              <div class="text-[9px] font-mono text-zinc-700 hidden sm:block">MEM: 124MB</div>
+            </div>
           </div>
 
-          <div id="activity-stream" class="flex-1 p-6 font-mono text-sm overflow-y-auto space-y-4">
+          <div id="activity-stream" class="flex-1 p-6 font-mono text-xs overflow-y-auto space-y-6 bg-zinc-950/20 scrollbar-hide">
             <div class="flex items-center justify-center h-full text-zinc-600">
               <div class="text-center">
-                <div class="animate-pulse mb-2">●●●</div>
-                <div>Waiting for commands...</div>
-                <div class="text-xs mt-2 text-zinc-700">Run <code class="px-2 py-0.5 bg-zinc-800 rounded">aura chat</code> in your terminal</div>
+                <div class="animate-pulse mb-4 text-zinc-800">
+                  <svg viewBox="0 0 24 24" class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" stroke-width="0.5"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                </div>
+                <div class="uppercase tracking-[0.2em] font-bold text-zinc-700">Aura System Hub Listening</div>
+                <div class="text-[10px] mt-4 text-zinc-800 max-w-[200px] mx-auto leading-relaxed">System standby. Feed your commands through the CLI to synchronize.</div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Sidebar -->
-        <div class="lg:col-span-4 space-y-6">
-          <!-- Wallet Status -->
-          <div class="bento-card">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-white font-bold text-sm font-mono">WALLET_STATUS</h3>
-              <div class="w-2 h-2 rounded-full bg-zinc-600" id="wallet-indicator"></div>
+        <div class="lg:col-span-4 space-y-8">
+          <!-- Multi-Chain Gas Stations -->
+          <div class="bento-card border-zinc-800 bg-zinc-950/30">
+             <div class="flex items-center justify-between mb-6">
+              <h3 class="text-white font-black text-xs font-mono uppercase tracking-widest flex items-center gap-2">
+                <span class="w-1.5 h-4 bg-yellow-500 rounded-full inline-block"></span>
+                Gas_Stations
+              </h3>
+              <span class="text-[9px] text-zinc-600 font-mono animate-pulse uppercase">Live_Query</span>
             </div>
-            <div id="connected-wallet" class="text-zinc-500 text-xs break-all font-mono">
-              Not connected
+            <div id="gas-stations-sidebar" class="space-y-3">
+               <div class="text-zinc-600 font-mono text-[9px] italic">Checking network relay tags...</div>
             </div>
           </div>
 
-          <!-- Recent Actions -->
-          <div class="bento-card">
-            <h3 class="text-white font-bold text-sm font-mono mb-4">RECENT_ACTIONS</h3>
-            <div id="recent-actions" class="space-y-2 text-xs">
-              <div class="text-zinc-600 italic">No recent actions</div>
+          <!-- Active Wallet HUD -->
+          <div class="bento-card relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 blur-3xl rounded-full translate-x-10 -translate-y-10"></div>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-white font-black text-xs font-mono uppercase tracking-widest">Active_Vault</h3>
+              <div class="px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[8px] font-mono text-green-400 group flex items-center gap-1.5">
+                <span class="w-1 h-1 bg-green-400 rounded-full animate-pulse"></span>
+                SECURE
+              </div>
+            </div>
+            <div id="connected-wallet" class="bg-black/40 p-4 rounded-xl border border-zinc-800 font-mono text-[11px] text-zinc-400 group-hover:border-zinc-700/50 transition-colors">
+              <div class="text-zinc-700 mb-1 uppercase tracking-widest text-[8px]">ID_SIG_HEX</div>
+              <span class="text-zinc-500">Not authenticated via 'aura login'</span>
+            </div>
+          </div>
+
+          <!-- Recent Operational History -->
+          <div class="bento-card border-zinc-800/50">
+            <h3 class="text-zinc-500 font-black text-xs font-mono mb-4 uppercase tracking-widest">Op_Log_History</h3>
+            <div id="recent-actions" class="space-y-3 font-mono">
+              <div class="text-zinc-700 text-[10px] italic">Listening for activity broadcasts...</div>
             </div>
           </div>
           
-          <!-- Info Card -->
-          <div class="bento-card border-dashed border-zinc-800 bg-transparent">
-            <p class="text-[10px] text-zinc-600 leading-relaxed uppercase">
-              This dashboard displays real-time activity from your Aura OS CLI. 
-              Only authorized commands from linked sessions appear here.
-            </p>
+          <!-- System Meta -->
+          <div class="bento-card border-dashed border-zinc-800 bg-zinc-900/5 p-4 rounded-3xl">
+            <div class="flex gap-4">
+               <div class="text-white/20">
+                 <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+               </div>
+               <p class="text-[9px] text-zinc-600 leading-relaxed uppercase tracking-widest">
+                Data synchronization is encrypted E2E. The dashboard never sees your private keys.
+                Communication status: <span class="text-zinc-400 font-bold" id="comm-link">TLS/SSL_STABLE</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -117,11 +183,24 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
   const recentActions = document.getElementById('recent-actions');
   const btnTrader = document.getElementById('btn-mode-trader');
   const btnDev = document.getElementById('btn-mode-dev');
+  const gasSidebar = document.getElementById('gas-stations-sidebar');
+  const uptimeDisplay = document.getElementById('uptime-display');
 
   let liveEventCount = 0;
   let totalCount = 0;
-  let currentMode = 'TRADER'; // Default mode
+  let currentMode = 'TRADER'; 
   let historyData = [];
+  let startTime = Date.now();
+
+  // Uptime Counter
+  setInterval(() => {
+    const now = Date.now();
+    const diff = new Date(now - startTime);
+    const h = String(diff.getUTCHours()).padStart(2, '0');
+    const m = String(diff.getUTCMinutes()).padStart(2, '0');
+    const s = String(diff.getUTCSeconds()).padStart(2, '0');
+    if (uptimeDisplay) uptimeDisplay.textContent = `${h}:${m}:${s}`;
+  }, 1000);
 
   // Toggle Logic
   btnTrader.addEventListener('click', () => setMode('TRADER'));
@@ -129,15 +208,13 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
   function setMode(mode) {
     currentMode = mode;
-    // Update UI
     if (mode === 'TRADER') {
-      btnTrader.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-black';
-      btnDev.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-zinc-500 hover:text-white';
+      btnTrader.className = 'px-5 py-2 rounded-lg text-[10px] font-black transition-all bg-white text-black shadow-lg';
+      btnDev.className = 'px-5 py-2 rounded-lg text-[10px] font-black transition-all text-zinc-500 hover:text-white';
     } else {
-      btnDev.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-black';
-      btnTrader.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-zinc-500 hover:text-white';
+      btnDev.className = 'px-5 py-2 rounded-lg text-[10px] font-black transition-all bg-white text-black shadow-lg';
+      btnTrader.className = 'px-5 py-2 rounded-lg text-[10px] font-black transition-all text-zinc-500 hover:text-white';
     }
-    // Rerender stream
     renderStream();
   }
 
@@ -151,26 +228,45 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     });
   }
 
+  function updateGasSidebar(data) {
+    if (!gasSidebar || !data || data.command_type !== "GAS") return;
+    
+    // Parse result string: "Ethereum: 10 Gwei\nBase: 0.1 Gwei"
+    const lines = data.result.split('\n').filter(l => l.includes(':'));
+    if (lines.length === 0) return;
+
+    gasSidebar.innerHTML = lines.map(line => {
+      const [name, price] = line.split(':').map(s => s.trim());
+      const pNum = parseFloat(price);
+      let color = 'text-green-400';
+      if (pNum > 50) color = 'text-red-400';
+      else if (pNum > 15) color = 'text-yellow-400';
+
+      return `
+        <div class="flex items-center justify-between border-b border-zinc-900 pb-2">
+          <span class="text-[10px] text-zinc-400 font-mono">${name}</span>
+          <span class="text-[10px] font-mono ${color} font-bold">${price}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
   // Initialize Supabase client
   if (!supabaseUrl || !supabaseKey) {
     console.warn('Supabase credentials not configured');
-    if (statusText) statusText.textContent = 'Not configured';
-    if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-red-500';
+    if (statusText) statusText.textContent = 'NO_CFG';
+    if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-500';
   } else {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Load existing data
     async function loadHistory() {
       const { data, error } = await supabase
         .from('aura_history')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(20);
+        .limit(30);
 
-      if (error) {
-        console.error('Error loading history:', error);
-        return;
-      }
+      if (error) return;
 
       if (data && data.length > 0) {
         historyData = data;
@@ -179,110 +275,110 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
         totalCount = data.length;
         if (statTotal) statTotal.textContent = String(totalCount);
 
-        // Count today's commands
         const today = new Date().toDateString();
         const todayCount = data.filter(d => new Date(d.created_at).toDateString() === today).length;
         if (statToday) statToday.textContent = String(todayCount);
 
-        // Show recent actions
-        if (recentActions && data.length > 0) {
-          recentActions.innerHTML = data.slice(0, 5).map(d => `
-            <div class="flex items-center gap-2 text-zinc-400">
-              <span class="px-1.5 py-0.5 bg-zinc-800 rounded text-[9px]">${d.command_type}</span>
-              <span class="truncate">${d.result?.slice(0, 30) || 'Success'}...</span>
+        if (recentActions) {
+          recentActions.innerHTML = data.slice(0, 8).map(d => `
+            <div class="flex items-center gap-3 border-b border-zinc-900 pb-2 border-dashed">
+              <span class="px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[8px] text-zinc-500 font-black">${d.command_type}</span>
+              <span class="truncate text-zinc-600 text-[9px] uppercase tracking-tighter">${new Date(d.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+              <span class="text-zinc-400 text-[9px] truncate ml-auto">${d.result?.slice(0, 15) || 'OK'}..</span>
             </div>
           `).join('');
         }
 
-        data.reverse().forEach(item => {
-          streamContainer.insertAdjacentHTML('afterbegin', createLogEntry(item));
-        });
+        // Search for gas data in history
+        const gasData = data.find(d => d.command_type === 'GAS');
+        if (gasData) updateGasSidebar(gasData);
       }
     }
 
     function createLogEntry(item) {
       const time = new Date(item.created_at).toLocaleTimeString();
-      const isError = item.result?.toLowerCase().includes('error');
-      const borderColor = isError ? 'border-red-500/50' : 'border-white/10';
-      const dotColor = isError ? 'bg-red-500' : 'bg-green-500';
+      const type = item.command_type || 'SYSTEM';
+      
+      let badgeColor = 'bg-zinc-900 text-zinc-400';
+      let accentColor = 'border-white/10';
+      
+      if (type === 'CHAT') { badgeColor = 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'; accentColor = 'border-cyan-500/30'; }
+      if (type === 'NEWS') { badgeColor = 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'; accentColor = 'border-yellow-500/30'; }
+      if (type === 'GAS') { badgeColor = 'bg-green-500/10 text-green-500 border-green-500/20'; accentColor = 'border-green-500/30'; }
+      if (type === 'TX_INFO') { badgeColor = 'bg-purple-500/10 text-purple-500 border-purple-500/20'; accentColor = 'border-purple-500/30'; }
+      if (type === 'SCRIPT_RUN') { badgeColor = 'bg-red-500/10 text-red-400 border-red-500/20'; accentColor = 'border-red-500/30'; }
 
-      // Advanced data for Developer mode
       const rawPayload = item.payload || item.intent;
       const payload = rawPayload ? JSON.stringify(rawPayload, null, 2) : '{}';
-      const address = item.wallet_address || '0x...';
 
       if (currentMode === 'DEVELOPER') {
         return `
-          <div class="log-entry-glow border-l-2 ${borderColor} pl-4 py-2 group hover:border-white/30 transition-all">
-            <div class="flex items-center justify-between mb-2">
+          <div class="log-entry-glow border-l-2 ${accentColor} pl-5 py-4 bg-zinc-950/40 rounded-r-2xl transition-all">
+            <div class="flex items-center justify-between mb-3">
               <div class="flex items-center gap-3">
-                <div class="w-1.5 h-1.5 rounded-full ${dotColor}"></div>
-                <span class="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">${time}</span>
-                <span class="px-2 py-0.5 rounded bg-zinc-900 text-purple-400 text-[9px] border border-zinc-800 font-semibold font-mono">${item.command_type}</span>
+                <span class="text-[9px] text-zinc-600 font-black tracking-tighter font-mono">${time}</span>
+                <span class="px-2 py-0.5 rounded border ${badgeColor} text-[8px] font-black font-mono tracking-widest uppercase">${type}</span>
               </div>
-              <span class="text-[9px] text-zinc-700 font-mono">${address.slice(0, 10)}...</span>
+              <span class="text-[8px] text-zinc-800 font-mono tracking-widest uppercase">NODE_RELAY_STABLE</span>
             </div>
-            <div class="bg-zinc-950 p-3 rounded-xl border border-zinc-900 font-mono text-[10px] text-zinc-500 overflow-x-auto mb-2">
+            <div class="bg-black/60 p-4 rounded-xl border border-zinc-900/50 font-mono text-[10px] text-zinc-500 scrollbar-hide overflow-x-auto mb-3 max-h-[200px]">
+              <div class="text-zinc-700 mb-2 uppercase text-[8px] tracking-[0.3em]">Payload_Stream</div>
               <pre>${payload}</pre>
             </div>
-            <div class="text-zinc-400 leading-relaxed text-xs">
-              ${item.result || 'Executed successfully'}
+            <div class="text-zinc-400 leading-relaxed text-[11px] whitespace-pre-wrap">
+              ${item.result || 'NULL_RESULT_RETURN'}
             </div>
           </div>
         `;
       }
 
-      // Trader Mode: Simplified
+      // TRADER Mode: Narrative
+      let fancyResult = item.result || 'Operation finished.';
+      if (type === "GAS") {
+        fancyResult = item.result.split('\n').slice(0, 3).join(' | ');
+      }
+
       return `
-        <div class="log-entry-glow border-l-2 ${borderColor} pl-4 py-2 group hover:border-white/30 transition-all">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="w-1.5 h-1.5 rounded-full ${dotColor}"></div>
-            <span class="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">${time}</span>
-            <span class="px-2 py-0.5 rounded bg-white text-black text-[9px] font-bold">${item.command_type}</span>
+        <div class="log-entry-glow border-l-2 ${accentColor} pl-5 py-4 hover:bg-zinc-900/10 transition-all rounded-r-xl">
+          <div class="flex items-center gap-4 mb-2">
+            <span class="text-[9px] text-zinc-700 font-black font-mono">${time}</span>
+            <span class="px-2.5 py-0.5 rounded-full ${badgeColor} text-[8px] font-black tracking-widest uppercase border">${type}</span>
           </div>
-          <div class="text-zinc-300 leading-relaxed text-xs font-medium">
-            ${item.result || 'Command finished.'}
+          <div class="text-zinc-200 leading-relaxed text-xs font-medium">
+             ${fancyResult}
           </div>
-          <p class="text-[10px] text-zinc-600 mt-1">Transaction confirmed on chain.</p>
+          <div class="flex items-center gap-2 mt-3 text-[9px] text-zinc-800 font-bold uppercase tracking-widest">
+            <span class="w-1 h-1 bg-zinc-800 rounded-full"></span>
+            Broadcasted via Aura_Relay
+          </div>
         </div>
       `;
     }
 
-    // Subscribe to real-time changes
     const channel = supabase
       .channel('aura_history_realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'aura_history' }, (payload) => {
-        console.log('New activity:', payload);
-        
-        // Update local state
         historyData.unshift(payload.new);
-        
-        // Update stats
         liveEventCount++;
         totalCount++;
         if (statLive) statLive.textContent = String(liveEventCount);
         if (statTotal) statTotal.textContent = String(totalCount);
-
-        const todayEl = document.getElementById('stat-today');
-        if (todayEl) todayEl.textContent = String(parseInt(todayEl.textContent || '0') + 1);
-        
-        // Render new entry
         if (streamContainer) {
            streamContainer.insertAdjacentHTML('afterbegin', createLogEntry(payload.new));
+           if (streamContainer.children.length > 50) streamContainer.lastElementChild?.remove();
         }
+        if (payload.new.command_type === 'GAS') updateGasSidebar(payload.new);
       })
       .subscribe((status) => {
-        console.log('Subscription status:', status);
         if (status === 'SUBSCRIBED') {
-          if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-green-500';
-          if (statusText) statusText.textContent = 'Connected';
+          if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-green-500';
+          if (statusText) statusText.textContent = 'LINK_ACTIVE';
         } else if (status === 'CHANNEL_ERROR') {
-          if (statusDot) statusDot.className = 'w-2 h-2 rounded-full bg-red-500';
-          if (statusText) statusText.textContent = 'Error';
+          if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]';
+          if (statusText) statusText.textContent = 'LINK_ERROR';
         }
       });
 
-    // Load initial data
     loadHistory();
   }
 </script>

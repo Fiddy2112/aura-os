@@ -3,8 +3,7 @@ import Conf from 'conf';
 import http from 'http';
 import open from 'open';
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
+
 
 const config = new Conf({
   projectName: 'aura-os'

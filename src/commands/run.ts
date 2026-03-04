@@ -8,6 +8,7 @@ import { BlockchainExecutor } from '../core/blockchain/executor.js';
 import { AIInterpreter } from '../core/ai/interpreter.js';
 import { Vault } from '../core/security/vault.js';
 import { type ScriptContext, type AuraScript } from '../core/scripting/types.js';
+import { syncActivity } from '../core/utils/supabase.js';
 
 export async function runCommand(scriptName: string, args: string[]) {
   if (!scriptName) {
@@ -17,7 +18,7 @@ export async function runCommand(scriptName: string, args: string[]) {
     return;
   }
 
-  // 1. Resolve Script Path
+  // Resolve Script Path
   // We look in current directory "./scripts" or direct path
   const cwd = process.cwd();
   const potentialPaths = [
@@ -45,7 +46,7 @@ export async function runCommand(scriptName: string, args: string[]) {
   console.log(chalk.white(` Only run scripts from sources you trust completely.`));
 
   try {
-    // 2. Import the script
+    // Import the script
     // Using pathToFileURL is necessary for ESM imports of local files on Windows
     const scriptUrl = pathToFileURL(scriptPath).toString();
     const module = await import(scriptUrl);
@@ -81,7 +82,7 @@ export async function runCommand(scriptName: string, args: string[]) {
         }
     }
 
-    // 3. Prepare Context
+    // Prepare Context
     const isSetup = Vault.isSetup();
     let privateKey: string | null = null;
     
@@ -118,9 +119,13 @@ export async function runCommand(scriptName: string, args: string[]) {
       }
     };
 
-    // 4. Run Script
+    // Run Script
     console.log(chalk.cyan(`\n ➤ Running ${scriptName}...`));
     await scriptFn(context);
+    
+    // Sync to dashboard
+    await syncActivity("SCRIPT_RUN", { name: scriptName, args }, "Script executed successfully");
+
     console.log(chalk.green(`\n ✓ Script finished successfully.`));
 
   } catch (error) {

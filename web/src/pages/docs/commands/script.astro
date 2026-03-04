@@ -1,0 +1,94 @@
+---
+import DocsLayout from '../../../layouts/DocsLayout.astro';
+---
+
+<DocsLayout title="aura script">
+  <nav class="flex items-center gap-2 text-sm text-zinc-500 mb-8">
+    <a href="/docs" class="hover:text-white transition-colors">Docs</a>
+    <span>/</span>
+    <a href="/docs/commands" class="hover:text-white transition-colors">Commands</a>
+    <span>/</span>
+    <span class="text-white">aura script</span>
+  </nav>
+
+  <div class="mb-12">
+    <div class="px-3 py-1 rounded-full bg-zinc-800 text-xs font-mono text-zinc-400 inline-block mb-4">command</div>
+    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 font-mono">aura script</h1>
+    <p class="text-xl text-zinc-400">Manage and create custom Web3 automation scripts.</p>
+  </div>
+
+  <div class="glass-card p-6 mb-12">
+    <h3 class="text-sm font-semibold text-zinc-500 uppercase tracking-wider mb-4">Synopsis</h3>
+    <div class="terminal">
+      <div class="p-4 font-mono text-sm">
+        <span class="text-green-400">aura script</span> <span class="text-yellow-400">&lt;list | create&gt;</span> <span class="text-cyan-400">[name]</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">Description</h2>
+    <p class="text-zinc-300 leading-relaxed mb-4">
+      The <code class="px-2 py-1 bg-zinc-800 rounded text-red-500">aura script</code> command is the gateway to Aura OS automation. 
+      It allows you to manage local TypeScript scripts that can leverage the internal Aura context (AI and Blockchain executors).
+    </p>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">Actions</h2>
+    <div class="grid gap-6 md:grid-cols-2">
+      <div class="glass-card p-6">
+        <h3 class="text-white font-bold mb-2">list</h3>
+        <p class="text-sm text-zinc-400 mb-4">Displays all custom scripts currently in your <code class="px-1.5 py-0.5 bg-zinc-800 rounded">./scripts</code> folder.</p>
+        <div class="terminal">
+          <div class="p-3 font-mono text-xs text-green-400">❯ aura script list</div>
+        </div>
+      </div>
+      <div class="glass-card p-6 border-l-4 border-red-500">
+        <h3 class="text-white font-bold mb-2">create</h3>
+        <p class="text-sm text-zinc-400 mb-4">Generates a new TypeScript script from a standardized boilerplate template.</p>
+        <div class="terminal">
+          <div class="p-3 font-mono text-xs text-yellow-400">❯ aura script create sweep</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">Running Scripts</h2>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Once created, scripts can be executed using the secondary <code class="px-2 py-1 bg-zinc-800 rounded text-white">aura run</code> command.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm">
+        <span class="text-purple-400">❯</span> <span class="text-green-400">aura run</span> <span class="text-yellow-400">sweep-assets</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-4">How it works (Script Context)</h2>
+    <p class="text-zinc-300 mb-6">Your scripts receive a <code>context</code> object providing access to:</p>
+    <div class="grid gap-4 md:grid-cols-3 text-xs font-mono">
+      <div class="bg-zinc-950 p-4 border border-zinc-900 rounded-xl">
+        <span class="text-cyan-400 font-bold tracking-widest block mb-2 uppercase">executor</span>
+        <span class="text-zinc-500">Blockchain client with private key access.</span>
+      </div>
+      <div class="bg-zinc-950 p-4 border border-zinc-900 rounded-xl">
+        <span class="text-purple-400 font-bold tracking-widest block mb-2 uppercase">ai</span>
+        <span class="text-zinc-500">Direct interface to Aura's NLP brain.</span>
+      </div>
+      <div class="bg-zinc-950 p-4 border border-zinc-900 rounded-xl">
+        <span class="text-yellow-400 font-bold tracking-widest block mb-2 uppercase">ui</span>
+        <span class="text-zinc-500">Logging and interactive prompts (Inquirer).</span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="pt-8 border-t border-zinc-800/50">
+    <div class="flex items-center justify-between text-sm text-zinc-500">
+      <a href="/docs/commands/tx" class="hover:text-white transition-colors">← aura tx</a>
+      <a href="/docs/ai-interpreter" class="hover:text-white transition-colors">AI Interpreter →</a>
+    </div>
+  </footer>
+</DocsLayout>

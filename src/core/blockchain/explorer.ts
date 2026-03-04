@@ -1,6 +1,5 @@
 import axios from "axios";
-import dotenv from "dotenv";
-dotenv.config();
+
 
 export class BlockchainExplorer {
     private apiKey = process.env.ETHERSCAN_API_KEY;

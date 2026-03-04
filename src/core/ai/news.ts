@@ -1,6 +1,5 @@
 import { tavily } from "@tavily/core";
-import dotenv from "dotenv";
-dotenv.config();
+
 
 // Trusted crypto news sources by category
 const CRYPTO_SOURCES = {

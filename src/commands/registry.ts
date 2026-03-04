@@ -3,6 +3,10 @@ import chainCommand from "./chain.js";
 import privilegeCommand from "./privilege.js";
 import riskCommand from "./risk.js";
 import analyzeCommand from "./analyze.js";
+import { scriptCommand } from "./script.js";
+import { runCommand } from "./run.js";
+import txCommand from "./tx.js";
+import { gasCommand } from "./gas.js";
 
 type DevCommand = {
   handler: (args: string[])=> Promise<void> | void;
@@ -35,5 +39,20 @@ export const devCommands: Record<string, DevCommand> = {
     handler: analyzeCommand,
     description: "Summary Verdict",
     aliases: ["a"],
+  },
+  script: {
+    handler: scriptCommand,
+    description: "Manage custom scripts (list, create)",
+    aliases: ["s"],
+  },
+  tx: {
+    handler: txCommand,
+    description: "Transaction analysis",
+    aliases: ["t"],
+  },
+  gas: {
+    handler: gasCommand,
+    description: "Real-time gas prices",
+    aliases: ["g"],
   },
 }

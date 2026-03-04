@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/aura-os/aura-os/main/web/public/logo.svg" alt="Aura OS Logo" width="100" height="100" />
+  <img src="web/public/logo.svg" alt="Aura OS Logo" width="100" height="100" />
   
   # AURA_OS
   
@@ -79,7 +79,6 @@ TAVILY_API_KEY=your_tavily_key    # For crypto research
 
 # Blockchain RPC URLs
 ETH_RPC_URL=https://eth.llamarpc.com
-SEPOLIA_RPC_URL=https://rpc.sepolia.org
 BASE_RPC_URL=https://mainnet.base.org
 ARBITRUM_RPC_URL=https://arb1.arbitrum.io/rpc
 OPTIMISM_RPC_URL=https://optimism.llamarpc.com
@@ -108,10 +107,13 @@ SUPABASE_DATABASE_NAME=aura_os
 | `aura news` | Real-time global crypto alpha aggregator |
 | `aura watch` | Background alpha hunting mode (auto-refreshing news) |
 | `aura wallet` | Manage encrypted accounts (show, export, portfolio) |
+| `aura debank` | Open DeBank portfolio for any wallet address |
 | `aura reset-password`| Securely change or recover vault master password |
 | `aura dashboard` | Launch your AURA_STREAM real-time web interface |
 | `aura status` | Diagnostic check of vault and AI system health |
+| `aura script` | Manage custom scripts (list, create) |
 | `aura help` | Show available commands and shortcuts |
+| `aura gas` | Real-time gas prices across multiple networks |
 
 ### Developer Commands
 
@@ -120,6 +122,7 @@ SUPABASE_DATABASE_NAME=aura_os
 | `aura info <address> [--json] [--explain]` | Get contract information (proxy detection, code size, bytecode hash) | `aura info 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |
 | `aura chain [current\|list\|<chain-name>]` | Manage blockchain chain (view current, list all, or switch) | `aura chain base` |
 | `aura run <script>` | Run custom TypeScript scripts | `aura run whale-watch` |
+| `aura tx <hash>` | Analyze a transaction by hash (status, fees, events) | `aura tx 0x...` |
 
 ---
 
@@ -244,7 +247,6 @@ Scripts have access to:
 | Chain | Network ID | Status |
 |-------|------------|--------|
 | Ethereum Mainnet | 1 | ✅ Production |
-| Sepolia Testnet | 11155111 | ✅ Default |
 | Base | 8453 | ✅ Production |
 | Arbitrum One | 42161 | ✅ Production |
 | Optimism | 10 | ✅ Production |
