@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Changelog - Aura OS">
+  <Navbar />
+  
+  <main class="pt-32 pb-24 bg-black min-h-screen">
+    <div class="max-w-4xl mx-auto px-6">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">Changelog</h1>
+      <p class="text-xl text-zinc-500 mb-12">New updates and improvements to Aura OS.</p>
+      
+      <div class="space-y-12">
+        <div class="glass-card p-8">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-white">v0.2.0</h2>
+            <span class="text-zinc-500 font-mono text-sm">March 2026</span>
+          </div>
+          <div class="prose prose-invert max-w-none">
+            <ul class="list-disc pl-5 text-zinc-400 space-y-2">
+              <li>Added <code class="text-zinc-300">gas</code> command for real-time gas prices across multiple networks</li>
+              <li>Added <code class="text-zinc-300">tx</code> command to analyze a transaction by hash</li>
+              <li>Fixed an issue where running <code class="text-zinc-300">aura help</code> was not returning data</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="glass-card p-8">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-white">v1.0.0</h2>
+            <span class="text-zinc-500 font-mono text-sm">March 2026</span>
+          </div>
+          <div class="prose prose-invert max-w-none">
+            <ul class="list-disc pl-5 text-zinc-400 space-y-2">
+              <li>Initial release of Aura OS</li>
+              <li>Multi-AI brain support with fallback</li>
+              <li>Secure AES-256 Vault</li>
+              <li>Terminal Chat & CLI operations</li>
+              <li>Web3 transaction executor integration</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  
+  <Footer />
+</Layout>

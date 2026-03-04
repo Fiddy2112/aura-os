@@ -1,0 +1,39 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Terms of Service - Aura OS">
+  <Navbar />
+  
+  <main class="pt-32 pb-24 bg-black min-h-screen">
+    <div class="max-w-4xl mx-auto px-6 prose prose-invert">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">Terms of Service</h1>
+      <p class="text-xl text-zinc-500 mb-12">Please read these terms carefully before using Aura OS.</p>
+      
+      <div class="glass-card p-8 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-4">1. Acceptance of Terms</h2>
+        <p class="text-zinc-400">
+          By accessing or using Aura OS (the Software) and AURA_STREAM (the Dashboard), you agree to be bound by these Terms of Service. If you do not agree, do not use the Software.
+        </p>
+      </div>
+      
+      <div class="glass-card p-8 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-4">2. Non-Custodial Nature</h2>
+        <p class="text-zinc-400">
+          Aura OS is a completely non-custodial interface. You retain full control and responsibility over your private keys, funds, and transactions. We do not hold, manage, or have access to your crypto assets.
+        </p>
+      </div>
+      
+      <div class="glass-card p-8 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-4">3. Disclaimer of Liability</h2>
+        <p class="text-zinc-400">
+          The Software is provided "as is" without warranties of any kind. The creators of Aura OS are not liable for any lost funds, compromised wallets due to local malware, or unintended transactions executed by the AI. Always verify the transaction details in your terminal before confirming execution.
+        </p>
+      </div>
+    </div>
+  </main>
+  
+  <Footer />
+</Layout>

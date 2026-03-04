@@ -1,0 +1,44 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { Shield, Lock, EyeOff } from 'lucide-react';
+---
+
+<Layout title="Privacy Policy - Aura OS">
+  <Navbar />
+  
+  <main class="pt-32 pb-24 bg-black min-h-screen">
+    <div class="max-w-4xl mx-auto px-6 prose prose-invert">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">Privacy Policy</h1>
+      <p class="text-xl text-zinc-500 mb-12">How Aura OS protects your data.</p>
+      
+      <div class="glass-card p-8 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-4">1. Information Collection</h2>
+        <p class="text-zinc-400">
+          Aura OS is designed with privacy as the core primitive. Our terminal application runs locally on your machine.
+          We do not collect, transmit, or store your private keys, seed phrases, or master passwords on any of our servers.
+        </p>
+      </div>
+      
+      <div class="glass-card p-8 mb-8">
+        <h2 class="text-2xl font-bold text-white mb-4">2. Cloud Sync & Dashboard</h2>
+        <p class="text-zinc-400 mb-4">
+          When you log in to the AURA_STREAM dashboard, we synchronize your command history (e.g. "Sent 1 ETH") and wallet addresses to provide your portfolio view.
+        </p>
+        <p class="text-zinc-400">
+          <strong>Privacy Sanitizer:</strong> Our built-in privacy sanitizer automatically redacts any detected secrets (such as accidentally pasted private keys) before they ever leave your device.
+        </p>
+      </div>
+      
+      <div class="glass-card p-8">
+        <h2 class="text-2xl font-bold text-white mb-4">3. Third-Party API Keys</h2>
+        <p class="text-zinc-400">
+          The API keys you provide for AI providers (OpenAI, Groq, Gemini) are stored securely in your local machine's encrypted vault. They are only sent directly to the respective providers' APIs from your local machine.
+        </p>
+      </div>
+    </div>
+  </main>
+  
+  <Footer />
+</Layout>

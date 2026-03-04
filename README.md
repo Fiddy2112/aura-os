@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="web/public/logo.svg" alt="Aura OS Logo" width="100" height="100" />
+  <img src="https://cdn.jsdelivr.net/gh/Fiddy2112/aura-os@main/web/public/logo.svg" alt="Aura OS Logo" width="100" height="100" />
   
   # AURA_OS
   

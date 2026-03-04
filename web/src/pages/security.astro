@@ -1,0 +1,63 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Footer from '../components/Footer.astro';
+import { Shield, Lock, FileCode2 } from 'lucide-react';
+---
+
+<Layout title="Security - Aura OS">
+  <Navbar />
+  
+  <main class="pt-32 pb-24 bg-black min-h-screen">
+    <div class="max-w-4xl mx-auto px-6">
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">Security Architecture</h1>
+      <p class="text-xl text-zinc-500 mb-12">How Aura OS secures your Web3 journey.</p>
+      
+      <div class="grid md:grid-cols-2 gap-8 mb-16">
+        <div class="glass-card p-8">
+          <div class="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mb-6">
+            <Lock className="text-white" />
+          </div>
+          <h3 class="text-2xl font-bold text-white mb-4">Aura Vault (AES-256)</h3>
+          <p class="text-zinc-400">
+            All private keys, API secrets, and sensitive configuration are encrypted at rest using military-grade AES-256-GCM encryption. The vault can only be decrypted locally by your master password.
+          </p>
+        </div>
+
+        <div class="glass-card p-8">
+          <div class="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mb-6">
+            <Shield className="text-white" />
+          </div>
+          <h3 class="text-2xl font-bold text-white mb-4">Silent Security</h3>
+          <p class="text-zinc-400">
+            To protect against physical shoulder surfing and screen recording, all credential inputs in the terminal are completely silent—not even asterisks are printed when typing your password.
+          </p>
+        </div>
+
+        <div class="glass-card p-8 md:col-span-2">
+          <div class="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center mb-6">
+            <FileCode2 className="text-white" />
+          </div>
+          <h3 class="text-2xl font-bold text-white mb-4">Privacy Sanitizer</h3>
+          <p class="text-zinc-400 mb-4">
+            Before any transaction intent or command history is synced to your cloud dashboard for activity tracking, it runs through the Aura Privacy Sanitizer.
+          </p>
+          <ul class="list-disc pl-5 text-zinc-500 space-y-2">
+            <li>Identifies and redacts Ethereum private keys (64 char hex strings)</li>
+            <li>Identifies and redacts API keys</li>
+            <li>Identifies and redacts 12/24 word seed phrases</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="text-center p-8 border border-zinc-800 rounded-xl bg-zinc-900/50">
+        <h2 class="text-2xl font-bold text-white mb-4">Vulnerability Disclosure</h2>
+        <p class="text-zinc-400">
+          If you believe you have found a security vulnerability in Aura OS, please contact us privately before public disclosure.
+        </p>
+      </div>
+    </div>
+  </main>
+  
+  <Footer />
+</Layout>
