@@ -1,0 +1,127 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import { Sparkles, Terminal, Shield, Zap, Activity, Cpu } from 'lucide-react';
+---
+
+<DocsLayout title="What's New in v0.2.0">
+  <nav class="flex items-center gap-2 text-sm text-zinc-500 mb-8">
+    <a href="/docs" class="hover:text-white transition-colors">Docs</a>
+    <span>/</span>
+    <span class="text-white">What's New</span>
+  </nav>
+
+  <div class="mb-12">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-mono mb-4">
+      <Sparkles size={14} />
+      <span>RELEASE V0.2.0 - MARCH 2026</span>
+    </div>
+    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">The Forensic & Automation Update</h1>
+    <p class="text-xl text-zinc-400">
+      Introducing deep transaction analysis, multi-chain gas monitoring, and the powerful Aura Scripting engine.
+    </p>
+  </div>
+
+  <div class="grid gap-6 md:grid-cols-3 mb-16">
+    <div class="glass-card p-6 border-t-2 border-purple-500">
+      <div class="text-purple-400 mb-4"><Activity size={24} /></div>
+      <h3 class="text-white font-bold mb-2">Forensic Analysis</h3>
+      <p class="text-sm text-zinc-400">Deep dive into any transaction hash with <code>aura tx</code>.</p>
+    </div>
+    <div class="glass-card p-6 border-t-2 border-green-500">
+      <div class="text-green-400 mb-4"><Zap size={24} /></div>
+      <h3 class="text-white font-bold mb-2">Market Intel</h3>
+      <p class="text-sm text-zinc-400">Real-time gas monitoring across 7+ chains with <code>aura gas</code>.</p>
+    </div>
+    <div class="glass-card p-6 border-t-2 border-blue-500">
+      <div class="text-blue-400 mb-4"><Cpu size={24} /></div>
+      <h3 class="text-white font-bold mb-2">Automation</h3>
+      <p class="text-sm text-zinc-400">Build custom Web3 scripts using <code>aura script</code>.</p>
+    </div>
+  </div>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">1. Forensic Tools (aura tx)</h2>
+    <p class="text-zinc-300 mb-6">
+      Standard block explorers can be overwhelming. <code>aura tx</code> distills transaction data into actionable intelligence, highlighting status, value transfers, and exact gas costs.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm">
+        <span class="text-purple-400">❯</span> <span class="text-green-400">aura tx</span> <span class="text-yellow-400">0x4a7...0b5</span>
+      </div>
+    </div>
+    <ul class="space-y-2 text-sm text-zinc-400 ml-4">
+      <li class="flex items-center gap-2">
+        <span class="text-green-500">✓</span> Instant success/failure verification.
+      </li>
+      <li class="flex items-center gap-2">
+        <span class="text-green-500">✓</span> Visual cost breakdown in Gwei and USD.
+      </li>
+      <li class="flex items-center gap-2">
+        <span class="text-green-500">✓</span> JSON export for developer use.
+      </li>
+    </ul>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">2. Gas Station (aura gas)</h2>
+    <p class="text-zinc-300 mb-6">
+      Never overpay for gas again. Aura now queries multiple L1 and L2 networks simultaneously to give you a bird's eye view of the market.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div>Ethereum Mainnet: <span class="text-yellow-400">12.4 Gwei</span></div>
+        <div>Base: <span class="text-green-400">0.005 Gwei</span></div>
+        <div>zkSync Era: <span class="text-green-400">0.011 Gwei</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">3. Aura Scripting Engine</h2>
+    <p class="text-zinc-300 mb-6">
+      Developers can now build custom automations. Want to sweep assets every Saturday? Or bridge tokens when gas is low? Do it with <code>aura script</code>.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm">
+        <span class="text-purple-400">❯</span> <span class="text-green-400">aura script create</span> <span class="text-yellow-400">my-bot</span>
+      </div>
+    </div>
+    <p class="text-sm text-zinc-400 italic">
+      Your scripts get full access to the AI Interpreter, Blockchain Executor, and Secure Vault.
+    </p>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">4. ZkSync Era Integration</h2>
+    <p class="text-zinc-300 mb-4">
+      Full support for the zkSync ecosystem is live. This includes:
+    </p>
+    <div class="grid gap-4 md:grid-cols-2 text-sm">
+      <div class="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+        <strong class="text-white block mb-1">Native Support</strong>
+        Correct symbols, decimal handling, and RPC optimization.
+      </div>
+      <div class="bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
+        <strong class="text-white block mb-1">Forensics</strong>
+        Full <code>aura tx</code> analysis support for zkSync Era transactions.
+      </div>
+    </div>
+  </section>
+
+  <section class="glass-card p-8">
+    <h2 class="text-2xl font-bold text-white mb-4">How to Update?</h2>
+    <p class="text-zinc-300 mb-6">
+      Existing users can upgrade instantly via npm:
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm">
+        <span class="text-purple-400">❯</span> <span class="text-green-400">npm install -g @felizz23/aura-os@latest</span>
+      </div>
+    </div>
+    <div class="flex justify-center">
+      <a href="/docs/commands" class="btn-primary text-sm py-2 px-8">
+        Full Command Reference
+      </a>
+    </div>
+  </section>
+</DocsLayout>
