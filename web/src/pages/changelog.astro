@@ -15,6 +15,20 @@ import Footer from '../components/Footer.astro';
       <div class="space-y-12">
         <div class="glass-card p-8">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-white">v0.2.3</h2>
+            <span class="text-zinc-500 font-mono text-sm">March 2026</span>
+          </div>
+          <div class="prose prose-invert max-w-none">
+            <ul class="list-disc pl-5 text-zinc-400 space-y-2">
+              <li>Fixed Cross-Origin Mixed Content blocking during <code class="text-zinc-300">aura login</code> by adding Private Network CORS headers and switching the local redirect to <code class="text-zinc-300">127.0.0.1</code></li>
+              <li>Rebuilt the Dashboard HUD to compute and display real-time statistics directly from database operations</li>
+              <li>Added smooth dynamic feedback to the Dashboard connectivity indicator for active socket connections and errors</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="glass-card p-8">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
             <h2 class="text-2xl font-bold text-white">v0.2.2</h2>
             <span class="text-zinc-500 font-mono text-sm">March 2026</span>
           </div>

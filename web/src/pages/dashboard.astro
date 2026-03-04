@@ -29,10 +29,10 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
           
           <div id="connection-status" class="flex items-center gap-3 px-4 py-2 rounded-xl bg-zinc-950 border border-zinc-800 shadow-inner">
             <div class="relative">
-              <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/20 absolute -inset-1 animate-ping"></div>
+              <div id="status-ping" class="w-2.5 h-2.5 rounded-full bg-yellow-500/20 absolute -inset-1 animate-ping"></div>
               <div class="w-2.5 h-2.5 rounded-full bg-yellow-500 relative" id="status-dot"></div>
             </div>
-            <span class="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest" id="status-text">CONNECTING</span>
+            <span class="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest transition-colors" id="status-text">CONNECTING</span>
           </div>
         </div>
       </header>
@@ -176,6 +176,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
 
   const streamContainer = document.getElementById('activity-stream');
   const statusDot = document.getElementById('status-dot');
+  const statusPing = document.getElementById('status-ping');
   const statusText = document.getElementById('status-text');
   const statTotal = document.getElementById('stat-total');
   const statToday = document.getElementById('stat-today');
@@ -251,50 +252,6 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
     }).join('');
   }
 
-  // Initialize Supabase client
-  if (!supabaseUrl || !supabaseKey) {
-    console.warn('Supabase credentials not configured');
-    if (statusText) statusText.textContent = 'NO_CFG';
-    if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-500';
-  } else {
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    async function loadHistory() {
-      const { data, error } = await supabase
-        .from('aura_history')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(30);
-
-      if (error) return;
-
-      if (data && data.length > 0) {
-        historyData = data;
-        renderStream();
-        
-        totalCount = data.length;
-        if (statTotal) statTotal.textContent = String(totalCount);
-
-        const today = new Date().toDateString();
-        const todayCount = data.filter(d => new Date(d.created_at).toDateString() === today).length;
-        if (statToday) statToday.textContent = String(todayCount);
-
-        if (recentActions) {
-          recentActions.innerHTML = data.slice(0, 8).map(d => `
-            <div class="flex items-center gap-3 border-b border-zinc-900 pb-2 border-dashed">
-              <span class="px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[8px] text-zinc-500 font-black">${d.command_type}</span>
-              <span class="truncate text-zinc-600 text-[9px] uppercase tracking-tighter">${new Date(d.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-              <span class="text-zinc-400 text-[9px] truncate ml-auto">${d.result?.slice(0, 15) || 'OK'}..</span>
-            </div>
-          `).join('');
-        }
-
-        // Search for gas data in history
-        const gasData = data.find(d => d.command_type === 'GAS');
-        if (gasData) updateGasSidebar(gasData);
-      }
-    }
-
     function createLogEntry(item) {
       const time = new Date(item.created_at).toLocaleTimeString();
       const type = item.command_type || 'SYSTEM';
@@ -355,6 +312,99 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       `;
     }
 
+  // Initialize Supabase client
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('Supabase credentials not configured');
+    if (statusText) statusText.textContent = 'NO_CFG';
+    if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-500';
+  } else {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    async function loadHistory() {
+      const { data, error } = await supabase
+        .from('aura_history')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (error) return;
+
+      if (data && data.length > 0) {
+        historyData = data;
+        renderStream();
+        
+        totalCount = data.length;
+        if (statTotal) statTotal.textContent = String(totalCount);
+
+        const today = new Date().toDateString();
+        const todayCount = data.filter(d => new Date(d.created_at).toDateString() === today).length;
+        if (statToday) statToday.textContent = String(todayCount);
+
+        // Success rate calculation
+        const statSuccess = document.getElementById('stat-success');
+        if (statSuccess && totalCount > 0) {
+          const successCount = data.filter(d => !d.result?.toLowerCase().includes('error')).length;
+          const percentage = ((successCount / totalCount) * 100).toFixed(1);
+          statSuccess.innerHTML = `${percentage}<span class="text-xs opacity-50">%</span>`;
+        }
+
+        // Hourly comparison growth
+        const nowMs = Date.now();
+        const oneHourAgo = nowMs - 3600000;
+        const twoHoursAgo = nowMs - 7200000;
+        
+        const lastHourOps = data.filter(d => new Date(d.created_at).getTime() > oneHourAgo).length;
+        const prevHourOps = data.filter(d => {
+          const t = new Date(d.created_at).getTime();
+          return t > twoHoursAgo && t <= oneHourAgo;
+        }).length;
+        
+        let growth = 0;
+        if (prevHourOps > 0) growth = Math.round(((lastHourOps - prevHourOps) / prevHourOps) * 100);
+        else if (lastHourOps > 0) growth = 100;
+        
+        const hourCompareEl = statToday?.nextElementSibling;
+        if (hourCompareEl) {
+           hourCompareEl.textContent = `${growth >= 0 ? '+' : ''}${growth}% vs last hour`;
+           hourCompareEl.className = `text-[10px] ${growth >= 0 ? 'text-green-500' : 'text-red-500'} font-mono mt-3`;
+        }
+
+        // Dynamic Subtitle for Active Sessions
+        const uniqueTypes = new Set(data.map(d => d.command_type || 'SYSTEM')).size;
+        const liveSubEl = statLive?.nextElementSibling;
+        if (liveSubEl) {
+           liveSubEl.textContent = `Interacted with ${uniqueTypes} command types`;
+        }
+
+        if (recentActions) {
+          recentActions.innerHTML = data.slice(0, 8).map(d => `
+            <div class="flex items-center gap-3 border-b border-zinc-900 pb-2 border-dashed">
+              <span class="px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[8px] text-zinc-500 font-black">${d.command_type}</span>
+              <span class="truncate text-zinc-600 text-[9px] uppercase tracking-tighter">${new Date(d.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+              <span class="text-zinc-400 text-[9px] truncate ml-auto">${d.result?.slice(0, 15) || 'OK'}..</span>
+            </div>
+          `).join('');
+        }
+
+        // Search for gas data in history
+        const gasData = data.find(d => d.command_type === 'GAS');
+        if (gasData) updateGasSidebar(gasData);
+      }
+
+      // Sync the logged-in user to the "Active_Vault" HUD
+      const { data: { session } } = await supabase.auth.getSession();
+      const connectedWalletEl = document.getElementById('connected-wallet');
+      if (session && connectedWalletEl) {
+        let identifier = session.user.email || session.user.app_metadata.provider || 'Secure Local Vault';
+        connectedWalletEl.innerHTML = `
+          <div class="text-zinc-700 mb-1 uppercase tracking-widest text-[8px]">ID_SIG_HEX</div>
+          <span class="text-zinc-200 font-bold tracking-tight">${identifier}</span>
+        `;
+      }
+    }
+
+
+
     const channel = supabase
       .channel('aura_history_realtime')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'aura_history' }, (payload) => {
@@ -372,10 +422,18 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-green-500';
-          if (statusText) statusText.textContent = 'LINK_ACTIVE';
+          if (statusPing) statusPing.className = 'w-2.5 h-2.5 rounded-full bg-green-500/20 absolute -inset-1 animate-ping';
+          if (statusText) {
+            statusText.textContent = 'LINK_ACTIVE';
+            statusText.classList.replace('text-zinc-500', 'text-green-500');
+          }
         } else if (status === 'CHANNEL_ERROR') {
           if (statusDot) statusDot.className = 'w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]';
-          if (statusText) statusText.textContent = 'LINK_ERROR';
+          if (statusPing) statusPing.className = 'hidden';
+          if (statusText) {
+            statusText.textContent = 'LINK_ERROR';
+            statusText.classList.replace('text-zinc-500', 'text-red-500');
+          }
         }
       });
 

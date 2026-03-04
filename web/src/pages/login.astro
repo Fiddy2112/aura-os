@@ -90,7 +90,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 <div id="login-config" 
   data-supabase-url={supabaseUrl} 
   data-supabase-key={supabaseKey}
-  data-cli-url="http://localhost:9876/auth-callback"
+  data-cli-url="http://127.0.0.1:9876/auth-callback"
   class="hidden"
 ></div>
 
@@ -108,7 +108,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   const configEl = document.getElementById('login-config');
   const supabaseUrl = configEl?.dataset.supabaseUrl || '';
   const supabaseKey = configEl?.dataset.supabaseKey || '';
-  const CLI_CALLBACK_URL = configEl?.dataset.cliUrl || 'http://localhost:9876/auth-callback';
+  const CLI_CALLBACK_URL = configEl?.dataset.cliUrl || 'http://127.0.0.1:9876/auth-callback';
   
   // Initialize Supabase
   let supabase: SupabaseClient | null = null;
