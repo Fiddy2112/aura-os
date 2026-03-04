@@ -18,9 +18,10 @@ const supabase = (supabaseUrl && supabaseKey)
 
 const PORT = 9876;
 
-// Aura OS Login Config - Prioritize production, fallback to local
-const PROD_WEB_APP = 'https://aura-os-phi.vercel.app/login';
-const WEB_APP_URL = process.env.WEB_APP_URL || (process.env.NODE_ENV === 'production' ? PROD_WEB_APP : 'http://localhost:4321/login');
+// Aura OS login configuration - Default is production, only use locally if in developer mode
+const PROD_WEB_APP = 'https://aura-os-self.vercel.app/login';
+const isDev = process.env.NODE_ENV === 'development' || process.env.AURA_ENV === 'development';
+const WEB_APP_URL = process.env.WEB_APP_URL || (isDev ? 'http://localhost:4321/login' : PROD_WEB_APP);
 
 export async function loginCommand(method?: string) {
   console.log(chalk.white.bold('\n Aura OS\n'));
