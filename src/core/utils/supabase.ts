@@ -7,10 +7,27 @@ dotenv.config();
 
 // Use consistent project name 'aura-os'
 const config = new Conf({ projectName: 'aura-os' });
-const supabase = createClient(
-  process.env.SUPABASE_URL || '', 
-  process.env.SUPABASE_KEY || ''
-);
+
+let supabase: any = null;
+
+const getSupabase = () => {
+  if (supabase) return supabase;
+  
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_KEY;
+
+  if (!url || !key) {
+    return null;
+  }
+
+  try {
+    supabase = createClient(url, key);
+    return supabase;
+  } catch (error) {
+    return null;
+  }
+};
+
 
 export const syncActivity = async (type: string, intent: any, result: string) => {
   const walletAddress = config.get('user_wallet');
@@ -26,6 +43,12 @@ export const syncActivity = async (type: string, intent: any, result: string) =>
   const sanitizedIntent = Sanitizer.sanitize(intent);
   const sanitizedResult = Sanitizer.sanitize(result);
 
+  const client = getSupabase();
+  if (!client) {
+    // Silently skip if Supabase is not configured to avoid annoying CLI users
+    return;
+  }
+
   try {
     // We use 'intent' as the column name to match your database schema
     const dataToInsert = {
@@ -37,14 +60,14 @@ export const syncActivity = async (type: string, intent: any, result: string) =>
       created_at: new Date().toISOString()
     };
 
-    const { error } = await supabase.from('aura_history').insert(dataToInsert);
+    const { error } = await client.from('aura_history').insert(dataToInsert);
 
     if (error) {
         // If 'user_email' doesn't exist in your table yet, try without it
         if (error.message.includes('user_email')) {
             const fallbackData = { ...dataToInsert };
             delete (fallbackData as any).user_email;
-            const fallbackResult = await supabase.from('aura_history').insert(fallbackData);
+            const fallbackResult = await client.from('aura_history').insert(fallbackData);
             if (!fallbackResult.error) {
                  console.log(chalk.gray(` [Sync]  Synchronized via fallback: ${type}`));
             }
