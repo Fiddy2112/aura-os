@@ -15,6 +15,21 @@ import Footer from '../components/Footer.astro';
       <div class="space-y-12">
         <div class="glass-card p-8">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-white">v0.2.4</h2>
+            <span class="text-zinc-500 font-mono text-sm">March 2026</span>
+          </div>
+          <div class="prose prose-invert max-w-none">
+            <ul class="list-disc pl-5 text-zinc-400 space-y-2">
+              <li>Replaced unstable local HTTP server auth with a fully seamless, secure Supabase polling "Device Flow".</li>
+              <li>Bypasses standard strict browser security blockers (Mixed Content, HSTS, PNA) completely.</li>
+              <li>Fixed a critical bug where the production URL did not correctly target the <code class="text-zinc-300">/login</code> route during authentication callbacks.</li>
+              <li>Fixed OAuth redirect flow returning 404s by ensuring the callback always anchors to the correct window session URI.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="glass-card p-8">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
             <h2 class="text-2xl font-bold text-white">v0.2.3</h2>
             <span class="text-zinc-500 font-mono text-sm">March 2026</span>
           </div>

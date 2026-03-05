@@ -26,7 +26,7 @@ const args = process.argv.slice(2);
 const command = args[0];
 const commandArgs = args.slice(1);
 
-const auraGradient = gradient(['#06b6d4', '#8b5cf6', '#ec4899']); // Cyan -> Purple -> Pink
+const auraGradient = gradient(['#06b6d4', '#8b5cf6', '#ec4899']);
 
 export function showBanner() {
   const banner = `
@@ -43,43 +43,43 @@ export function showBanner() {
 
 function showHelp() {
   showBanner();
-  
+
   const helpContent = `
   ${chalk.bold.white('MAIN COMMANDS')}
-    ${chalk.magenta('setup')}       ${chalk.gray('Initialize your encrypted Web3 vault')}
-    ${chalk.magenta('research')}    ${chalk.gray('Deep project analysis & Sentiment')}
-    ${chalk.magenta('analyze')}     ${chalk.gray('Security analysis & Verdict (Trader/Dev modes)')}
-    ${chalk.magenta('watch')}       ${chalk.gray('Automated AI alpha hunting mode')}
+    ${chalk.magenta('setup')}          ${chalk.gray('Initialize your encrypted Web3 vault')}
+    ${chalk.magenta('research')}       ${chalk.gray('Deep project analysis & sentiment')}
+    ${chalk.magenta('analyze')}        ${chalk.gray('Security analysis & verdict (Trader/Dev modes)')}
+    ${chalk.magenta('watch')}          ${chalk.gray('Automated AI alpha hunting mode')}
 
   ${chalk.bold.white('INTERACTION')}
-    ${chalk.cyan('chat')}        ${chalk.gray('Natural language AI interaction')}
-    ${chalk.cyan('news')}        ${chalk.gray('Real-time crypto alpha aggregator')}
+    ${chalk.cyan('chat')}           ${chalk.gray('Natural language AI interaction')}
+    ${chalk.cyan('news')}           ${chalk.gray('Real-time crypto alpha aggregator')}
 
   ${chalk.bold.white('SYSTEM')}
-    ${chalk.gray('wallet')}      ${chalk.gray('Manage accounts (show, export)')}
-    ${chalk.gray('debank')}      ${chalk.gray('Open DeBank portfolio for an address')}
-    ${chalk.gray('dashboard')}   ${chalk.gray('Launch the real-time Web UI')}
-    ${chalk.gray('login')}       ${chalk.gray('Login via browser (google/metamask)')}
-    ${chalk.gray('status')}      ${chalk.gray('Check Aura OS configuration status')}
+    ${chalk.gray('wallet')}         ${chalk.gray('Manage accounts (show, export)')}
+    ${chalk.gray('debank')}         ${chalk.gray('Open DeBank portfolio for an address')}
+    ${chalk.gray('dashboard')}      ${chalk.gray('Launch the real-time Web UI')}
+    ${chalk.gray('login')}          ${chalk.gray('Login via browser (Google / MetaMask)')}
+    ${chalk.gray('logout')}         ${chalk.gray('Disconnect from dashboard')}
+    ${chalk.gray('status')}         ${chalk.gray('Check Aura OS configuration status')}
     ${chalk.gray('reset-password')} ${chalk.gray('Change or reset your master password')}
-    ${chalk.gray('script')}      ${chalk.gray('Manage custom scripts (list, create)')}
-    ${chalk.gray('run')}         ${chalk.gray('Run a custom script by name')}
-    ${chalk.gray('tx')}          ${chalk.gray('Analyze a transaction by hash')}
-    ${chalk.gray('gas')}         ${chalk.gray('Real-time gas prices across all networks')}
-    ${chalk.gray('help')}        ${chalk.gray('Show this help message')}
+    ${chalk.gray('script')}         ${chalk.gray('Manage custom scripts (list, create)')}
+    ${chalk.gray('run')}            ${chalk.gray('Run a custom script by name')}
+    ${chalk.gray('tx')}             ${chalk.gray('Analyze a transaction by hash')}
+    ${chalk.gray('gas')}            ${chalk.gray('Real-time gas prices across all networks')}
+    ${chalk.gray('help')}           ${chalk.gray('Show this help message')}
 
   ${chalk.bold.white('DEV / SECURITY')}
-    ${chalk.gray('info')}       ${chalk.gray('Contract identity & intelligence (use --dev for forensic view)')}
-    ${chalk.gray('privilege')}  ${chalk.gray('Ownership & control surface analysis')}
-    ${chalk.gray('risk')}       ${chalk.gray('Centralization & upgrade risk score (--dev for breakdown)')}
-    ${chalk.gray('chain')}      ${chalk.gray('Manage blockchain chain (current/list/set)')}
-    ${chalk.gray('analyze')}    ${chalk.gray('Contract security analysis summary')}
+    ${chalk.gray('info')}           ${chalk.gray('Contract identity & intelligence')}
+    ${chalk.gray('privilege')}      ${chalk.gray('Ownership & control surface analysis')}
+    ${chalk.gray('risk')}           ${chalk.gray('Centralization & upgrade risk score')}
+    ${chalk.gray('chain')}          ${chalk.gray('Manage blockchain chain (current/list/set)')}
 
   ${chalk.bold.white('FLAGS')}
-    ${chalk.gray('--dev')}      ${chalk.gray('Enable developer / forensic mode')}
-    ${chalk.gray('--json')}     ${chalk.gray('Output raw JSON')}
-    ${chalk.gray('-h, --help')} ${chalk.gray('Show help for command')}
-    ${chalk.gray('-v')}         ${chalk.gray('Show version')}
+    ${chalk.gray('--dev')}          ${chalk.gray('Enable developer / forensic mode')}
+    ${chalk.gray('--json')}         ${chalk.gray('Output raw JSON')}
+    ${chalk.gray('-h, --help')}     ${chalk.gray('Show help')}
+    ${chalk.gray('-v')}             ${chalk.gray('Show version')}
   `;
 
   console.log(boxen(helpContent, {
@@ -87,20 +87,19 @@ function showHelp() {
     borderColor: 'cyan',
     borderStyle: 'round',
     title: chalk.bold.cyan(' ⬢ Aura Menu '),
-    titleAlignment: 'center'
+    titleAlignment: 'center',
   }));
 }
 
 function showStatus() {
   showBanner();
-  
+
   const isSetup = Vault.isSetup();
   const hasApiKey = !!process.env.OPENAI_API_KEY;
 
   const statusInfo = `
-  ${chalk.bold('VAULT:')}    ${isSetup ? chalk.green('ACTIVE') : chalk.red('INACTIVE')}
-  ${chalk.bold('NETWORK:')}  ${chalk.cyan('SUI_MAINNET')}
-  ${chalk.bold('AI_CORE:')}  ${hasApiKey ? chalk.green('ONLINE') : chalk.red('OFFLINE')}
+  ${chalk.bold('VAULT:')}    ${isSetup  ? chalk.green('ACTIVE')  : chalk.red('INACTIVE')}
+  ${chalk.bold('AI_CORE:')} ${hasApiKey ? chalk.green('ONLINE')  : chalk.red('OFFLINE')}
 
   ${chalk.gray('──────────────────────────────────────')}
 
@@ -112,7 +111,7 @@ function showStatus() {
     borderColor: isSetup && hasApiKey ? 'green' : 'yellow',
     borderStyle: 'double',
     title: chalk.bold(' SYSTEM_DIAGNOSTICS '),
-    titleAlignment: 'left'
+    titleAlignment: 'left',
   }));
 }
 
@@ -126,45 +125,44 @@ function resolveDevCommand(name: string) {
 
 async function main() {
 
-  if (command === "dev") {
+  // ── dev sub-commands ───────────────────────────────────────────────────────
+  if (command === 'dev') {
     const sub = commandArgs[0];
-  
-    if (!sub || sub === "--help" || sub === "-h" ) {
-      console.log(chalk.bold.cyan("\n=== Dev Commands ===\n"));
+
+    if (!sub || sub === '--help' || sub === '-h') {
+      console.log(chalk.bold.cyan('\n=== Dev Commands ===\n'));
       Object.entries(devCommands).forEach(([name, cmd]) => {
-        const alias = cmd.aliases?.length
-          ? ` (${cmd.aliases.join(", ")})`
-          : "";
-        console.log(
-          ` - ${chalk.yellow(name)}${alias} : ${chalk.gray(cmd.description)}`
-        );
+        const alias = cmd.aliases?.length ? ` (${cmd.aliases.join(', ')})` : '';
+        console.log(` - ${chalk.yellow(name)}${alias} : ${chalk.gray(cmd.description)}`);
       });
+      console.log('');
       return;
     }
-  
-    const subArgs = commandArgs.slice(1);
+
     const cmd = resolveDevCommand(sub);
-  
     if (!cmd) {
-      console.log(chalk.red("\nUnknown dev command\n"));
+      console.log(chalk.red(`\n Unknown dev command: "${sub}"\n`));
       process.exit(1);
     }
-  
-    await cmd.handler(subArgs);
+
+    await cmd.handler(commandArgs.slice(1));
     return;
   }
 
+  // ── top-level commands ─────────────────────────────────────────────────────
   switch (command) {
+
     case 'version':
     case '--version':
     case '-v':
       console.log(chalk.cyan(`Aura OS v${pkg.version}`));
       break;
+
     case 'setup':
     case '-sp':
       await setupCommand();
       break;
-      
+
     case 'chat':
     case '-c':
       if (commandArgs.length === 0) {
@@ -172,27 +170,25 @@ async function main() {
         console.log(chalk.gray('  Usage: aura chat "Your message here"\n'));
         process.exit(1);
       }
-      const message = commandArgs.join(' ');
-      await chatCommand(message);
+      await chatCommand(commandArgs.join(' '));
       break;
 
     case 'research':
     case '-r':
-      const researchTopic = commandArgs.join(' ');
-      await researchCommand(researchTopic || undefined);
+      // researchCommand now takes args: string[]
+      await researchCommand(commandArgs);
       break;
 
     case 'news':
     case '-n':
-      const newsTopic = commandArgs.join(' ');
-      await newsCommand(newsTopic || undefined);
+      await newsCommand(commandArgs.join(' ') || undefined);
       break;
-      
+
     case 'status':
     case '-s':
       showStatus();
       break;
-      
+
     case 'help':
     case '--help':
     case '-h':
@@ -201,14 +197,12 @@ async function main() {
 
     case 'login':
     case '-l':
-      const loginMethod = commandArgs[0];
-      await loginCommand(loginMethod);
+      await loginCommand(commandArgs[0]);
       break;
 
     case 'watch':
     case '-w':
-      const intervalMinutes = parseInt(commandArgs[0]) || 15;
-      await watchCommand(intervalMinutes);
+      await watchCommand(parseInt(commandArgs[0]) || 15);
       break;
 
     case 'dashboard':
@@ -218,14 +212,12 @@ async function main() {
 
     case 'wallet':
     case '-wl':
-      const walletAction = commandArgs[0];
-      await walletCommand(walletAction);
+      await walletCommand(commandArgs[0]);
       break;
 
     case 'run':
-      const scriptName = commandArgs[0];
-      const scriptArgs = commandArgs.slice(1);
-      await runCommand(scriptName, scriptArgs);
+      // runCommand now takes full args: string[] — first element is script name
+      await runCommand(commandArgs);
       break;
 
     case 'analyze':
@@ -259,19 +251,19 @@ async function main() {
     case '-g':
       await gasCommand();
       break;
-      
+
     case undefined:
       showHelp();
       break;
-      
+
     default:
-      console.log(chalk.red(`\n  Unknown command: ${command}`));
-      console.log(chalk.gray('  Run "aura --help" for available commands\n'));
+      console.log(chalk.red(`\n  Unknown command: "${command}"`));
+      console.log(chalk.gray('  Run "aura help" for available commands\n'));
       process.exit(1);
   }
 }
 
 main().catch((error) => {
-  console.error(chalk.red('\n  Error:'), error.message);
+  console.error(chalk.red('\n  Error:'), error instanceof Error ? error.message : String(error));
   process.exit(1);
 });

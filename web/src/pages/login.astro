@@ -34,12 +34,12 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
         </div>
 
         <!-- Auth Options -->
-        <div class="space-y-4">
+        <div id="auth-section" class="space-y-4">
           <!-- Web3 Login -->
-          <button id="btn-web3" class="relative w-full group overflow-hidden bg-white p-[1px] rounded-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300">
-            <div class="relative bg-zinc-950 rounded-[11px] p-4 flex items-center justify-center gap-3 transition-colors group-hover:bg-zinc-900">
+          <button id="btn-web3" class="relative w-full group/btn overflow-hidden bg-white p-[1px] rounded-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] transition-all duration-300">
+            <div class="relative bg-zinc-950 rounded-[11px] p-4 flex items-center justify-center gap-3 transition-colors group-hover/btn:bg-zinc-900">
               <div class="w-5 h-5 flex items-center justify-center">
-                 <div class="w-2 h-2 rounded-full bg-purple-500 neon-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-purple-500 neon-pulse"></div>
               </div>
               <span class="font-bold text-white tracking-tight uppercase text-xs">Connect Web3 Wallet</span>
             </div>
@@ -74,28 +74,48 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
           </div>
         </div>
 
-        <!-- Status & Footer -->
+        <!-- Status Message -->
         <div id="status-msg" class="mt-6 text-center text-xs font-mono h-4 text-transparent transition-colors duration-300">
-          Status Message
+          &nbsp;
+        </div>
+
+        <!-- Success State (hidden by default) -->
+        <div id="success-section" class="hidden mt-6 text-center space-y-3">
+          <div class="w-12 h-12 rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mx-auto">
+            <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <p id="success-text" class="text-green-400 text-sm font-medium"></p>
+          <p class="text-zinc-500 text-xs">You can now close this tab and return to the terminal.</p>
         </div>
         
         <div class="mt-8 pt-6 border-t border-white/5 text-center">
-            <a href="/" class="text-xs text-zinc-600 hover:text-zinc-400 transition-colors">Return to Home</a>
+          <a href="/" class="text-xs text-zinc-600 hover:text-zinc-400 transition-colors">Return to Home</a>
         </div>
       </div>
     </div>
   </main>
 </Layout>
 
-<div id="login-config" 
-  data-supabase-url={supabaseUrl} 
+<!-- Config passed to client script via data attributes (no inline secrets) -->
+<div
+  id="login-config"
+  data-supabase-url={supabaseUrl}
   data-supabase-key={supabaseKey}
-  data-cli-url="http://127.0.0.1:9876/auth-callback"
   class="hidden"
 ></div>
 
 <script>
-  import { createClient, type SupabaseClient, type Provider, type User, type Session } from '@supabase/supabase-js';
+  import {
+    createClient,
+    type SupabaseClient,
+    type Provider,
+    type User,
+    type Session,
+  } from '@supabase/supabase-js';
+
+  // ─── Types ──────────────────────────────────────────────────────────────────
 
   interface AuthPayload {
     provider: string;
@@ -104,121 +124,186 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
     session?: Session;
   }
 
-  // Get config from DOM
-  const configEl = document.getElementById('login-config');
-  const supabaseUrl = configEl?.dataset.supabaseUrl || '';
-  const supabaseKey = configEl?.dataset.supabaseKey || '';
-  const CLI_CALLBACK_URL = configEl?.dataset.cliUrl || 'http://127.0.0.1:9876/auth-callback';
-  
-  // Initialize Supabase
+  // ─── Init ───────────────────────────────────────────────────────────────────
+
+  const configEl   = document.getElementById('login-config') as HTMLElement;
+  const supabaseUrl = configEl?.dataset.supabaseUrl ?? '';
+  const supabaseKey = configEl?.dataset.supabaseKey ?? '';
+
+  // Read session_id from URL once — this never changes during the page lifetime
+  const sessionId = new URLSearchParams(window.location.search).get('session_id');
+
   let supabase: SupabaseClient | null = null;
-  try {
-    if (supabaseUrl && supabaseKey) {
-      supabase = createClient(supabaseUrl, supabaseKey);
-    } else {
-      console.warn('Supabase credentials missing. syncing features may be limited.');
-    }
-  } catch (e) {
-    console.error('Supabase init error:', e);
+  if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+  } else {
+    console.warn('[AuraOS] Supabase credentials missing.');
   }
 
-  // Elements
-  const statusEl = document.getElementById('status-msg');
-  const btnWeb3 = document.getElementById('btn-web3');
-  const btnGoogle = document.getElementById('btn-google');
-  const btnGithub = document.getElementById('btn-github');
+  // ─── UI helpers ─────────────────────────────────────────────────────────────
 
-  function showStatus(msg: string, type = 'info') {
+  const statusEl      = document.getElementById('status-msg')     as HTMLElement;
+  const authSection   = document.getElementById('auth-section')   as HTMLElement;
+  const successSection = document.getElementById('success-section') as HTMLElement;
+  const successText   = document.getElementById('success-text')   as HTMLElement;
+
+  function showStatus(msg: string, type: 'info' | 'error' | 'success' = 'info') {
     if (!statusEl) return;
     statusEl.textContent = msg;
-    statusEl.classList.remove('text-red-500', 'text-green-500', 'text-zinc-400', 'text-transparent');
-    
-    if (type === 'error') statusEl.classList.add('text-red-500');
-    else if (type === 'success') statusEl.classList.add('text-green-500');
-    else statusEl.classList.add('text-zinc-400');
+    statusEl.className = 'mt-6 text-center text-xs font-mono h-4 transition-colors duration-300 ' + (
+      type === 'error'   ? 'text-red-400'   :
+      type === 'success' ? 'text-green-400' :
+                           'text-zinc-400'
+    );
   }
 
-  async function notifyCLI(payload: AuthPayload) {
-    try {
-      showStatus('Syncing with Aura OS CLI...', 'info');
-      await fetch(CLI_CALLBACK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      showStatus('Successfully connected to Aura OS!', 'success');
-      
-      // Close window after short delay if in popup
-      setTimeout(() => {
-        window.close();
-        // If not closed (not a popup), show success
-        showStatus('You can now close this tab.', 'success');
-      }, 1500);
-    } catch (e) {
-      console.warn('CLI not listening', e);
-      showStatus('Logged in (CLI not detected)', 'success');
-      // Redirect to dashboard if CLI isn't listening
-      setTimeout(() => window.location.href = '/dashboard', 1000);
+  function showSuccess(label: string) {
+    authSection?.classList.add('hidden');
+    statusEl?.classList.add('hidden');
+    successSection?.classList.remove('hidden');
+    if (successText) successText.textContent = `Connected as ${label}`;
+  }
+
+  function setButtonsDisabled(disabled: boolean) {
+    ['btn-web3', 'btn-google', 'btn-github'].forEach(id => {
+      const el = document.getElementById(id) as HTMLButtonElement | null;
+      if (el) el.disabled = disabled;
+    });
+  }
+
+  // ─── Core: push payload to Supabase so CLI can pick it up ───────────────────
+
+  async function syncWithCLI(payload: AuthPayload): Promise<boolean> {
+    // No session_id → user opened login page directly (not from CLI)
+    // Just redirect to dashboard after login
+    if (!sessionId) return false;
+
+    if (!supabase) {
+      showStatus('Auth service not configured', 'error');
+      return false;
+    }
+
+    showStatus('Syncing with Aura OS CLI…');
+
+    const { error } = await supabase
+      .from('cli_sessions')
+      .update({ payload: payload as any })
+      .eq('session_id', sessionId);
+
+    if (error) {
+      console.error('[AuraOS] CLI sync failed:', error);
+      showStatus('Failed to sync with CLI', 'error');
+      return false;
+    }
+
+    return true;
+  }
+
+  async function handleAuthSuccess(payload: AuthPayload) {
+    setButtonsDisabled(true);
+
+    const label =
+      payload.wallet ??
+      payload.user?.email ??
+      payload.user?.id ??
+      'unknown';
+
+    const synced = await syncWithCLI(payload);
+
+    if (synced) {
+      // CLI flow: show "close this tab" message
+      showSuccess(label);
+    } else {
+      // Direct web login: redirect to dashboard
+      showStatus('Logged in! Redirecting…', 'success');
+      setTimeout(() => (window.location.href = '/dashboard'), 1000);
     }
   }
 
-  // --- OAUTH LOGIN ---
+  // ─── OAuth (Google / GitHub) ─────────────────────────────────────────────────
+  //
+  // Flow:
+  //   1. User clicks → signInWithOAuth (redirectTo = /login/callback?session_id=...)
+  //   2. Supabase redirects back to /login/callback
+  //   3. /login/callback exchanges the code, then redirects back here with session active
+  //   4. On page load we check getSession() and call handleAuthSuccess
+
   async function handleOAuth(provider: Provider) {
     if (!supabase) {
       showStatus('Auth service not configured', 'error');
       return;
     }
-    showStatus(`Connecting to ${provider}...`);
+
+    showStatus(`Redirecting to ${provider}…`);
+    setButtonsDisabled(true);
+
+    // Build the callback URL, carrying session_id through the whole OAuth round-trip
+    const callbackUrl = new URL('/login/callback', window.location.origin);
+    if (sessionId) callbackUrl.searchParams.set('session_id', sessionId);
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: window.location.href,
-      }
+        redirectTo: callbackUrl.toString(),
+      },
     });
-    if (error) showStatus(error.message, 'error');
+
+    if (error) {
+      showStatus(error.message, 'error');
+      setButtonsDisabled(false);
+    }
+    // If no error: browser is navigating away — nothing more to do
   }
 
-  // Add listeners
-  if (btnGoogle) btnGoogle.addEventListener('click', () => handleOAuth('google'));
-  if (btnGithub) btnGithub.addEventListener('click', () => handleOAuth('github'));
+  document.getElementById('btn-google')?.addEventListener('click', () => handleOAuth('google'));
+  document.getElementById('btn-github')?.addEventListener('click', () => handleOAuth('github'));
 
-  // --- WEB3 LOGIN ---
-  if (btnWeb3) {
-    btnWeb3.addEventListener('click', async () => {
+  // ─── MetaMask ────────────────────────────────────────────────────────────────
+
+  document.getElementById('btn-web3')?.addEventListener('click', async () => {
+    // @ts-ignore
+    if (typeof window.ethereum === 'undefined') {
+      showStatus('MetaMask not detected', 'error');
+      return;
+    }
+
+    try {
+      showStatus('Requesting wallet access…');
+      setButtonsDisabled(true);
+
       // @ts-ignore
-      if (typeof window.ethereum === 'undefined') {
-        showStatus('MetaMask not installed', 'error');
+      const accounts: string[] = await window.ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      if (!accounts[0]) throw new Error('No account returned');
+
+      await handleAuthSuccess({ provider: 'metamask', wallet: accounts[0] });
+    } catch (err) {
+      showStatus((err as Error).message || 'Wallet request rejected', 'error');
+      setButtonsDisabled(false);
+    }
+  });
+
+  // ─── Check for existing OAuth session on page load ───────────────────────────
+  //
+  // This handles the case where Supabase has just redirected back after OAuth.
+  // Supabase sets the session in localStorage automatically; we just read it.
+
+  if (supabase) {
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
+      if (error) {
+        console.error('[AuraOS] getSession error:', error);
         return;
       }
+      if (!session) return; // No active session — normal first load
 
-      try {
-        showStatus('Requesting wallet access...');
-        // @ts-ignore
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        const address = accounts[0];
-        
-        await notifyCLI({
-          provider: 'metamask',
-          wallet: address
-        });
-      } catch (err) {
-        showStatus((err as Error).message || 'Details rejected', 'error');
-      }
-    });
-  }
-
-  // --- CHECK SESSION ON LOAD ---
-  if (supabase) {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        // We have a session!
-        // Send to CLI
-        notifyCLI({
-          provider: session.user.app_metadata.provider || 'oauth',
-          user: session.user,
-          session: session
-        });
-      }
+      // Active session found (OAuth just completed)
+      await handleAuthSuccess({
+        provider: session.user.app_metadata?.provider ?? 'oauth',
+        user:     session.user,
+        session,
+      });
     });
   }
 </script>
@@ -229,6 +314,6 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
   }
   @keyframes pulse {
     0%, 100% { opacity: 0.2; transform: scale(1); }
-    50% { opacity: 0.25; transform: scale(1.1); }
+    50%       { opacity: 0.25; transform: scale(1.1); }
   }
 </style>

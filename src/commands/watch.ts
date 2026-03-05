@@ -2,31 +2,53 @@ import chalk from 'chalk';
 import { researchCommand } from './research.js';
 import { syncActivity } from '../core/utils/supabase.js';
 
-export async function watchCommand(intervalMinutes: number = 15) {
-  console.log(chalk.cyan(`\n Aura Watch Mode Activated.`));
-  console.log(chalk.gray(` Scanning for Alpha every ${intervalMinutes} minutes...`));
-  console.log(chalk.gray(` Results will be synced to your dashboard.\n`));
+const WATCH_TOPICS = [
+  "Sui ecosystem alpha",
+  "Top crypto narratives today",
+  "DeFi alpha this week",
+  "Layer 2 news today",
+  "Solana ecosystem updates",
+];
 
+export async function watchCommand(intervalMinutes: number = 15) {
+  console.log(chalk.cyan(`\n ◉ Aura Watch Mode`));
+  console.log(chalk.gray(` Scanning for alpha every ${intervalMinutes} minutes.`));
+  console.log(chalk.gray(` Results sync to your dashboard automatically.`));
+  console.log(chalk.gray(` Press Ctrl+C to stop.\n`));
+
+  // Run immediately on start, then on interval
   await performWatch();
-  setInterval(async () => {
+
+  const timer = setInterval(async () => {
     await performWatch();
   }, intervalMinutes * 60 * 1000);
+
+  // Graceful shutdown
+  process.on('SIGINT', () => {
+    clearInterval(timer);
+    console.log(chalk.gray('\n\n Watch stopped.\n'));
+    process.exit(0);
+  });
 }
 
 async function performWatch() {
   const timestamp = new Date().toLocaleTimeString();
-  console.log(chalk.gray(`[${timestamp}] Aura is hunting for news...`));
+  const topic = WATCH_TOPICS[Math.floor(Math.random() * WATCH_TOPICS.length)];
+
+  console.log(chalk.gray(`\n[${timestamp}] Hunting: "${topic}"...`));
 
   try {
-    const topics = ["Sui ecosystem alpha leaks", "Top crypto narratives today"];
-    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-
-    const summary = await researchCommand(randomTopic);
+    // researchCommand now takes args: string[] — pass topic as single arg
+    const summary = await researchCommand([topic]);
 
     if (summary) {
-      console.log(chalk.green(` Alpha found and synced!`));
+      await syncActivity("WATCH", { topic }, summary);
+      console.log(chalk.green(` ✓ Alpha found and synced to dashboard.`));
+    } else {
+      console.log(chalk.yellow(` No results for "${topic}". Will retry next cycle.`));
     }
   } catch (error) {
-    console.error(chalk.red(` Watch error: ${error.message}`));
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error(chalk.red(` Watch error: ${msg}`));
   }
 }

@@ -49,7 +49,7 @@ AI-powered contract security analysis with specialized **Trader** (Risk/Verdict)
 
 ```bash
 # Clone the repository
-git clone https://github.com/aura-os/aura-os.git
+git clone https://github.com/Fiddy2112/aura-os.git
 cd aura-os
 
 # Install dependencies
@@ -439,7 +439,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 <div align="center">
   <p><strong>Built with ❤️ for the Web3 community</strong></p>
   <p>
-    <a href="https://github.com/aura-os">GitHub</a> ·
+    <a href="https://github.com/Fiddy2112/aura-os">GitHub</a> ·
     <a href="https://twitter.com/auraos">Twitter</a> ·
     <a href="https://discord.gg/auraos">Discord</a>
   </p>

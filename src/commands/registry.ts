@@ -9,13 +9,13 @@ import txCommand from "./tx.js";
 import { gasCommand } from "./gas.js";
 
 type DevCommand = {
-  handler: (args: string[])=> Promise<void> | void;
+  handler: (args: string[]) => Promise<void> | void;
   description: string;
   aliases?: string[];
-}
+};
 
 export const devCommands: Record<string, DevCommand> = {
-  info:{
+  info: {
     handler: infoCommand,
     description: "Contract identity & intelligence",
     aliases: ["i"],
@@ -37,7 +37,7 @@ export const devCommands: Record<string, DevCommand> = {
   },
   analyze: {
     handler: analyzeCommand,
-    description: "Summary Verdict",
+    description: "Full contract summary verdict",
     aliases: ["a"],
   },
   script: {
@@ -45,14 +45,19 @@ export const devCommands: Record<string, DevCommand> = {
     description: "Manage custom scripts (list, create)",
     aliases: ["s"],
   },
+  run: {
+    handler: runCommand,
+    description: "Run a custom script from ./scripts folder",
+    // no alias — 'r' is taken by risk
+  },
   tx: {
     handler: txCommand,
-    description: "Transaction analysis",
+    description: "Transaction analysis by hash",
     aliases: ["t"],
   },
   gas: {
     handler: gasCommand,
-    description: "Real-time gas prices",
+    description: "Real-time gas prices across networks",
     aliases: ["g"],
   },
-}
+};

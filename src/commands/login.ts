@@ -1,192 +1,212 @@
 import chalk from 'chalk';
 import Conf from 'conf';
-import http from 'http';
+import crypto from 'crypto';
 import open from 'open';
 import { createClient } from '@supabase/supabase-js';
 
-
-const config = new Conf({
-  projectName: 'aura-os'
-});
+const config = new Conf({ projectName: 'aura-os' });
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || '';
 
-const supabase = (supabaseUrl && supabaseKey) 
+const supabase = (supabaseUrl && supabaseKey)
   ? createClient(supabaseUrl, supabaseKey)
   : null;
 
-const PORT = 9876;
-
-// Aura OS login configuration - Default is production, only use locally if in developer mode
-const PROD_WEB_APP = 'https://aura-os-self.vercel.app/login';
+const PROD_WEB_APP = 'https://aura-os-self.vercel.app';
 const isDev = process.env.NODE_ENV === 'development' || process.env.AURA_ENV === 'development';
-const WEB_APP_URL = process.env.WEB_APP_URL || (isDev ? 'http://localhost:4321/login' : PROD_WEB_APP);
+const BASE_WEB_APP = process.env.WEB_APP_URL || (isDev ? 'http://localhost:4321' : PROD_WEB_APP);
+const WEB_APP_LOGIN_URL = new URL('/login', BASE_WEB_APP).toString();
+
+const POLL_INTERVAL_MS = 5000;
+const MAX_ATTEMPTS = 120; // 10 minutes
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+async function cleanupSession(sessionId: string) {
+  if (!supabase) return;
+  try {
+    await supabase.from('cli_sessions').delete().eq('session_id', sessionId);
+  } catch {
+    // best-effort cleanup, don't throw
+  }
+}
+
+function saveMetaMaskSession(wallet: string) {
+  config.set('user_wallet', wallet.toLowerCase());
+  config.set('auth_provider', 'metamask');
+  config.set('login_at', new Date().toISOString());
+}
+
+function saveOAuthSession(payload: any) {
+  config.set('user_id', payload.user.id);
+  config.set('user_email', payload.user.email);
+  config.set('auth_provider', payload.provider);
+  config.set('login_at', new Date().toISOString());
+
+  if (payload.session?.access_token) {
+    config.set('access_token', payload.session.access_token);
+    config.set('refresh_token', payload.session.refresh_token);
+  }
+}
+
+function printAlreadyLoggedIn() {
+  const email  = config.get('user_email')  as string | undefined;
+  const wallet = config.get('user_wallet') as string | undefined;
+
+  console.log(chalk.gray('\n Already connected as:'));
+  if (email)  console.log(chalk.white(`   ${email}`));
+  if (wallet) console.log(chalk.white(`   ${wallet}`));
+  console.log(chalk.gray('\n Run "aura logout" to disconnect.\n'));
+}
+
+// ─── Main ────────────────────────────────────────────────────────────────────
 
 export async function loginCommand(method?: string) {
   console.log(chalk.white.bold('\n Aura OS\n'));
 
-  // Legacy: if wallet address provided directly
-  if (method && method.startsWith('0x')) {
-    const cleanAddress = method.toLowerCase();
-    config.set('user_wallet', cleanAddress);
+  // Legacy: direct wallet address passed as argument
+  if (method?.startsWith('0x')) {
+    config.set('user_wallet', method.toLowerCase());
     config.set('login_at', new Date().toISOString());
-    console.log(chalk.green(` Connected: ${cleanAddress}\n`));
+    console.log(chalk.green(` Connected: ${method.toLowerCase()}\n`));
     return;
   }
 
-  // Check if already logged in
-  const existingUser = config.get('user_email') as string;
-  const existingWallet = config.get('user_wallet') as string;
-  if (existingUser || existingWallet) {
-    console.log(chalk.gray(` Already connected as:`));
-    if (existingUser) console.log(chalk.white(`   ${existingUser}`));
-    if (existingWallet) console.log(chalk.white(`   ${existingWallet}`));
-    console.log(chalk.gray('\n Run "aura logout" to disconnect.\n'));
+  // Already logged in
+  if (config.get('user_email') || config.get('user_wallet')) {
+    printAlreadyLoggedIn();
     return;
   }
 
-  console.log(chalk.gray(' Starting auth server...'));
+  if (!supabase) {
+    console.log(chalk.red(
+      '\n Supabase is not configured.\n' +
+      chalk.gray(' Add SUPABASE_URL and SUPABASE_KEY to your .env file.\n')
+    ));
+    return;
+  }
 
-  return new Promise<void>((resolve) => {
-    let authCompleted = false;
+  console.log(chalk.gray(' Initiating login sequence...'));
 
-    const server = http.createServer(async (req, res) => {
-      // CORS Headers
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-      res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  // ── Create session in Supabase ─────────────────────────────────────────
+  const sessionId = `cli_${crypto.randomUUID()}`;
 
-      if (req.method === 'OPTIONS') {
-        res.writeHead(204);
-        res.end();
-        return;
-      }
+  const { error: insertError } = await supabase
+    .from('cli_sessions')
+    .insert([{ session_id: sessionId, payload: null }]);
 
-      const url = new URL(req.url || '', `http://localhost:${PORT}`);
+  if (insertError) {
+    console.error(
+      chalk.red('\n Failed to initialize auth session.\n') +
+      chalk.gray(`  Supabase error: ${insertError.message}\n`) +
+      chalk.gray('  Check your SUPABASE_URL, SUPABASE_KEY, and table RLS policies.\n')
+    );
+    return;
+  }
 
-      // Handle auth callback
-      if (url.pathname === '/auth-callback' && req.method === 'POST') {
-        let body = '';
-        req.on('data', chunk => { body += chunk; });
-        req.on('end', async () => {
-          try {
-            const data = JSON.parse(body);
-            
-            // MetaMask login
-            if (data.provider === 'metamask' && data.wallet) {
-              config.set('user_wallet', data.wallet.toLowerCase());
-              config.set('auth_provider', 'metamask');
-              config.set('login_at', new Date().toISOString());
-              
-              authCompleted = true;
-              console.log(chalk.green.bold('\n ✓ Connected\n'));
-              console.log(chalk.gray(' Wallet:'), chalk.white(data.wallet));
-            }
-            // OAuth login (Google/GitHub)
-            else if (data.user) {
-              config.set('user_id', data.user.id);
-              config.set('user_email', data.user.email);
-              config.set('auth_provider', data.provider);
-              config.set('login_at', new Date().toISOString());
-              
-              if (data.session?.access_token) {
-                config.set('access_token', data.session.access_token);
-                config.set('refresh_token', data.session.refresh_token);
-              }
+  // ── Open browser ───────────────────────────────────────────────────────
+  const loginUrl = new URL(WEB_APP_LOGIN_URL);
+  loginUrl.searchParams.set('session_id', sessionId);
+  const finalUrl = loginUrl.toString();
 
-              authCompleted = true;
-              console.log(chalk.green.bold('\n ✓ Connected\n'));
-              console.log(chalk.gray(' Email:'), chalk.white(data.user.email));
-            }
+  console.log(chalk.gray('\n Opening browser to:\n'));
+  console.log(chalk.cyan(`   ${finalUrl}\n`));
+  console.log(chalk.gray(' If the browser did not open, paste the URL above manually.\n'));
 
-            if (authCompleted) {
-              console.log(chalk.gray('\n Commands will now sync to your dashboard.\n'));
-              
-              // Send a premium feedback page to the user
-              res.writeHead(200, { 'Content-Type': 'text/html' });
-              res.end(`
-                <html>
-                  <head>
-                    <title>Aura OS - Success</title>
-                    <style>
-                      body { background: #000; color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-                      .card { border: 1px solid #333; padding: 40px; border-radius: 20px; text-align: center; background: #050505; }
-                      .icon { font-size: 40px; margin-bottom: 20px; }
-                      .btn { background: #fff; color: #000; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-weight: bold; margin-top: 20px; display: inline-block; }
-                    </style>
-                  </head>
-                  <body>
-                    <div class="card">
-                      <div class="icon">✅</div>
-                      <h1>Aura OS Connected</h1>
-                      <p>Authentication successful. You can now close this tab and return to your terminal.</p>
-                      <a href="/" class="btn">Go to Dashboard</a>
-                    </div>
-                  </body>
-                </html>
-              `);
+  try {
+    await open(finalUrl);
+  } catch {
+    // URL already printed above, user can open manually
+  }
 
-              setTimeout(() => {
-                server.close();
-                resolve();
-              }, 1000);
-            }
-          } catch (err) {
-            console.error(chalk.red(' Auth error'));
-            res.writeHead(400);
-            res.end('Error');
-          }
-        });
-        return;
-      }
+  // ── Poll for payload ───────────────────────────────────────────────────
+  console.log(chalk.gray(' Waiting for authentication'), chalk.gray('(timeout: 10 min)...'));
 
-      // Default fallback
-      res.writeHead(200);
-      res.end('Aura OS CLI Auth Server');
-    });
+  await new Promise<void>((resolve) => {
+    let attempts = 0;
+    let settled  = false;
 
-    server.listen(PORT, async () => {
-      console.log(chalk.gray(' Opening browser...\n'));
-      console.log(chalk.gray(` Waiting for login at ${WEB_APP_URL}...`));
-
-      try {
-        await open(WEB_APP_URL);
-      } catch (err) {
-        console.log(chalk.red(`\n Failed to open browser. Closing setup so you can try again.\n`));
-        server.close();
-        resolve();
-        return;
-      }
-
-      // Timeout
-      setTimeout(() => {
-        if (!authCompleted) {
-          console.log(chalk.yellow('\n Connection timed out.\n'));
-          server.close();
-          resolve();
-        }
-      }, 10 * 60 * 1000);
-    });
-
-    server.on('error', (err: any) => {
-      if (err.code === 'EADDRINUSE') {
-        console.log(chalk.red(` Port ${PORT} in use. Close other login process.\n`));
-      }
+    const done = async (sessionIdToClean?: string) => {
+      if (settled) return;
+      settled = true;
+      clearInterval(pollInterval);
+      if (sessionIdToClean) await cleanupSession(sessionIdToClean);
       resolve();
-    });
+    };
+
+    const pollInterval = setInterval(async () => {
+      attempts++;
+
+      // Timeout guard
+      if (attempts >= MAX_ATTEMPTS) {
+        console.log(chalk.yellow('\n Login timed out after 10 minutes.\n'));
+        await done(sessionId);
+        return;
+      }
+
+      // Show progress every ~60 seconds
+      if (attempts % 12 === 0) {
+        const minutesLeft = Math.round(((MAX_ATTEMPTS - attempts) * POLL_INTERVAL_MS) / 60000);
+        process.stdout.write(chalk.gray(`\r Waiting... (${minutesLeft} min remaining)   `));
+      }
+
+      let data: any, error: any;
+      try {
+        ({ data, error } = await supabase!
+          .from('cli_sessions')
+          .select('payload')
+          .eq('session_id', sessionId)
+          .single());
+      } catch (networkErr) {
+        // Transient network error — keep polling
+        return;
+      }
+
+      // Supabase query error (not "row not found")
+      if (error && error.code !== 'PGRST116') {
+        console.error(chalk.red(`\n Supabase poll error: ${error.message}\n`));
+        await done(sessionId);
+        return;
+      }
+
+      if (!data?.payload) return; // Not authenticated yet
+
+      // ── Handle authenticated payload ────────────────────────────────
+      const payload = data.payload;
+
+      if (payload.provider === 'metamask' && payload.wallet) {
+        saveMetaMaskSession(payload.wallet);
+        console.log(chalk.green.bold('\n\n ✓ Connected via MetaMask\n'));
+        console.log(chalk.gray(' Wallet:'), chalk.white(payload.wallet));
+
+      } else if (payload.user) {
+        saveOAuthSession(payload);
+        console.log(chalk.green.bold('\n\n ✓ Connected via'), chalk.green.bold(payload.provider ?? 'OAuth'));
+        console.log(chalk.gray('\n'));
+        console.log(chalk.gray(' Email:'), chalk.white(payload.user.email));
+
+      } else {
+        console.log(chalk.red('\n Unknown payload format received. Login aborted.\n'));
+        await done(sessionId);
+        return;
+      }
+
+      console.log(chalk.gray('\n Commands will now sync to your dashboard.\n'));
+      await done(sessionId);
+
+    }, POLL_INTERVAL_MS);
   });
 }
 
+// ─── Logout ──────────────────────────────────────────────────────────────────
+
 export async function logoutCommand() {
-  config.delete('user_id');
-  config.delete('user_email');
-  config.delete('user_wallet');
-  config.delete('access_token');
-  config.delete('refresh_token');
-  config.delete('auth_provider');
-  config.delete('login_at');
-  
+  const keys = [
+    'user_id', 'user_email', 'user_wallet',
+    'access_token', 'refresh_token',
+    'auth_provider', 'login_at',
+  ];
+  keys.forEach(k => config.delete(k));
   console.log(chalk.green('\n ✓ Disconnected\n'));
 }
