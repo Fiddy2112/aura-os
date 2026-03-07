@@ -15,6 +15,27 @@ import Footer from '../components/Footer.astro';
       <div class="space-y-12">
         <div class="glass-card p-8">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+            <h2 class="text-2xl font-bold text-white">v0.3.0</h2>
+            <span class="text-zinc-500 font-mono text-sm">March 2026</span>
+          </div>
+          <div class="prose prose-invert max-w-none">
+            <ul class="list-disc pl-5 text-zinc-400 space-y-2">
+              <li>Added <code class="text-zinc-300">whale</code> command for tracking whale wallet activity and accumulation signals.</li>
+              <li>Added <code class="text-zinc-300">track</code> command to snapshot portfolio balances for any wallet.</li>
+              <li>Added <code class="text-zinc-300">audit</code> command for AI-powered smart contract security and vulnerability scans.</li>
+              <li>Added <code class="text-zinc-300">ask</code> command to ask any Web3/Solidity questions without Needing a wallet.</li>
+              <li>Added AI Core support for <code class="text-zinc-300">GROQ_API_KEY</code> and <code class="text-zinc-300">GEMINI_API_KEY</code>.</li>
+              <li>Fixed a critical infinite loop bug in the contract creation context analyzer binary search.</li>
+              <li>Fixed <code class="text-zinc-300">OwnershipTransferred</code> topic canonical signature formatting.</li>
+              <li>Fixed typo in the hex private key sanitizer regex.</li>
+              <li>Resolved Polymarket plugin type errors for multi-agent capabilities.</li>
+              <li>Completed robust CLI Authentication Device Flow via Supabase.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="glass-card p-8">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
             <h2 class="text-2xl font-bold text-white">v0.2.4</h2>
             <span class="text-zinc-500 font-mono text-sm">March 2026</span>
           </div>
@@ -24,6 +45,8 @@ import Footer from '../components/Footer.astro';
               <li>Bypasses standard strict browser security blockers (Mixed Content, HSTS, PNA) completely.</li>
               <li>Fixed a critical bug where the production URL did not correctly target the <code class="text-zinc-300">/login</code> route during authentication callbacks.</li>
               <li>Fixed OAuth redirect flow returning 404s by ensuring the callback always anchors to the correct window session URI.</li>
+              <li>Fixed type mismatch in the <code class="text-zinc-300">run</code> command handler and cleaned up CLI menu formatting.</li>
+              <li>Added <code class="text-zinc-300">logout</code> to the main CLI help menu and improved password prompt hiding.</li>
             </ul>
           </div>
         </div>
@@ -84,7 +107,7 @@ import Footer from '../components/Footer.astro';
 
         <div class="glass-card p-8">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
-            <h2 class="text-2xl font-bold text-white">v1.0.0</h2>
+            <h2 class="text-2xl font-bold text-white">v0.1.0</h2>
             <span class="text-zinc-500 font-mono text-sm">March 2026</span>
           </div>
           <div class="prose prose-invert max-w-none">

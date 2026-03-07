@@ -21,9 +21,14 @@ import { devCommands } from './commands/registry.js';
 import { scriptCommand } from './commands/script.js';
 import txCommand from './commands/tx.js';
 import { gasCommand } from './commands/gas.js';
+import whaleCommand from './commands/whale.js';
+import auditCommand from './commands/audit.js';
+import trackCommand from './commands/track.js';
+import askCommand from './commands/ask.js';
 
-const args = process.argv.slice(2);
-const command = args[0];
+
+const args        = process.argv.slice(2);
+const command     = args[0];
 const commandArgs = args.slice(1);
 
 const auraGradient = gradient(['#06b6d4', '#8b5cf6', '#ec4899']);
@@ -54,6 +59,12 @@ function showHelp() {
   ${chalk.bold.white('INTERACTION')}
     ${chalk.cyan('chat')}           ${chalk.gray('Natural language AI interaction')}
     ${chalk.cyan('news')}           ${chalk.gray('Real-time crypto alpha aggregator')}
+    ${chalk.cyan('ask')}            ${chalk.gray('Ask any Web3/Solidity question (no wallet needed)')}
+
+  ${chalk.bold.white('ANALYTICS')}
+    ${chalk.cyan('whale')}          ${chalk.gray('Whale wallet activity & accumulation signals')}
+    ${chalk.cyan('track')}          ${chalk.gray('Track portfolio balance for any wallet')}
+    ${chalk.cyan('audit')}          ${chalk.gray('Full security audit with vulnerability scan')}
 
   ${chalk.bold.white('SYSTEM')}
     ${chalk.gray('wallet')}         ${chalk.gray('Manage accounts (show, export)')}
@@ -94,12 +105,12 @@ function showHelp() {
 function showStatus() {
   showBanner();
 
-  const isSetup = Vault.isSetup();
-  const hasApiKey = !!process.env.OPENAI_API_KEY;
+  const isSetup   = Vault.isSetup();
+  const hasApiKey = !!(process.env.OPENAI_API_KEY || process.env.GROQ_API_KEY || process.env.GEMINI_API_KEY);
 
   const statusInfo = `
-  ${chalk.bold('VAULT:')}    ${isSetup  ? chalk.green('ACTIVE')  : chalk.red('INACTIVE')}
-  ${chalk.bold('AI_CORE:')} ${hasApiKey ? chalk.green('ONLINE')  : chalk.red('OFFLINE')}
+  ${chalk.bold('VAULT:')}    ${isSetup   ? chalk.green('ACTIVE')  : chalk.red('INACTIVE')}
+  ${chalk.bold('AI_CORE:')} ${hasApiKey  ? chalk.green('ONLINE')  : chalk.red('OFFLINE')}
 
   ${chalk.gray('──────────────────────────────────────')}
 
@@ -175,7 +186,6 @@ async function main() {
 
     case 'research':
     case '-r':
-      // researchCommand now takes args: string[]
       await researchCommand(commandArgs);
       break;
 
@@ -216,7 +226,6 @@ async function main() {
       break;
 
     case 'run':
-      // runCommand now takes full args: string[] — first element is script name
       await runCommand(commandArgs);
       break;
 
@@ -250,6 +259,27 @@ async function main() {
     case 'gas':
     case '-g':
       await gasCommand();
+      break;
+
+    case 'whale':
+      await whaleCommand(commandArgs);
+      break;
+
+    case 'audit':
+      await auditCommand(commandArgs);
+      break;
+
+    case 'track':
+      await trackCommand(commandArgs);
+      break;
+
+    case 'ask':
+      if (commandArgs.length === 0) {
+        console.log(chalk.red('\n  Error: Question is required'));
+        console.log(chalk.gray('  Usage: aura ask "How does ERC-4337 work?"\n'));
+        process.exit(1);
+      }
+      await askCommand(commandArgs);
       break;
 
     case undefined:

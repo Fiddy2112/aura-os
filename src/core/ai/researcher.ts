@@ -2,100 +2,30 @@ import OpenAI from "openai";
 import Groq from "groq-sdk";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NewsSearcher, type SearchResult } from "./news.js";
-import { PolymarketPlugin } from "./plugins/polymarket.js";
+import { PolymarketPlugin, type PolymarketMarket } from "./plugins/polymarket.js";
 import chalk from "chalk";
 
-/**
- * Deep Research Prompt for structured project analysis
- */
+// ── Deep Research Prompt ──────────────────────────────────────────────────────
+
 function getDeepResearchPrompt(project: string): string {
   return `You are a professional crypto research analyst and sentiment expert.
 
-  Your task is to produce a structured, evidence-driven research report about ${project}. 
-  This task is analytical research, NOT news summarization and NOT investment advice.
+  Your task is to produce a structured, evidence-driven research report about ${project}.
+  This is analytical research — NOT news summarization and NOT investment advice.
 
-  ========================
-  STRICT BOUNDARIES
-  ========================
-  - Use ONLY information explicitly present in the provided sources and the [PREDICTION MARKET DATA].
-  - If Prediction Market data (Polymarket) is available, it MUST be used to contextualize market sentiment and speculative risk.
-  - Do NOT rely on prior knowledge, common crypto narratives, or assumptions.
-  - If evidence is missing or unclear, explicitly state: "insufficient data".
-  - Do NOT infer intent, future outcomes, or motivations beyond what sources state.
-  - IF SOURCES CONFLICT: Explicitly note the discrepancy and cite both conflicting sources (e.g., "Source 1 claims X, while Source 2 indicates Y").
+  STRICT BOUNDARIES:
+  - Use ONLY information from the provided sources and [PREDICTION MARKET DATA].
+  - If Polymarket data is available, use it to contextualize market sentiment.
+  - Do NOT rely on prior knowledge or assumptions.
+  - If evidence is missing, state: "insufficient data".
+  - If sources conflict, cite both: "Source 1 claims X, Source 2 indicates Y".
 
-  ========================
-  AUDIENCE
-  ========================
-  - The reader understands basic crypto concepts.
-  - Use precise, neutral, and analytical language.
-  - Avoid marketing, hype, or opinionated phrasing.
-
-  ========================
-  MANDATORY RESEARCH PRINCIPLES
-  ========================
-  - Every factual claim MUST be supported by an inline citation to the source index, e.g., "Mainnet launched in Q1 [Source 1]."
-  - If a claim cannot be fully supported, label it as "unsupported".
-  - Clearly distinguish between:
-    - FACTS (directly stated or observable)
-    - CLAIMED PURPOSE (what the project says about itself)
-    - INTERPRETATIONS (explicitly marked and evidence-based)
+  MANDATORY PRINCIPLES:
+  - Every factual claim MUST have an inline citation: e.g., "Launched Q1 [Source 1]."
+  - Distinguish FACTS / CLAIMED PURPOSE / INTERPRETATIONS.
   - Market data MUST include a timestamp or reference date.
 
-  ========================
-  RESEARCH FLOW (FOLLOW STRICTLY)
-  ========================
-
-  1. PROJECT DEFINITION
-  - FACTS: What is the project? When was it created?
-  - CLAIMED PURPOSE: What problem does it claim to solve?
-  - CATEGORY: L1, L2, DeFi, AI Agent, etc.
-
-  2. TECHNOLOGY & SECURITY
-  - IMPLEMENTATION: What is live? What is inherited?
-  - MATURITY: idea / testnet / mainnet / production.
-  - SECURITY: Audit history, multisig setup, and bug bounties.
-  - TECHNICAL TRADE-OFFS: Design constraints or limitations.
-  - EVIDENCE: Repos, technical documentation.
-
-  3. TEAM, GOVERNANCE & CONTROL
-  - FACTS: Who controls upgrades/decisions?
-  - GOVERNANCE: DAO, multisig, or foundation.
-  - CENTRALIZATION POINTS: Who has final override power?
-
-  4. TOKEN MODEL & ECONOMICS
-  - ROLE: Is the token required for core functionality?
-  - SUPPLY & DISTRIBUTION: Total/circulating supply, unlocks.
-  - INCENTIVES: Who benefits? Who bears economic risk?
-
-  5. ADOPTION, TRACTION & MARKET SENTIMENT
-  - USAGE SIGNALS: On-chain activity (TVL, active users).
-  - MARKET METRICS: Cap, FDV, 24h Volume (with dates).
-  - PREDICTION MARKET SENTIMENT:
-    - Analyze 'Odds' and 'Volume' from [PREDICTION MARKET DATA].
-    - Does the market bet 'Yes' or 'No' on this project's success or specific milestones?
-    - High volume indicates high conviction or significant conflict in sentiment.
-
-  6. RISK ANALYSIS
-  - HIGH RISK: Risks materially affecting functionality, governance, or economics. 
-    - Integration: If Polymarket 'Yes' odds are < 30% for key milestones, evaluate as High Execution Risk.
-  - MEDIUM RISK: Risks with moderate impact.
-  - LOW RISK: Minor or mitigated risks.
-  - For EACH risk: Explain WHY and cite EVIDENCE.
-
-  7. LIMITATIONS & UNKNOWNS
-  - Missing data or unverified claims.
-
-  ========================
-  RULES
-  ========================
-  - Do NOT speculate or predict price.
-  - Do NOT provide investment recommendations.
-  - Maintain a neutral, analytical, research-only tone.
-
-  ========================
-  OUTPUT FORMAT (STRICT)
-  ========================
+  OUTPUT FORMAT (STRICT):
 
   PROJECT OVERVIEW:
   - FACTS:
@@ -138,37 +68,41 @@ function getDeepResearchPrompt(project: string): string {
   - ...`;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+
 export interface ResearchReport {
-  project: string;
-  report: string;
-  sources: SearchResult[];
+  project:   string;
+  report:    string;
+  sources:   SearchResult[];
   timestamp: Date;
 }
 
-/**
- * DeepResearcher - Analyzes crypto projects with structured research reports
- * Uses NewsSearcher for data fetching, then applies deep analysis
- */
 export class DeepResearcher {
   private newsSearcher = new NewsSearcher();
-  private openai = new OpenAI();
-  private groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  private genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-  /**
-   * Perform deep research analysis on a crypto project
-   * @param project Project name to research
-   * @param options Research options
-   */
+  // Lazy-init AI clients — only instantiate if keys are present
+  private get openai() {
+    return process.env.OPENAI_API_KEY
+      ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+      : null;
+  }
+  private get groq() {
+    return process.env.GROQ_API_KEY
+      ? new Groq({ apiKey: process.env.GROQ_API_KEY })
+      : null;
+  }
+  private get genAI() {
+    return process.env.GEMINI_API_KEY
+      ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+      : null;
+  }
+
   async analyzeProject(
     project: string,
-    options?: {
-      language?: "en" | "vi";
-    }
+    options?: { language?: 'en' | 'vi' }
   ): Promise<ResearchReport> {
-    const { language = "en" } = options || {};
+    const { language = 'en' } = options ?? {};
 
-    // Fetch comprehensive data from multiple source categories
     const queries = [
       `${project} cryptocurrency project overview technology`,
       `${project} crypto team founders governance`,
@@ -177,23 +111,21 @@ export class DeepResearcher {
       `${project} cryptocurrency risks analysis`,
     ];
 
-    const polyPlugin = new PolymarketPlugin();
-
-    let polyData: PolymarketPlugin[] = [];
-
+    // Fetch Polymarket data (best-effort)
+    let polyData: PolymarketMarket[] = [];
     try {
-      polyData = await polyPlugin.fetchMarkets(project);
-    } catch (error) {
-      console.log(chalk.gray(` [Polymarket] No data found or API issue.`));
+      const plugin = new PolymarketPlugin();
+      polyData = await plugin.fetchMarkets(project);
+    } catch {
+      console.log(chalk.gray(' [Polymarket] No data found.'));
     }
 
-    // Collect data from all queries
+    // Fetch news from all queries
     const allResults: SearchResult[] = [];
-    
     for (const query of queries) {
       const results = await this.newsSearcher.search(query, {
         limit: 3,
-        categories: ["research", "news", "defi", "market"],
+        categories: ['research', 'news', 'defi', 'market'],
         language,
       });
       allResults.push(...results);
@@ -201,138 +133,121 @@ export class DeepResearcher {
 
     // Deduplicate by URL
     const uniqueResults = allResults.filter(
-      (result, index, self) =>
-        index === self.findIndex((r) => r.url === result.url)
+      (r, i, self) => i === self.findIndex(x => x.url === r.url)
     );
 
     if (uniqueResults.length === 0) {
       return {
         project,
-        report: `Unable to find sufficient data for research on "${project}". Please try a more specific project name or check if the project exists.`,
+        report: `Unable to find sufficient data for "${project}". Try a more specific name.`,
         sources: [],
         timestamp: new Date(),
       };
     }
 
-    const polyContext = polyData.length > 0 
-    ? `\n[PREDICTION MARKET DATA (POLYMARKET)]:\n` + polyData.map(d => 
-        `- Market: ${d.title}\n  Volume: ${d.volume}\n  Odds (Yes): ${(d.price * 100).toFixed(1)}%`
-      ).join('\n')
-    : "";
+    const polyContext = polyData.length > 0
+      ? `\n[PREDICTION MARKET DATA (POLYMARKET)]:\n` +
+        polyData.map((d: any) =>
+          `- Market: ${d.title}\n  Volume: ${d.volume}\n  Odds (Yes): ${(d.price * 100).toFixed(1)}%`
+        ).join('\n')
+      : '';
 
-    // Prepare source context for analysis
     const sourcesContext = uniqueResults
-      .map(
-        (d, i) =>
-          `[Source ${i + 1}: ${d.source}]\nTitle: ${d.title}\nContent: ${d.content}\nURL: ${d.url}`
+      .map((d, i) =>
+        `[Source ${i + 1}: ${d.source}]\nTitle: ${d.title}\nContent: ${d.content}\nURL: ${d.url}`
       )
-      .join("\n\n---\n\n");
+      .join('\n\n---\n\n');
 
-    const combinedContext = sourcesContext + "\n\n" + polyContext;
-
-    // Generate deep research report
-    const report = await this.generateReport(combinedContext, project, language);
-
-    return {
+    const report = await this.generateReport(
+      sourcesContext + '\n\n' + polyContext,
       project,
-      report,
-      sources: uniqueResults,
-      timestamp: new Date(),
-    };
+      language,
+    );
+
+    return { project, report, sources: uniqueResults, timestamp: new Date() };
   }
 
-  /**
-   * Generate research report using AI
-   */
   private async generateReport(
     sourcesContext: string,
     project: string,
-    language: "en" | "vi"
+    language: 'en' | 'vi',
   ): Promise<string> {
-    const systemPrompt = getDeepResearchPrompt(project);
-    const languageNote =
-      language === "vi"
-        ? "\n\nIMPORTANT: The user speaks Vietnamese. Output the research report in Vietnamese."
-        : "";
+    const system = getDeepResearchPrompt(project);
+    const langNote = language === 'vi'
+      ? '\n\nIMPORTANT: Output the report in Vietnamese.'
+      : '';
+    const user = `Analyze these sources and produce a structured research report about ${project}:\n\n${sourcesContext}${langNote}`;
 
-    const userContent = `Analyze the following sources and produce a structured research report about ${project}:\n\n${sourcesContext}${languageNote}`;
+    const openai = this.openai;
+    const groq   = this.groq;
+    const genAI  = this.genAI;
 
-    // Try OpenAI first
-    try {
-      const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userContent },
-        ],
-        temperature: 0.2,
-        max_tokens: 4000,
-      });
-
-      return completion.choices[0].message.content || "Unable to generate report.";
-    } catch {
-      console.log("OpenAI unavailable, trying Groq...");
-
-      // Try Groq
+    if (openai) {
       try {
-        const groqResponse = await this.groq.chat.completions.create({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userContent },
-          ],
+        const res = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
           temperature: 0.2,
+          max_tokens: 4000,
         });
-
-        return groqResponse.choices[0].message.content || "Unable to generate report.";
+        const text = res.choices[0].message.content;
+        if (text) return text;
       } catch {
-        console.log("Groq unavailable, trying Gemini...");
-
-        // Try Gemini
-        try {
-          const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-          const fullPrompt = `${systemPrompt}\n\n${userContent}`;
-          const result = await model.generateContent(fullPrompt);
-          return result.response.text();
-        } catch {
-          throw new Error("All AI models failed to generate the research report.");
-        }
+        console.log(chalk.gray(' OpenAI unavailable, trying Groq...'));
       }
     }
+
+    if (groq) {
+      try {
+        const res = await groq.chat.completions.create({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+          temperature: 0.2,
+        });
+        const text = res.choices[0].message.content;
+        if (text) return text;
+      } catch {
+        console.log(chalk.gray(' Groq unavailable, trying Gemini...'));
+      }
+    }
+
+    if (genAI) {
+      try {
+        const model  = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const result = await model.generateContent(`${system}\n\n${user}`);
+        return result.response.text();
+      } catch {}
+    }
+
+    throw new Error('All AI models failed to generate the research report.');
   }
 
-  /**
-   * Quick project summary (less comprehensive than full analysis)
-   */
   async quickSummary(project: string): Promise<string> {
     const results = await this.newsSearcher.search(
       `${project} cryptocurrency overview summary`,
-      { limit: 5, categories: ["research", "news"] }
+      { limit: 5, categories: ['research', 'news'] },
     );
 
-    if (results.length === 0) {
-      return `No data found for ${project}.`;
+    if (results.length === 0) return `No data found for ${project}.`;
+
+    const rawText = results.map(r => r.content).join('\n\n');
+    const openai  = this.openai;
+
+    if (openai) {
+      try {
+        const res = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: `Provide a brief, factual summary of ${project} based only on the provided information. No speculation or investment advice.` },
+            { role: 'user',   content: rawText },
+          ],
+          temperature: 0.3,
+          max_tokens: 500,
+        });
+        return res.choices[0].message.content || 'Unable to summarize.';
+      } catch {}
     }
 
-    const rawText = results.map((r) => r.content).join("\n\n");
-    
-    try {
-      const completion = await this.openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `Provide a brief, factual summary of ${project} based only on the provided information. No speculation or investment advice.`,
-          },
-          { role: "user", content: rawText },
-        ],
-        temperature: 0.3,
-        max_tokens: 500,
-      });
-
-      return completion.choices[0].message.content || "Unable to summarize.";
-    } catch {
-      return `Summary: ${results[0]?.content.slice(0, 500) || "No data available."}`;
-    }
+    return `Summary: ${results[0]?.content.slice(0, 500) ?? 'No data available.'}`;
   }
 }

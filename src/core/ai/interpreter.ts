@@ -5,44 +5,28 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
 import chalk from 'chalk';
 
-// Enhanced Intent Schema with more actions
+// ── Intent Schema ─────────────────────────────────────────────────────────────
+
 const IntentSchema = z.object({
   action: z.enum([
-    "CHECK_BALANCE",
-    "SEND_TOKEN",
-    "SWAP_TOKEN",
-    "GET_PRICE",
-    "GET_GAS",
-    "GET_ADDRESS",
-    "GET_TRANSACTIONS",
-    "RESEARCH",
-    "NEWS",
-    "PORTFOLIO",
-    // Developer Actions
-    "TRACK_WALLET",
-    "NFT_INFO",
-    "READ_CONTRACT",
-    "DECODE_TX",
-    "ENS_LOOKUP",
-    "GET_CONTRACT",
-    "GENERATE_WALLET",
-    "SIGN_MESSAGE",
-    "REJECTED"
+    "CHECK_BALANCE", "SEND_TOKEN", "SWAP_TOKEN", "GET_PRICE", "GET_GAS",
+    "GET_ADDRESS", "GET_TRANSACTIONS", "RESEARCH", "NEWS", "PORTFOLIO",
+    "TRACK_WALLET", "NFT_INFO", "READ_CONTRACT", "DECODE_TX", "ENS_LOOKUP",
+    "GET_CONTRACT", "GENERATE_WALLET", "SIGN_MESSAGE", "REJECTED",
   ]),
-  token: z.string().nullable(),
-  amount: z.number().nullable(),
-  target_address: z.string().nullable(),
-  chain: z.string().nullable(),
-  reason: z.string().nullable(),
-  topic: z.string().nullable(),
-  includePrice: z.boolean().nullable(),
-  // Developer fields
+  token:            z.string().nullable(),
+  amount:           z.number().nullable(),
+  target_address:   z.string().nullable(),
+  chain:            z.string().nullable(),
+  reason:           z.string().nullable(),
+  topic:            z.string().nullable(),
+  includePrice:     z.boolean().nullable(),
   contract_address: z.string().nullable(),
-  function_name: z.string().nullable(),
-  tx_hash: z.string().nullable(),
-  ens_name: z.string().nullable(),
-  token_id: z.string().nullable(),
-  message: z.string().nullable(),
+  function_name:    z.string().nullable(),
+  tx_hash:          z.string().nullable(),
+  ens_name:         z.string().nullable(),
+  token_id:         z.string().nullable(),
+  message:          z.string().nullable(),
 });
 
 export type Intent = z.infer<typeof IntentSchema>;
@@ -54,409 +38,307 @@ export interface WalletContext {
   chain?: string;
 }
 
+// ── Shared fallback helper ────────────────────────────────────────────────────
+// Tries OpenAI → Groq → Gemini, returns the first that succeeds.
+
+type ChatMessage = { role: 'system' | 'user' | 'assistant'; content: string };
+
+async function runWithFallback(
+  openai: OpenAI | null,
+  groq:   Groq   | null,
+  genAI:  GoogleGenerativeAI | null,
+  messages: ChatMessage[],
+  temperature = 0.3,
+): Promise<string> {
+  const system = messages.find(m => m.role === 'system')?.content ?? '';
+  const user   = messages.filter(m => m.role !== 'system').map(m => m.content).join('\n');
+
+  if (openai) {
+    try {
+      const res = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages,
+        temperature,
+      });
+      const text = res.choices[0].message.content;
+      if (text) return text;
+    } catch {}
+  }
+
+  if (groq) {
+    try {
+      const res = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages,
+        temperature,
+      });
+      const text = res.choices[0].message.content;
+      if (text) return text;
+    } catch {}
+  }
+
+  if (genAI) {
+    try {
+      const model  = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const result = await model.generateContent(`${system}\n\n${user}`);
+      return result.response.text();
+    } catch {}
+  }
+
+  throw new Error('All AI models failed.');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export class AIInterpreter {
   private openai: OpenAI | null = null;
-  private groq: Groq | null = null;
-  private genAI: GoogleGenerativeAI | null = null;
+  private groq:   Groq   | null = null;
+  private genAI:  GoogleGenerativeAI | null = null;
 
   constructor() {
-    const openaiKey = process.env.OPENAI_API_KEY;
-    const groqKey = process.env.GROQ_API_KEY;
-    const geminiKey = process.env.GEMINI_API_KEY;
+    if (process.env.OPENAI_API_KEY)  this.openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    if (process.env.GROQ_API_KEY)    this.groq   = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    if (process.env.GEMINI_API_KEY)  this.genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-    if (openaiKey) {
-      this.openai = new OpenAI({ apiKey: openaiKey });
-    }
-    
-    if (groqKey) {
-      this.groq = new Groq({ apiKey: groqKey });
-    }
-
-    if (geminiKey) {
-      this.genAI = new GoogleGenerativeAI(geminiKey);
-    }
-
-    if (!openaiKey && !groqKey && !geminiKey) {
-      console.warn(chalk.yellow("\n [AI] Warning: No AI API keys detected in your .env file."));
-      console.warn(chalk.gray(" Run 'aura setup' to configure your personal AI providers.\n"));
+    if (!this.openai && !this.groq && !this.genAI) {
+      console.warn(chalk.yellow("\n [AI] Warning: No AI API keys detected."));
+      console.warn(chalk.gray(" Run 'aura setup' to configure your AI providers.\n"));
     }
   }
+
+  // ── parse: convert natural language → Intent ───────────────────────────────
 
   async parse(userInput: string, walletContext?: WalletContext): Promise<Intent | null> {
     if (!this.openai && !this.groq && !this.genAI) {
-      console.error(chalk.red("\n [AI Error] No AI providers available. Please run 'aura setup'."));
+      console.error(chalk.red("\n [AI Error] No AI providers available. Run 'aura setup'."));
       return null;
     }
+
     const systemPrompt = `
-      You are Aura OS, a professional AI Agent specializing in Web3 and Research.
+    You are Aura OS, a professional AI Agent specializing in Web3 and Research.
+    Task: Analyze user requests and convert them to JSON.
 
-      Task: Analyze user requests and convert them to JSON.
+    CURRENT CONTEXT:
+    • Wallet:  ${walletContext?.isConnected ? 'Connected' : 'Disconnected'}
+    • Address: ${walletContext?.address || 'Not configured'}
+    • Balance: ${walletContext?.balance || 'Unknown'}
+    • Network: ${walletContext?.chain || 'Default'}
 
-      CURRENT CONTEXT:
-      • Wallet: ${walletContext?.isConnected ? 'Connected' : 'Disconnected'}
-      • Address: ${walletContext?.address || 'Not configured'}
-      • Balance: ${walletContext?.balance || 'Unknown'}
-      • Network: ${walletContext?.chain || 'Default'}
+    SUPPORTED ACTIONS:
+    GET_PRICE, CHECK_BALANCE, SEND_TOKEN, SWAP_TOKEN, PORTFOLIO, GET_GAS,
+    GET_ADDRESS, GET_TRANSACTIONS, RESEARCH, NEWS,
+    TRACK_WALLET, NFT_INFO, READ_CONTRACT, DECODE_TX,
+    ENS_LOOKUP, GET_CONTRACT, GENERATE_WALLET, SIGN_MESSAGE, REJECTED
 
-      SUPPORTED ACTIONS:
+    RULES:
+    - STRICTLY Web3 only. Reject general questions with REJECTED.
+    - Return valid JSON only. No apologies or explanations.
+    - Understand English and Vietnamese naturally.
+    - NEWS = quick headlines. RESEARCH = deep structured analysis.
 
-      1. GET_PRICE
-         - Token/crypto price
-         - Examples: "ETH price?", "giá Bitcoin"
+    EXAMPLES:
+    User: "ETH price" → { "action": "GET_PRICE", "token": "ETH" }
+    User: "vitalik.eth" → { "action": "ENS_LOOKUP", "ens_name": "vitalik.eth" }
+    User: "Decode tx 0xabc" → { "action": "DECODE_TX", "tx_hash": "0xabc" }
+    User: "Generate new wallet" → { "action": "GENERATE_WALLET" }
+    User: "Sign message: Hello" → { "action": "SIGN_MESSAGE", "message": "Hello" }
+    `.trim();
 
-      2. RESEARCH
-         - Deep project analysis, structured reports, technical assessment
-         - Use for: "Research Solana", "Analyze Ethereum", "Tell me about Arbitrum"
-         - Keywords: research, analyze, deep dive, assessment, report
-         - Returns comprehensive 7-section research report
-
-      2.5. NEWS
-         - Quick news updates, latest headlines, current events
-         - Use for: "Crypto news today", "What's happening with ETH?", "Bitcoin news"
-         - Keywords: news, headlines, updates, happening, latest
-         - Returns quick news summary
-
-      3. CHECK_BALANCE / SEND_TOKEN / SWAP_TOKEN / PORTFOLIO
-         - Wallet operations
-         - CHECK_BALANCE: "Check my ETH"
-         - PORTFOLIO: "Show my portfolio"
-
-      4. GET_GAS / GET_ADDRESS / GET_TRANSACTIONS
-         - Utility queries
-
-      5. DEVELOPER TOOLS:
-         - TRACK_WALLET: Track/monitor a wallet address
-           Example: "Track 0x123...", "theo dõi ví này"
-         - NFT_INFO: Get NFT metadata, owner, floor price
-           Example: "Check Bored Ape #1234", "NFT info 0x..."
-         - READ_CONTRACT: Read smart contract data
-           Example: "Read balanceOf on 0x... contract"
-         - DECODE_TX: Decode transaction calldata
-           Example: "Decode tx 0x..."
-         - ENS_LOOKUP: Resolve ENS name to address or vice versa
-           Example: "What's vitalik.eth address?", "ENS for 0x..."
-         - GET_CONTRACT: Get contract info (ABI, source, verified)
-           Example: "Show AAVE contract", "contract info 0x..."
-         - GENERATE_WALLET: Create new wallet keypair
-           Example: "Generate new wallet", "tạo ví mới"
-         - SIGN_MESSAGE: Sign a message with wallet
-           Example: "Sign message: Hello World"
-
-      6. REJECTED
-         - Non-Web3 requests
-
-      RULES:
-      - STRICTLY Web3 only. Reject general questions.
-      - Return valid JSON only. No apologies or explanations.
-      - Understand English and Vietnamese naturally.
-
-      EXAMPLES:
-      
-      User: "ETH price"
-      → { "action": "GET_PRICE", "token": "ETH" }
-      
-      User: "Track 0x742d35Cc6634C0532925a3b844Bc9e7595f"
-      → { "action": "TRACK_WALLET", "target_address": "0x742d35Cc6634C0532925a3b844Bc9e7595f" }
-
-      User: "Check Bored Ape #1234"
-      → { "action": "NFT_INFO", "token": "BAYC", "token_id": "1234" }
-
-      User: "What's vitalik.eth address?"
-      → { "action": "ENS_LOOKUP", "ens_name": "vitalik.eth" }
-
-      User: "Decode tx 0xabc123..."
-      → { "action": "DECODE_TX", "tx_hash": "0xabc123..." }
-
-      User: "Generate new wallet"
-      → { "action": "GENERATE_WALLET" }
-
-      User: "Sign message: Hello Aura"
-      → { "action": "SIGN_MESSAGE", "message": "Hello Aura" }
-
-      User: "Read totalSupply on 0x1234 contract"
-      → { "action": "READ_CONTRACT", "contract_address": "0x1234", "function_name": "totalSupply" }
-    `;
-
-    try {
-      if (this.openai) {
+    // Try OpenAI with structured output first
+    if (this.openai) {
+      try {
         const completion = await this.openai.beta.chat.completions.parse({
-          model: "gpt-4o-mini",
+          model: 'gpt-4o-mini',
           messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userInput },
+            { role: 'system', content: systemPrompt },
+            { role: 'user',   content: userInput },
           ],
-          response_format: zodResponseFormat(IntentSchema, "intent"),
+          response_format: zodResponseFormat(IntentSchema, 'intent'),
           temperature: 0.1,
         });
-
         return completion.choices[0].message.parsed;
-      } else {
-        throw new Error("OpenAI not initialized");
-      }
-    } catch (error) {
-      console.log(chalk.gray(" OpenAI Parse failed or incomplete, moving to Groq..."));
-      try {
-        if (this.groq) {
-          const groqResponse = await this.groq.chat.completions.create({
-            model: "llama-3.3-70b-versatile",
-            messages: [
-              { role: "system", content: systemPrompt + "\nIMPORTANT: You must output ONLY valid JSON." },
-              { role: "user", content: userInput },
-            ],
-            response_format: { type: "json_object" },
-            temperature: 0.1,
-          });
-          
-          const content = groqResponse.choices[0].message.content;
-          return content ? JSON.parse(content) : null;
-        } else {
-          throw new Error("Groq not initialized");
-        }
-      } catch (groqError) {
-        console.log(chalk.gray(" Groq Parse failed, moving to Gemini..."));
-
-        try {
-          if (this.genAI) {
-            const model = this.genAI.getGenerativeModel({ 
-              model: "gemini-1.5-flash",
-              generationConfig: { responseMimeType: "application/json" }
-            });
-            
-            const result = await model.generateContent(`${systemPrompt}\n\nUser input: ${userInput}`);
-            const text = result.response.text();
-            return JSON.parse(text);
-          } else {
-            throw new Error("Gemini not initialized");
-          }
-        } catch (geminiError) {
-          console.error(chalk.red(" All AI models failed to parse the command."));
-          return null;
-        }
-      }
+      } catch {}
     }
+
+    // Groq fallback
+    if (this.groq) {
+      try {
+        const res = await this.groq.chat.completions.create({
+          model: 'llama-3.3-70b-versatile',
+          messages: [
+            { role: 'system', content: systemPrompt + '\nIMPORTANT: Output ONLY valid JSON.' },
+            { role: 'user',   content: userInput },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.1,
+        });
+        const content = res.choices[0].message.content;
+        return content ? JSON.parse(content) : null;
+      } catch {}
+    }
+
+    // Gemini fallback
+    if (this.genAI) {
+      try {
+        const model  = this.genAI.getGenerativeModel({
+          model: 'gemini-1.5-flash',
+          generationConfig: { responseMimeType: 'application/json' },
+        });
+        const result = await model.generateContent(`${systemPrompt}\n\nUser: ${userInput}`);
+        return JSON.parse(result.response.text());
+      } catch {}
+    }
+
+    console.error(chalk.red(' All AI models failed to parse the command.'));
+    return null;
   }
+
+  // ── quickParse: regex/keyword fast path ────────────────────────────────────
 
   quickParse(userInput: string, walletAddress?: string): Intent | null {
     const input = userInput.toLowerCase().trim();
-    const baseIntent = {
-      token: null, amount: null, target_address: null, chain: null, 
+    const base = {
+      token: null, amount: null, target_address: null, chain: null,
       reason: null, topic: null, includePrice: null,
-      contract_address: null, function_name: null, tx_hash: null, 
-      ens_name: null, token_id: null, message: null
+      contract_address: null, function_name: null, tx_hash: null,
+      ens_name: null, token_id: null, message: null,
     };
-    
+
     const addrMatch = input.match(/0x[a-fA-F0-9]{40}/);
     const targetAddr = addrMatch ? addrMatch[0] : null;
 
-    // ENS lookup
     const ensMatch = input.match(/([a-z0-9-]+\.eth)/i);
-    if (ensMatch) {
-      return { ...baseIntent, action: 'ENS_LOOKUP', ens_name: ensMatch[1] };
-    }
+    if (ensMatch) return { ...base, action: 'ENS_LOOKUP', ens_name: ensMatch[1] };
 
-    // Generate wallet
-    if (input.includes('generate') && input.includes('wallet') || 
-        input.includes('tạo') && input.includes('ví') ||
+    if ((input.includes('generate') && input.includes('wallet')) ||
+        (input.includes('tạo') && input.includes('ví')) ||
         input.includes('new wallet')) {
-      return { ...baseIntent, action: 'GENERATE_WALLET' };
+      return { ...base, action: 'GENERATE_WALLET' };
     }
 
-    // Sign message
     if (input.includes('sign message') || input.includes('ký')) {
       const msgMatch = userInput.match(/sign message[:\s]+(.+)/i);
-      return { ...baseIntent, action: 'SIGN_MESSAGE', message: msgMatch ? msgMatch[1].trim() : null };
+      return { ...base, action: 'SIGN_MESSAGE', message: msgMatch?.[1]?.trim() ?? null };
     }
 
-    // Decode tx
     const txMatch = input.match(/(?:decode|tx|transaction)\s*(0x[a-fA-F0-9]{64})/i);
-    if (txMatch) {
-      return { ...baseIntent, action: 'DECODE_TX', tx_hash: txMatch[1] };
-    }
+    if (txMatch) return { ...base, action: 'DECODE_TX', tx_hash: txMatch[1] };
 
-    // Track wallet
     if (targetAddr && (input.includes('track') || input.includes('theo dõi') || input.includes('monitor'))) {
-      return { ...baseIntent, action: 'TRACK_WALLET', target_address: targetAddr };
+      return { ...base, action: 'TRACK_WALLET', target_address: targetAddr };
     }
 
-    // Contract info
     if (targetAddr && (input.includes('contract') || input.includes('hợp đồng'))) {
-      return { ...baseIntent, action: 'GET_CONTRACT', contract_address: targetAddr };
+      return { ...base, action: 'GET_CONTRACT', contract_address: targetAddr };
     }
 
-    // Address found - default to GET_TRANSACTIONS
     if (targetAddr) {
       if (walletAddress && targetAddr.toLowerCase() === walletAddress.toLowerCase()) {
         if (input.includes('giao dịch') || input.includes('lịch sử') || input.includes('history')) {
-          return { ...baseIntent, action: 'GET_TRANSACTIONS', target_address: targetAddr };
+          return { ...base, action: 'GET_TRANSACTIONS', target_address: targetAddr };
         }
-        return { ...baseIntent, action: 'CHECK_BALANCE', token: 'ETH', target_address: targetAddr };
+        return { ...base, action: 'CHECK_BALANCE', token: 'ETH', target_address: targetAddr };
       }
-      return { ...baseIntent, action: 'GET_TRANSACTIONS', target_address: targetAddr };
+      return { ...base, action: 'GET_TRANSACTIONS', target_address: targetAddr };
     }
 
-    if (input.includes('gas')) return { ...baseIntent, action: 'GET_GAS' };
-    
-    if (input.includes('địa chỉ') || input.includes('my address')) return { ...baseIntent, action: 'GET_ADDRESS' };
+    if (input.includes('gas')) return { ...base, action: 'GET_GAS' };
+    if (input.includes('địa chỉ') || input.includes('my address')) return { ...base, action: 'GET_ADDRESS' };
 
     const priceMatch = input.match(/(?:price|giá).*?(eth|btc|usdt|usdc)/i);
-    if (priceMatch) return { ...baseIntent, action: 'GET_PRICE', token: priceMatch[1].toUpperCase() };
+    if (priceMatch) return { ...base, action: 'GET_PRICE', token: priceMatch[1].toUpperCase() };
 
     const balanceMatch = input.match(/(?:balance|số dư).*?(eth|usdt|usdc)?/i);
     if (balanceMatch && !input.includes('send')) {
-      return { ...baseIntent, action: 'CHECK_BALANCE', token: balanceMatch[1]?.toUpperCase() || 'ETH' };
+      return { ...base, action: 'CHECK_BALANCE', token: balanceMatch[1]?.toUpperCase() ?? 'ETH' };
     }
 
-    // News detection
     const newsKeywords = ['news', 'tin tức', 'headline', 'happening', 'update', 'latest'];
     if (newsKeywords.some(kw => input.includes(kw))) {
-      // Extract topic from input
       const topicMatch = userInput.match(/(?:news|tin tức|headline|update|latest)\s+(?:about|on|for)?\s*(.+)/i);
-      return { ...baseIntent, action: 'NEWS', topic: topicMatch ? topicMatch[1].trim() : null };
+      return { ...base, action: 'NEWS', topic: topicMatch?.[1]?.trim() ?? null };
     }
 
     return null;
   }
 
-  async summarize(rawContext:string, topic?:string):Promise<string>{
-    const systemPrompt = `
-      You are Aura OS, a Crypto Intelligence Researcher.
+  // ── chat: general freeform AI call (used by ask.ts, audit.ts, etc.) ─────────
 
-      Task: Analyze and summarize raw crypto data/news about "${topic || 'the market'}".
+  async chat(userMessage: string, systemPrompt?: string): Promise<string> {
+    const messages: ChatMessage[] = [];
+    if (systemPrompt) messages.push({ role: 'system', content: systemPrompt });
+    messages.push({ role: 'user', content: userMessage });
 
-      OUTPUT FORMAT:
-        Overview: One powerful sentence summarizing the topic.
-      
-        Key Insights:
-      • [3-5 bullet points covering trends, data, news]
-      
-        Aura's Alpha: A short, sharp perspective or recommendation.
-
-      RULES:
-      - Detect user language. Vietnamese input → Vietnamese output. Otherwise English.
-      - Remove ads, spam, or marketing fluff.
-      - Focus on factual data and actionable intelligence.
-      - Keep it readable for Terminal (CLI) and Web.
-      - Be concise but insightful.
-    `
-
-    try {
-      if (this.openai) {
-        const completion = await this.openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `Let's summarize the following: ${rawContext}` },
-          ],
-          temperature: 0.3,
-        });
-
-        return completion.choices[0].message.content || "This content cannot be summarized.";
-      } else {
-        throw new Error("OpenAI not initialized");
-      }
-    } catch (error) {
-      try {
-        if (this.groq) {
-          const groqCompletion = await this.groq.chat.completions.create({
-            model: "llama-3.3-70b-versatile",
-            messages: [
-              { role: "system", content: systemPrompt },
-              { role: "user", content: `Summarize this: ${rawContext}` },
-            ],
-          });
-          return groqCompletion.choices[0].message.content || "";
-        } else {
-          throw new Error("Groq not initialized");
-        }
-      } catch (groqError) {
-        try {
-          if (this.genAI) {
-            const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const fullPrompt = `${systemPrompt}\n\nSummarize this: ${rawContext}`;
-            const result = await model.generateContent(fullPrompt);
-            return result.response.text();
-          } else {
-            throw new Error("Gemini not initialized");
-          }
-        } catch (geminiError) {
-          return "All AI models failed.";
-        }
-      }
-    }
+    return runWithFallback(this.openai, this.groq, this.genAI, messages, 0.4);
   }
 
-  async explainContract(info:any):Promise<string>{
-    const prompt = `
-      You are Aura OS, a smart contract security analyst specializing in Web3 security.
+  // ── summarize ──────────────────────────────────────────────────────────────
 
-      Task: Analyze the provided contract metadata (address, isContract, codeSize, isProxy, implementation) and provide a security-focused explanation.
+  async summarize(rawContext: string, topic?: string): Promise<string> {
+    const system = `
+    You are Aura OS, a Crypto Intelligence Researcher.
+    Task: Analyze and summarize raw crypto data/news about "${topic || 'the market'}".
 
-      OUTPUT FORMAT:
-        Contract Type: [EOA/Contract/Proxy] - Brief classification
-        
-        Analysis:
-        • Code Size: Explain what the bytecode size indicates (small = simple/minimal, large = complex)
-        • Proxy Pattern: If isProxy=true, explain EIP-1967 proxy pattern and security implications
-        • Implementation Address: If proxy detected, note that logic is in separate contract
-        
-        Security Assessment:
-        • [2-3 bullet points on security considerations]
-        • [Any red flags or concerns]
-        
-        Aura's Verdict: A concise security recommendation or warning.
+    OUTPUT FORMAT:
+      Overview: One powerful sentence summarizing the topic.
 
-      RULES:
-      - Be technical but accessible
-      - Focus on actionable security insights
-      - Highlight proxy risks if applicable (upgradeability, admin controls, implementation contract verification)
-      - If isContract=false, explain it's an EOA (Externally Owned Account)
-      - Keep it readable for Terminal (CLI) and Web
-      - Be concise but thorough
-    `;
+      Key Insights:
+      • [3-5 bullet points covering trends, data, news]
 
-    try{
-      if (this.openai) {
-        const completion = await this.openai.chat.completions.create({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: prompt },
-            { role: "user", content: `Analyze and explain this contract information: ${JSON.stringify(info, null, 2)}` },
-          ],
-          temperature: 0.3,
-        });
+      Aura's Alpha: A short, sharp perspective or recommendation.
 
-        return completion.choices[0].message.content || "Unable to explain this contract information.";
-      } else {
-        throw new Error("OpenAI not initialized");
-      }
-    }catch{
-      try {
-        if (this.groq) {
-          const groqCompletion = await this.groq.chat.completions.create({
-            model: "llama-3.3-70b-versatile",
-            messages: [
-              { role: "system", content: prompt },
-              { role: "user", content: `Analyze and explain this contract: ${JSON.stringify(info, null, 2)}` },
-            ],
-          });
-          return groqCompletion.choices[0].message.content || "";
-        } else {
-          throw new Error("Groq not initialized");
-        }
-      } catch (groqError) {
-        try {
-          if (this.genAI) {
-            const model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const fullPrompt = `${prompt}\n\nAnalyze and explain this contract: ${JSON.stringify(info, null, 2)}`;
-            const result = await model.generateContent(fullPrompt);
-            return result.response.text();
-          } else {
-            throw new Error("Gemini not initialized");
-          }
-        } catch (geminiError) {
-          return "All AI models failed.";
-        }
-      }
-    }
+    RULES:
+    - Detect user language. Vietnamese input → Vietnamese output. Otherwise English.
+    - Remove ads, spam, or marketing fluff.
+    - Focus on factual data and actionable intelligence.
+    - Be concise but insightful.
+    `.trim();
+
+    return runWithFallback(
+      this.openai, this.groq, this.genAI,
+      [
+        { role: 'system', content: system },
+        { role: 'user',   content: `Summarize: ${rawContext}` },
+      ],
+      0.3,
+    );
+  }
+
+  // ── explainContract ────────────────────────────────────────────────────────
+
+  async explainContract(info: any): Promise<string> {
+    const system = `
+    You are Aura OS, a smart contract security analyst.
+    Task: Analyze contract metadata and provide a security-focused explanation.
+
+    OUTPUT FORMAT:
+      Contract Type: [EOA/Contract/Proxy] - Brief classification
+
+      Analysis:
+      • Code Size: What does the bytecode size indicate?
+      • Proxy Pattern: If proxy, explain EIP-1967 and security implications.
+      • Implementation: If proxy, note logic is in a separate contract.
+
+      Security Assessment:
+      • [2-3 bullet points on security considerations]
+      • [Any red flags]
+
+      Aura's Verdict: A concise security recommendation.
+
+    RULES:
+    - Be technical but accessible.
+    - Focus on actionable security insights.
+    - If isContract=false, explain it's an EOA.
+    - Keep it concise.
+    `.trim();
+
+    return runWithFallback(
+      this.openai, this.groq, this.genAI,
+      [
+        { role: 'system', content: system },
+        { role: 'user',   content: `Analyze: ${JSON.stringify(info, null, 2)}` },
+      ],
+      0.3,
+    );
   }
 }
