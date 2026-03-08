@@ -7,6 +7,10 @@ import { scriptCommand } from "./script.js";
 import { runCommand } from "./run.js";
 import txCommand from "./tx.js";
 import { gasCommand } from "./gas.js";
+import { approveCommand } from "./approve.js";
+import { convertCommand } from "./convert.js";
+import { honeypotCommand } from "./honeypot.js";
+import { abiCommand } from "./abi.js";
 
 type DevCommand = {
   handler: (args: string[]) => Promise<void> | void;
@@ -59,5 +63,25 @@ export const devCommands: Record<string, DevCommand> = {
     handler: gasCommand,
     description: "Real-time gas prices across networks",
     aliases: ["g"],
+  },
+  approve: {
+    handler: approveCommand,
+    description: "Scan and revoke token approvals",
+    aliases: ["ap"],
+  },
+  convert: {
+    handler: convertCommand,
+    description: "Convert tokens",
+    aliases: ["cv"],
+  },
+  honeypot: {
+    handler: honeypotCommand,
+    description: "Scan for honeypot tokens",
+    aliases: ["hp"],
+  },
+  abi: {
+    handler: abiCommand,
+    description: "Get contract ABI",
+    aliases: ["ab"],
   },
 };

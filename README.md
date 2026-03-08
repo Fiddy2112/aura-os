@@ -114,6 +114,18 @@ SUPABASE_DATABASE_NAME=aura_os
 | `aura script` | Manage custom scripts (list, create) |
 | `aura help` | Show available commands and shortcuts |
 | `aura gas` | Real-time gas prices across multiple networks |
+| `aura approve` | Scan and revoke ERC-20 token approvals interactively |
+| `aura convert` | Convert tokens |
+| `aura honeypot`| Scan for honeypot tokens and malicious contracts |
+| `aura abi`     | Fetch and display smart contract ABIs |
+| `aura send`    | Send ETH and ERC-20 tokens easily |
+| `aura ens`     | Look up and resolve ENS domains |
+| `aura call`    | Read smart contracts directly without ABIs |
+| `aura wrap`    | Wrap or unwrap ETH to WETH |
+| `aura nft`     | View NFT collection details and metadata |
+| `aura simulate`| Safely test and preview transactions via Tenderly |
+| `aura bridge`  | Bridge assets cross-chain via Across Protocol |
+| `aura summarize`| AI-powered plain-English explanations of contracts |
 
 ### Developer Commands
 

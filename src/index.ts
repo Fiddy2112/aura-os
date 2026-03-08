@@ -25,6 +25,19 @@ import whaleCommand from './commands/whale.js';
 import auditCommand from './commands/audit.js';
 import trackCommand from './commands/track.js';
 import askCommand from './commands/ask.js';
+import { convertCommand } from './commands/convert.js';
+import { priceCommand } from './commands/price.js';
+import { honeypotCommand } from './commands/honeypot.js';
+import { approveCommand } from './commands/approve.js';
+import { abiCommand } from './commands/abi.js';
+import { sendCommand } from './commands/send.js';
+import { ensCommand } from './commands/ens.js';
+import { callCommand } from './commands/call.js';
+import { wrapCommand } from './commands/wrap.js';
+import { nftCommand } from './commands/nft.js';
+import { simulateCommand } from './commands/simulate.js';
+import { bridgeCommand } from './commands/bridge.js';
+import { summarizeCommand } from './commands/summarize.js';
 
 
 const args        = process.argv.slice(2);
@@ -48,7 +61,7 @@ export function showBanner() {
 
 function showHelp() {
   showBanner();
-
+  
   const helpContent = `
   ${chalk.bold.white('MAIN COMMANDS')}
     ${chalk.magenta('setup')}          ${chalk.gray('Initialize your encrypted Web3 vault')}
@@ -65,6 +78,10 @@ function showHelp() {
     ${chalk.cyan('whale')}          ${chalk.gray('Whale wallet activity & accumulation signals')}
     ${chalk.cyan('track')}          ${chalk.gray('Track portfolio balance for any wallet')}
     ${chalk.cyan('audit')}          ${chalk.gray('Full security audit with vulnerability scan')}
+    ${chalk.cyan('honeypot')}       ${chalk.gray('Scan tokens for honeypot contracts and scams')}
+    ${chalk.cyan('summarize')}      ${chalk.gray('AI-powered plain-English explanations of contracts')}
+    ${chalk.cyan('nft')}            ${chalk.gray('View NFT collection details and metadata')}
+    ${chalk.cyan('price')}          ${chalk.gray('Real-time token prices and market data')}
 
   ${chalk.bold.white('SYSTEM')}
     ${chalk.gray('wallet')}         ${chalk.gray('Manage accounts (show, export)')}
@@ -78,6 +95,11 @@ function showHelp() {
     ${chalk.gray('run')}            ${chalk.gray('Run a custom script by name')}
     ${chalk.gray('tx')}             ${chalk.gray('Analyze a transaction by hash')}
     ${chalk.gray('gas')}            ${chalk.gray('Real-time gas prices across all networks')}
+    ${chalk.gray('approve')}        ${chalk.gray('Scan and revoke ERC-20 token approvals')}
+    ${chalk.gray('convert')}        ${chalk.gray('Convert tokens')}
+    ${chalk.gray('send')}           ${chalk.gray('Send ETH and ERC-20 tokens easily')}
+    ${chalk.gray('wrap')}           ${chalk.gray('Wrap or unwrap ETH to WETH')}
+    ${chalk.gray('bridge')}         ${chalk.gray('Bridge assets cross-chain via Across Protocol')}
     ${chalk.gray('help')}           ${chalk.gray('Show this help message')}
 
   ${chalk.bold.white('DEV / SECURITY')}
@@ -85,6 +107,10 @@ function showHelp() {
     ${chalk.gray('privilege')}      ${chalk.gray('Ownership & control surface analysis')}
     ${chalk.gray('risk')}           ${chalk.gray('Centralization & upgrade risk score')}
     ${chalk.gray('chain')}          ${chalk.gray('Manage blockchain chain (current/list/set)')}
+    ${chalk.gray('abi')}            ${chalk.gray('Fetch and display smart contract ABIs')}
+    ${chalk.gray('call')}           ${chalk.gray('Read smart contracts directly without ABIs')}
+    ${chalk.gray('simulate')}       ${chalk.gray('Safely test and preview transactions via Tenderly')}
+    ${chalk.gray('ens')}            ${chalk.gray('Look up and resolve ENS domains')}
 
   ${chalk.bold.white('FLAGS')}
     ${chalk.gray('--dev')}          ${chalk.gray('Enable developer / forensic mode')}
@@ -280,6 +306,63 @@ async function main() {
         process.exit(1);
       }
       await askCommand(commandArgs);
+      break;
+    
+    case 'convert': 
+      await convertCommand(commandArgs); 
+      break;
+
+    case 'price':   
+      await priceCommand(commandArgs);   
+      break;
+
+    case 'honeypot': 
+      await honeypotCommand(commandArgs); 
+      break;
+
+    case 'approve': 
+      await approveCommand(commandArgs); 
+      break;
+
+    case 'abi':     
+      await abiCommand(commandArgs);     
+      break;
+
+    case 'send':
+    case 'transfer': 
+      await sendCommand(commandArgs); 
+      break;
+
+    case 'ens':
+      await ensCommand(commandArgs); 
+      break;
+
+    case 'call':     
+      await callCommand(commandArgs); 
+      break;
+
+    case 'wrap':     
+      await wrapCommand(commandArgs, 'wrap'); 
+      break;
+
+    case 'unwrap':   
+      await wrapCommand(commandArgs, 'unwrap'); 
+      break;
+
+    case 'nft':      
+      await nftCommand(commandArgs); 
+      break;
+
+    case 'simulate': 
+      await simulateCommand(commandArgs); 
+      break;
+
+    case 'bridge':   
+      await bridgeCommand(commandArgs); 
+      break;
+
+    case 'summarize': 
+      await summarizeCommand(commandArgs); 
       break;
 
     case undefined:
