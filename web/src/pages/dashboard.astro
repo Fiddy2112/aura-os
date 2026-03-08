@@ -10,13 +10,13 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
   <main class="min-h-screen bg-black grid-pattern py-10">
     <div class="section-container">
       
-      <header class="mb-10 animate-fade-in-up flex items-center justify-between">
-        <div class="relative">
-          <div class="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-white/20 rounded-full blur-[2px]"></div>
-          <h1 class="text-4xl md:text-5xl font-bold gradient-text-shimmer tracking-tighter">AURA_COMMAND</h1>
-          <p class="text-zinc-500 font-mono text-[10px] mt-1 uppercase tracking-[0.4em]">Autonomous AI Intelligence System</p>
+      <header class="mb-10 animate-fade-in-up flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0">
+        <div class="relative text-center md:text-left">
+          <div class="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-12 bg-white/20 rounded-full blur-[2px] hidden md:block"></div>
+          <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold gradient-text-shimmer tracking-tighter">AURA_COMMAND</h1>
+          <p class="text-zinc-500 font-mono text-[9px] sm:text-[10px] mt-1 uppercase tracking-[0.3em] sm:tracking-[0.4em]">Autonomous AI Intelligence System</p>
         </div>
-        <div class="flex items-center gap-6">
+        <div class="flex flex-wrap md:flex-nowrap items-center justify-center gap-4 md:gap-6 w-full md:w-auto">
           <div class="hidden md:flex flex-col items-end">
             <span class="text-[10px] text-zinc-600 font-mono uppercase tracking-widest">System_Uptime</span>
             <span class="text-xs text-white font-mono" id="uptime-display">00:00:00</span>
@@ -42,7 +42,7 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
       </div>
 
       <!-- HUD Stats Grid -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
         <div class="glass-card-premium p-6 relative overflow-hidden group">
           <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
             <svg viewBox="0 0 24 24" class="w-12 h-12 text-white" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
@@ -441,12 +441,3 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || '';
   }
 </script>
 
-<style>
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-</style>

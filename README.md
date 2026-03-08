@@ -122,12 +122,14 @@ SUPABASE_DATABASE_NAME=aura_os
 | `aura ens`     | Look up and resolve ENS domains |
 | `aura call`    | Read smart contracts directly without ABIs |
 | `aura wrap`    | Wrap or unwrap ETH to WETH |
-| `aura nft`     | View NFT collection details and metadata |
 | `aura simulate`| Safely test and preview transactions via Tenderly |
 | `aura bridge`  | Bridge assets cross-chain via Across Protocol |
+| `aura audit`   | Full security audit with vulnerability scan |
 | `aura summarize`| AI-powered plain-English explanations of contracts |
+| `aura nft`     | View NFT collection details and metadata |
+| `aura price`   | Real-time token prices and market data |
 
-### Developer Commands
+### System Commands
 
 | Command | Description | Example |
 |---------|-------------|---------|

@@ -62,13 +62,13 @@ import { Brain,Lock,Shield,Terminal } from 'lucide-react';
               </ul>
             </div>
             <div class="flex justify-center">
-              <div class="terminal w-full max-w-md">
+              <div class="terminal w-full max-w-md overflow-hidden">
                 <div class="terminal-header">
                   <div class="terminal-dot bg-red-600"></div>
                   <div class="terminal-dot bg-yellow-600"></div>
                   <div class="terminal-dot bg-green-600"></div>
                 </div>
-                <div class="p-4 font-mono text-sm space-y-2">
+                <div class="p-4 font-mono text-sm space-y-2 overflow-x-auto whitespace-nowrap">
                   <div><span class="text-zinc-500">$</span> aura chat "Kiểm tra số dư ETH"</div>
                   <div class="text-zinc-500">Aura is thinking...</div>
                   <div class="text-white">✓ Valid command: CHECK_BALANCE</div>
@@ -166,13 +166,13 @@ import { Brain,Lock,Shield,Terminal } from 'lucide-react';
               </ul>
             </div>
             <div class="flex justify-center">
-              <div class="terminal w-full max-w-md">
+              <div class="terminal w-full max-w-md overflow-hidden">
                 <div class="terminal-header">
                   <div class="terminal-dot bg-red-600"></div>
                   <div class="terminal-dot bg-yellow-600"></div>
                   <div class="terminal-dot bg-green-600"></div>
                 </div>
-                <div class="p-4 font-mono text-sm space-y-1">
+                <div class="p-4 font-mono text-sm space-y-1 overflow-x-auto whitespace-nowrap">
                   <div><span class="text-zinc-500">$</span> aura agent start \</div>
                   <div class="pl-4">--task "monitor whale wallets" \</div>
                   <div class="pl-4">--alert telegram \</div>

@@ -34,16 +34,16 @@ import CopyButton from './CopyButton';
     </p>
 
     <div class="w-full max-w-2xl mx-auto mb-10 animate-fade-in-up" style="animation-delay: 0.4s;">
-      <div class="terminal">
+      <div class="terminal w-full max-w-full overflow-hidden">
         <div class="terminal-header">
           <div class="terminal-dot bg-red-500"></div>
           <div class="terminal-dot bg-yellow-500"></div>
           <div class="terminal-dot bg-green-500"></div>
           <span class="ml-4 text-xs text-zinc-600 font-mono">aura-os ~ terminal</span>
         </div>
-        <div class="p-6 font-mono text-sm md:text-base">
-          <div class="flex items-center justify-between gap-4">
-            <div class="flex items-start gap-3 flex-1 min-w-0">
+        <div class="p-6 font-mono text-sm md:text-base overflow-x-auto whitespace-nowrap scrollbar-hide">
+          <div class="flex items-center justify-between gap-4 min-w-max">
+            <div class="flex items-start gap-3 flex-1">
               <span class="text-zinc-500 select-none">$</span>
               <AnimatedCode client:load 
                 sequence={[

@@ -18,13 +18,13 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
 
   <section class="mb-16">
     <h2 class="text-2xl font-bold text-white mb-6" id="quick-reference">Quick Reference</h2>
-    <div class="terminal">
+    <div class="terminal w-full max-w-full overflow-hidden">
       <div class="terminal-header">
         <div class="terminal-dot bg-red-500"></div>
         <div class="terminal-dot bg-yellow-500"></div>
         <div class="terminal-dot bg-green-500"></div>
       </div>
-      <div class="p-4 font-mono text-sm space-y-1">
+      <div class="p-4 font-mono text-xs sm:text-sm space-y-1 overflow-x-auto whitespace-nowrap">
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">setup</span>            <span class="text-zinc-500"># Initialize wallet</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">chat</span> <span class="text-yellow-400">"message"</span>   <span class="text-zinc-500"># Send AI command</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">gas</span>             <span class="text-zinc-500"># Real-time gas prices</span></div>
@@ -42,6 +42,7 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">call</span> <span class="text-yellow-400">"0x..."</span>       <span class="text-zinc-500"># Read contract</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">wrap</span> <span class="text-yellow-400">"1"</span>           <span class="text-zinc-500"># Convert ETH to WETH</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">nft</span> <span class="text-yellow-400">"0x..."</span>        <span class="text-zinc-500"># Analyze NFTs</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">price</span> <span class="text-yellow-400">"eth"</span>        <span class="text-zinc-500"># Real-time token prices</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">simulate</span> <span class="text-yellow-400">"0x..."</span>   <span class="text-zinc-500"># Test transaction</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">bridge</span> <span class="text-yellow-400">"1 USDC"</span>    <span class="text-zinc-500"># Cross-chain bridge</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">summarize</span> <span class="text-yellow-400">"0x..."</span>  <span class="text-zinc-500"># AI explain contract</span></div>
