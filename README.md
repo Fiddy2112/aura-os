@@ -87,6 +87,9 @@ POLYGON_RPC_URL=https://polygon.llamarpc.com
 AVALANCHE_RPC_URL=https://avalanche.llamarpc.com
 DEFAULT_CHAIN=ethereum
 
+# Explorer / Tax Export (for aura export command)
+ETHERSCAN_API_KEY=your_etherscan_key
+
 # Supabase (for dashboard sync)
 SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_key
@@ -127,7 +130,17 @@ SUPABASE_DATABASE_NAME=aura_os
 | `aura audit`   | Full security audit with vulnerability scan |
 | `aura summarize`| AI-powered plain-English explanations of contracts |
 | `aura nft`     | View NFT collection details and metadata |
-| `aura price`   | Real-time token prices and market data |
+| `aura stake` | Stake ETH via Lido (stETH) or Rocket Pool (rETH) liquid staking |
+| `aura export` | Export full tx history as CSV/JSON for tax tools (Koinly, TaxBit, etc.) |
+| `aura pnl` | On-chain P&L tracker — invested, current value, ROI per wallet |
+| `aura swap` | Swap tokens via Uniswap V3 directly from the terminal |
+| `aura multicall` | Batch multiple contract reads into one RPC request (Multicall3) |
+| `aura decode` | Decode raw transaction calldata into human-readable arguments |
+| `aura logs` | Fetch and inspect on-chain event logs for any contract |
+| `aura gashistory` | Display historical gas price trends and percentiles |
+| `aura alert` | Set real-time price, gas, and balance threshold alerts |
+| `aura risk` | Rapid ERC-20 token risk scoring (liquidity, concentration, upgradability) |
+| `aura price` | Real-time token prices and market data |
 
 ### System Commands
 

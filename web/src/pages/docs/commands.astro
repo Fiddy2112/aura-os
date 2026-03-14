@@ -28,16 +28,26 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">setup</span>            <span class="text-zinc-500"># Initialize wallet</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">chat</span> <span class="text-yellow-400">"message"</span>   <span class="text-zinc-500"># Send AI command</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">gas</span>             <span class="text-zinc-500"># Real-time gas prices</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">gashistory</span>       <span class="text-zinc-500"># Historical gas trends</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">tx</span> <span class="text-yellow-400">&lt;hash&gt;</span>       <span class="text-zinc-500"># Analyze transaction</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">decode</span> <span class="text-yellow-400">"0x..."</span>   <span class="text-zinc-500"># Decode calldata</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">logs</span> <span class="text-yellow-400">"0x..."</span>     <span class="text-zinc-500"># Inspect event logs</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">multicall</span>        <span class="text-zinc-500"># Batched contract reads</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">script</span> <span class="text-yellow-400">create</span>   <span class="text-zinc-500"># Build custom automations</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">research</span> <span class="text-yellow-400">"eth"</span>    <span class="text-zinc-500"># Deep project research</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">news</span> <span class="text-yellow-400">"solana"</span>      <span class="text-zinc-500"># Get market alpha</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">analyze</span> <span class="text-yellow-400">"0x..."</span>   <span class="text-zinc-500"># Smart contract audit</span></div>
-        <div><span class="text-purple-400">aura</span> <span class="text-green-400">approve</span> <span class="text-yellow-400">"0x..."</span>   <span class="text-zinc-500"># Scan & revoke approvals</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">approve</span> <span class="text-yellow-400">"0x..."</span>   <span class="text-zinc-500"># Scan &amp; revoke approvals</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">honeypot</span> <span class="text-yellow-400">"0x..."</span>  <span class="text-zinc-500"># Scam/honeypot detection</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">risk</span> <span class="text-yellow-400">"0x..."</span>      <span class="text-zinc-500"># Token risk score</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">abi</span> <span class="text-yellow-400">"0x..."</span>       <span class="text-zinc-500"># Get smart contract ABI</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">convert</span>             <span class="text-zinc-500"># Convert tokens</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">swap</span> <span class="text-yellow-400">"ETH USDC"</span>   <span class="text-zinc-500"># Uniswap V3 swap</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">send</span> <span class="text-yellow-400">"1 ETH..."</span>    <span class="text-zinc-500"># Send assets</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">stake</span> <span class="text-yellow-400">"0.5 lido"</span>   <span class="text-zinc-500"># Liquid staking</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">pnl</span> <span class="text-yellow-400">"0x..."</span>       <span class="text-zinc-500"># On-chain P&amp;L</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">export</span> <span class="text-yellow-400">"0x..."</span>     <span class="text-zinc-500"># Export tx history</span></div>
+        <div><span class="text-purple-400">aura</span> <span class="text-green-400">alert</span>            <span class="text-zinc-500"># Set live alerts</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">ens</span> <span class="text-yellow-400">"vitalik..."</span>  <span class="text-zinc-500"># Resolve ENS</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">call</span> <span class="text-yellow-400">"0x..."</span>       <span class="text-zinc-500"># Read contract</span></div>
         <div><span class="text-purple-400">aura</span> <span class="text-green-400">wrap</span> <span class="text-yellow-400">"1"</span>           <span class="text-zinc-500"># Convert ETH to WETH</span></div>
@@ -361,6 +371,173 @@ import DocsLayout from '../../layouts/DocsLayout.astro';
       <div class="glass-card p-4 border-l-4 border-yellow-500">
         <code class="text-yellow-400 text-sm font-mono">⚠ OpenAI API key not found</code>
         <p class="text-sm text-zinc-400 mt-2">Set <code>OPENAI_API_KEY</code> in your <code>.env</code> file.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="stake">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-green-500/10 text-green-400 rounded-lg font-mono text-lg">aura stake &lt;amount&gt; &lt;protocol&gt; [--info]</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Stake ETH directly into liquid staking protocols — <strong>Lido</strong> (stETH, ~3.8% APR) or <strong>Rocket Pool</strong> (rETH, ~3.6% APR). Runs on Ethereum mainnet only. Use <code>--info</code> to view existing positions.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura stake</span> <span class="text-yellow-400">0.5 lido</span></div>
+        <div class="text-cyan-400 mt-2">  Stake:   0.5 ETH → ~0.5 stETH</div>
+        <div class="text-cyan-400">  Est APR: 3.8% (~0.019 ETH/year)</div>
+        <div class="text-green-400 mt-2">✓ Staked 0.5 ETH on Lido!</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="export">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-purple-500/10 text-purple-400 rounded-lg font-mono text-lg">aura export &lt;address&gt; [--format csv|json] [--output &lt;dir&gt;]</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Export complete transaction history as <strong>CSV</strong> or <strong>JSON</strong>. Fetches both native and ERC-20 transfers, deduplicates by hash, and sorts chronologically. Compatible with Koinly, CoinTracker, TaxBit, and CryptoTaxCalc. Requires <code>ETHERSCAN_API_KEY</code>.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura export</span> <span class="text-yellow-400">0xd8dA6BF... --format json --output ./reports</span></div>
+        <div class="text-green-400 mt-2">✓ Export Complete</div>
+        <div class="text-zinc-400">  Records: 1,106 | Sends: 423 | Receives: 680</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="pnl">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-cyan-500/10 text-cyan-400 rounded-lg font-mono text-lg">aura pnl &lt;address&gt;</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Calculate on-chain profit &amp; loss by introspecting transaction history. Shows total ETH invested, current portfolio value, unrealized gains/losses, and overall ROI.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura pnl</span> <span class="text-yellow-400">0xd8dA6BF...</span></div>
+        <div class="text-white font-bold mt-2">P&amp;L Summary</div>
+        <div class="text-zinc-400">  Invested: 12.40 ETH | Current: 15.82 ETH</div>
+        <div class="text-green-400">  Gain:     +3.42 ETH (+27.6% ROI)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="swap">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-pink-500/10 text-pink-400 rounded-lg font-mono text-lg">aura swap</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Swap ERC-20 tokens via the <strong>Uniswap V3</strong> router directly from the vault-secured CLI. Shows a transaction preview with expected output and slippage before execution.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura swap</span></div>
+        <div class="text-zinc-400 mt-2">  From token: ETH</div>
+        <div class="text-zinc-400">  To token:   USDC</div>
+        <div class="text-zinc-400">  Amount:     0.1</div>
+        <div class="text-cyan-400 mt-2">  Expected:   ~312.45 USDC (slippage: 0.5%)</div>
+        <div class="text-green-400">✓ Swap successful!</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="multicall">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-blue-500/10 text-blue-400 rounded-lg font-mono text-lg">aura multicall</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Execute multiple smart contract <strong>view/pure</strong> function calls in a single RPC request using the Multicall3 standard (0xcA11...). Dramatically reduces latency for multi-data queries.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura multicall</span></div>
+        <div class="text-zinc-400 mt-2">  3 calls batched → 1 RPC request (120ms)</div>
+        <div class="text-green-400">✓ Results returned</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="decode">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-yellow-500/10 text-yellow-400 rounded-lg font-mono text-lg">aura decode &lt;calldata&gt; [--abi &lt;file&gt;]</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Decode raw transaction calldata into a human-readable function signature and argument list. Resolves ABI automatically from Etherscan, or accepts a local <code>--abi my.json</code> file.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura decode</span> <span class="text-yellow-400">0xa9059cbb000000000000000000000000...</span></div>
+        <div class="text-cyan-400 mt-2">  Function: transfer(address to, uint256 amount)</div>
+        <div class="text-zinc-400">  to:       0xd8dA6BF...</div>
+        <div class="text-zinc-400">  amount:   1,000,000,000 (1000 USDC)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="logs">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-teal-500/10 text-teal-400 rounded-lg font-mono text-lg">aura logs &lt;address&gt; [--event &lt;name&gt;] [--blocks &lt;n&gt;]</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Fetch and display on-chain event logs for any contract. Filter by event signature (<code>--event Transfer</code>), block window (<code>--blocks 1000</code>), or raw topic hash.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura logs</span> <span class="text-yellow-400">0xA0b86991... --event Transfer --blocks 500</span></div>
+        <div class="text-zinc-400 mt-2">  Found 48 Transfer events</div>
+        <div class="text-cyan-400">  [19443210] Transfer 50,000 USDC → 0x742d...</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="gashistory">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-orange-500/10 text-orange-400 rounded-lg font-mono text-lg">aura gashistory [--blocks &lt;n&gt;]</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Displays historical gas price trends by sampling blocks over the specified window. Useful for planning transactions during off-peak hours.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura gashistory</span> <span class="text-yellow-400">--blocks 100</span></div>
+        <div class="text-zinc-400 mt-2">  p25: 8.2 Gwei | p50: 11.4 Gwei | p75: 16.8 Gwei</div>
+        <div class="text-green-400">  Lowest: 7.1 Gwei (12 blocks ago)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="alert">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-red-500/10 text-red-400 rounded-lg font-mono text-lg">aura alert</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Set real-time on-chain alerts for price thresholds, gas prices, or wallet balance changes. Fires an instant terminal notification when conditions are met.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura alert</span></div>
+        <div class="text-zinc-400 mt-2">  Alert type: gas | price | balance</div>
+        <div class="text-yellow-400 mt-2">🔔 ALERT: Gas dropped below 10 Gwei (current: 8.4)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16" id="risk">
+    <div class="flex items-center gap-3 mb-4">
+      <code class="px-3 py-1.5 bg-orange-500/10 text-orange-400 rounded-lg font-mono text-lg">aura risk &lt;token-address&gt;</code>
+    </div>
+    <p class="text-zinc-300 leading-relaxed mb-6">
+      Rapid risk scoring for any ERC-20 token. Evaluates liquidity depth, top-holder supply concentration, proxy/upgrade risk, and verified source status. Returns a 0-100 risk score with a verdict.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura risk</span> <span class="text-yellow-400">0xA0b86991...</span></div>
+        <div class="text-zinc-400 mt-2">  Risk Score: 18/100</div>
+        <div class="text-green-400">  Verdict: LOW RISK ✓</div>
+        <div class="text-zinc-400">  Liquidity: $4.2B | Top-10 Hold: 42%</div>
       </div>
     </div>
   </section>

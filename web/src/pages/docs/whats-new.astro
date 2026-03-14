@@ -1,9 +1,9 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import { Sparkles, Terminal, Shield, Zap, Activity, Cpu } from 'lucide-react';
+import { Sparkles, Terminal, Shield, Zap, Activity, Cpu, Download, TrendingUp, Layers, Radio, ArrowLeftRight, AlertTriangle } from 'lucide-react';
 ---
 
-<DocsLayout title="What's New in v0.4.0">
+<DocsLayout title="What's New in v0.5.0">
   <nav class="flex items-center gap-2 text-sm text-zinc-500 mb-8">
     <a href="/docs" class="hover:text-white transition-colors">Docs</a>
     <span>/</span>
@@ -13,91 +13,162 @@ import { Sparkles, Terminal, Shield, Zap, Activity, Cpu } from 'lucide-react';
   <div class="mb-12">
     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-mono mb-4">
       <Sparkles size={14} />
-      <span>RELEASE V0.4.0 - MARCH 2026</span>
+      <span>RELEASE V0.5.0 - MARCH 2026</span>
     </div>
-    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">The Security & Utility Update</h1>
+    <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">The Data & DeFi Update</h1>
     <p class="text-xl text-zinc-400">
-      Introducing proactive honeypot detection, streamlined token approvals, fast token conversions, and smart contract ABI tools.
+      Introducing liquid staking, on-chain P&amp;L tracking, tax exports, Uniswap swaps, real-time alerts, calldata decoding, and much more.
     </p>
   </div>
 
   <div class="grid gap-6 md:grid-cols-3 mb-16">
     <div class="glass-card p-6 border-t-2 border-purple-500">
-      <div class="text-purple-400 mb-4"><Shield size={24} /></div>
-      <h3 class="text-white font-bold mb-2">Honeypot Scanner</h3>
-      <p class="text-sm text-zinc-400">Detect malicious contracts instantly with <code>aura honeypot</code>.</p>
+      <div class="text-purple-400 mb-4"><Download size={24} /></div>
+      <h3 class="text-white font-bold mb-2">Tax Export</h3>
+      <p class="text-sm text-zinc-400">Export full tx history as CSV/JSON with <code>aura export</code>.</p>
     </div>
     <div class="glass-card p-6 border-t-2 border-green-500">
-      <div class="text-green-400 mb-4"><Zap size={24} /></div>
-      <h3 class="text-white font-bold mb-2">Approvals Manager</h3>
-      <p class="text-sm text-zinc-400">Scan and revoke token allowances with <code>aura approve</code>.</p>
+      <div class="text-green-400 mb-4"><TrendingUp size={24} /></div>
+      <h3 class="text-white font-bold mb-2">Liquid Staking</h3>
+      <p class="text-sm text-zinc-400">Stake ETH via Lido or Rocket Pool with <code>aura stake</code>.</p>
+    </div>
+    <div class="glass-card p-6 border-t-2 border-cyan-500">
+      <div class="text-cyan-400 mb-4"><Activity size={24} /></div>
+      <h3 class="text-white font-bold mb-2">P&amp;L Tracking</h3>
+      <p class="text-sm text-zinc-400">Real on-chain ROI analytics with <code>aura pnl</code>.</p>
     </div>
     <div class="glass-card p-6 border-t-2 border-blue-500">
-      <div class="text-blue-400 mb-4"><Cpu size={24} /></div>
-      <h3 class="text-white font-bold mb-2">Token Conversion</h3>
-      <p class="text-sm text-zinc-400">Easily swap tokens directly from your CLI with <code>aura convert</code>.</p>
+      <div class="text-blue-400 mb-4"><Layers size={24} /></div>
+      <h3 class="text-white font-bold mb-2">Multicall Batching</h3>
+      <p class="text-sm text-zinc-400">Batch contract reads in one RPC call with <code>aura multicall</code>.</p>
+    </div>
+    <div class="glass-card p-6 border-t-2 border-yellow-500">
+      <div class="text-yellow-400 mb-4"><Radio size={24} /></div>
+      <h3 class="text-white font-bold mb-2">Real-time Alerts</h3>
+      <p class="text-sm text-zinc-400">Price, gas, and balance watchers with <code>aura alert</code>.</p>
+    </div>
+    <div class="glass-card p-6 border-t-2 border-pink-500">
+      <div class="text-pink-400 mb-4"><ArrowLeftRight size={24} /></div>
+      <h3 class="text-white font-bold mb-2">Uniswap Swap</h3>
+      <p class="text-sm text-zinc-400">Swap tokens via Uniswap V3 directly with <code>aura swap</code>.</p>
     </div>
   </div>
 
   <section class="mb-16">
-    <h2 class="text-2xl font-bold text-white mb-6">1. Proactive Scam Defense (aura honeypot)</h2>
+    <h2 class="text-2xl font-bold text-white mb-6">1. Transaction Export (aura export)</h2>
     <p class="text-zinc-300 mb-6">
-      Protect your assets before you swap. <code>aura honeypot</code> simulates transactions to verify if a token can actually be sold, analyzing buy/sell taxes and detecting malicious contract behaviors.
+      Export your complete on-chain transaction history to CSV or JSON — fully compatible with Koinly, CoinTracker, TaxBit, and CryptoTaxCalc. Fetches both native and ERC-20 transfers, deduplicates, and sorts chronologically.
     </p>
     <div class="terminal mb-6">
-      <div class="p-4 font-mono text-sm">
-        <span class="text-purple-400">❯</span> <span class="text-green-400">aura honeypot</span> <span class="text-yellow-400">0x...</span>
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura export</span> <span class="text-yellow-400">0xd8dA6BF...</span></div>
+        <div class="text-zinc-500 mt-2">Fetching transactions...</div>
+        <div class="text-cyan-400">Processing 1,247 transactions...</div>
+        <div class="text-green-400 mt-2">✓ Export Complete</div>
+        <div class="text-zinc-400">  File:     aura-export-d8dA6BF-Ethereum-2026-03-14.csv</div>
+        <div class="text-zinc-400">  Records:  1,106 | Sends: 423 | Receives: 680</div>
       </div>
     </div>
     <ul class="space-y-2 text-sm text-zinc-400 ml-4">
-      <li class="flex items-center gap-2">
-        <span class="text-green-500">✓</span> Simulates real buys and sells.
-      </li>
-      <li class="flex items-center gap-2">
-        <span class="text-green-500">✓</span> Checks hidden taxes and blacklist capabilities.
-      </li>
-      <li class="flex items-center gap-2">
-        <span class="text-green-500">✓</span> Simple "Safe" or "Honeypot" verdict.
-      </li>
+      <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Supports CSV and JSON formats (<code>--format</code>)</li>
+      <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Custom output directory (<code>--output ./reports</code>)</li>
+      <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Works on ETH, Polygon, Base, Arbitrum, Optimism, BSC</li>
     </ul>
   </section>
 
   <section class="mb-16">
-    <h2 class="text-2xl font-bold text-white mb-6">2. Token Approvals Manager (aura approve)</h2>
+    <h2 class="text-2xl font-bold text-white mb-6">2. Liquid Staking (aura stake)</h2>
     <p class="text-zinc-300 mb-6">
-      Unlimited approvals to shady dApps are the number one cause of wallet drains. Use <code>aura approve</code> to quickly audit your wallet's allowances on any network and instantly revoke dangerous or unused approvals interactively.
+      Stake ETH into Lido (stETH ~3.8% APR) or Rocket Pool (rETH ~3.6% APR) directly from your vault-secured CLI. Preview stakes before confirming, check existing positions with <code>--info</code>.
     </p>
     <div class="terminal mb-6">
       <div class="p-4 font-mono text-sm space-y-1">
-        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura approve</span> <span class="text-yellow-400">0xYourWallet... --revoke</span></div>
-        <div class="text-yellow-400">⚠ Found 2 UNLIMITED approvals</div>
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura stake</span> <span class="text-yellow-400">0.5 lido</span></div>
+        <div class="text-cyan-400 mt-2">  Protocol: Lido</div>
+        <div class="text-cyan-400">  Stake:    0.5 ETH → ~0.5 stETH</div>
+        <div class="text-cyan-400">  Est APR:  3.8% (~0.0190 ETH/year)</div>
+        <div class="text-green-400 mt-2">✓ Staked 0.5 ETH on Lido!</div>
       </div>
     </div>
   </section>
 
   <section class="mb-16">
-    <h2 class="text-2xl font-bold text-white mb-6">3. Simple Token Conversion (aura convert)</h2>
+    <h2 class="text-2xl font-bold text-white mb-6">3. P&amp;L Tracker (aura pnl)</h2>
     <p class="text-zinc-300 mb-6">
-      Quickly swap assets across supported dexes right from your terminal without opening a browser. Let Aura execute optimal paths securely and transparently.
+      Calculate on-chain profit &amp; loss by walking transaction history. See total invested, current portfolio value, unrealized gains/losses, and overall ROI for any wallet address.
     </p>
     <div class="terminal mb-6">
-      <div class="p-4 font-mono text-sm">
-        <span class="text-purple-400">❯</span> <span class="text-green-400">aura convert</span>
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura pnl</span> <span class="text-yellow-400">0xd8dA6BF...</span></div>
+        <div class="text-white mt-2 font-bold">P&amp;L Summary</div>
+        <div class="text-zinc-400">  Invested:  12.40 ETH</div>
+        <div class="text-zinc-400">  Current:   15.82 ETH</div>
+        <div class="text-green-400">  Gain:      +3.42 ETH (+27.6% ROI)</div>
       </div>
     </div>
-    <p class="text-sm text-zinc-400 italic">
-      Securely signed using your local encrypted vault.
-    </p>
   </section>
 
   <section class="mb-16">
-    <h2 class="text-2xl font-bold text-white mb-6">4. Developer Tooling (aura abi)</h2>
-    <p class="text-zinc-300 mb-4">
-      No more jumping to Etherscan to fetch ABIs. Retrieve and manage ABIs locally with a single command to streamline your scripting and interactions.
+    <h2 class="text-2xl font-bold text-white mb-6">4. Multicall Batching (aura multicall)</h2>
+    <p class="text-zinc-300 mb-6">
+      Execute multiple smart contract read calls in a single RPC request using the Multicall3 standard, drastically reducing latency for multi-data queries.
     </p>
     <div class="terminal mb-6">
-      <div class="p-4 font-mono text-sm">
-        <span class="text-purple-400">❯</span> <span class="text-green-400">aura abi</span> <span class="text-yellow-400">0x...</span>
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura multicall</span> <span class="text-yellow-400">0xContract... balanceOf totalSupply decimals</span></div>
+        <div class="text-zinc-400 mt-2">  3 calls batched → 1 RPC request</div>
+        <div class="text-green-400">✓ Results returned in 120ms</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">5. Calldata Decoder (aura decode)</h2>
+    <p class="text-zinc-300 mb-6">
+      Decode raw transaction calldata into human-readable function calls and arguments using Etherscan ABI sources or a local ABI file.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura decode</span> <span class="text-yellow-400">0xa9059cbb0000000000000000000000...</span></div>
+        <div class="text-cyan-400 mt-2">  Function: transfer(address to, uint256 amount)</div>
+        <div class="text-zinc-400">  to:       0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045</div>
+        <div class="text-zinc-400">  amount:   1000000000 (1000 USDC)</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">6. Event Log Viewer (aura logs)</h2>
+    <p class="text-zinc-300 mb-6">
+      Fetch and display on-chain event logs for any contract. Filter by event signature, block range, or specific topics for precise forensic inspection.
+    </p>
+    <div class="terminal mb-6">
+      <div class="p-4 font-mono text-sm space-y-1">
+        <div><span class="text-purple-400">❯</span> <span class="text-green-400">aura logs</span> <span class="text-yellow-400">0xA0b86991... --event Transfer</span></div>
+        <div class="text-zinc-400 mt-2">  Found 48 Transfer events in last 1000 blocks</div>
+        <div class="text-cyan-400">  [Block 19443210] Transfer 50,000 USDC → 0x742d...</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mb-16">
+    <h2 class="text-2xl font-bold text-white mb-6">7. More New Commands</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div class="glass-card p-5">
+        <code class="text-yellow-400 font-mono">aura gashistory</code>
+        <p class="text-sm text-zinc-400 mt-2">Display historical gas price trends and percentiles over configurable block windows.</p>
+      </div>
+      <div class="glass-card p-5">
+        <code class="text-red-400 font-mono">aura alert</code>
+        <p class="text-sm text-zinc-400 mt-2">Set live price, gas, and balance threshold alerts. Fires a terminal notification when triggered.</p>
+      </div>
+      <div class="glass-card p-5">
+        <code class="text-pink-400 font-mono">aura swap</code>
+        <p class="text-sm text-zinc-400 mt-2">Swap ERC-20 tokens via Uniswap V3 with slippage control and path preview before execution.</p>
+      </div>
+      <div class="glass-card p-5">
+        <code class="text-orange-400 font-mono">aura risk</code>
+        <p class="text-sm text-zinc-400 mt-2">Rapid risk scoring for any ERC-20 token: liquidity depth, supply concentration, and upgrade risk.</p>
       </div>
     </div>
   </section>

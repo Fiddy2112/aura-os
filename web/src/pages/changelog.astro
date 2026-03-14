@@ -13,6 +13,30 @@ import Footer from '../components/Footer.astro';
       <p class="text-xl text-zinc-500 mb-12">New updates and improvements to Aura OS.</p>
       
       <div class="space-y-12">
+        <div class="glass-card p-8 border-l-4 border-purple-500">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <h2 class="text-2xl font-bold text-white">v0.5.0</h2>
+              <span class="px-2 py-0.5 text-xs font-mono bg-purple-500/20 text-purple-400 rounded-full border border-purple-500/30">Latest</span>
+            </div>
+            <span class="text-zinc-500 font-mono text-sm">March 2026</span>
+          </div>
+          <div class="prose prose-invert max-w-none">
+            <ul class="list-disc pl-5 text-zinc-400 space-y-2">
+              <li>Added <code class="text-zinc-300">export</code> command to export full transaction history as CSV or JSON for tax and accounting tools (Koinly, CoinTracker, TaxBit, CryptoTaxCalc).</li>
+              <li>Added <code class="text-zinc-300">stake</code> command to stake ETH via Lido (stETH) and Rocket Pool (rETH) liquid staking protocols directly from the CLI.</li>
+              <li>Added <code class="text-zinc-300">pnl</code> command for on-chain profit &amp; loss tracking — total invested, current value, unrealized gains, and ROI per wallet.</li>
+              <li>Added <code class="text-zinc-300">multicall</code> command to batch read multiple contract calls in a single RPC request via Multicall3.</li>
+              <li>Added <code class="text-zinc-300">decode</code> command to decode raw transaction calldata using online ABI sources or custom ABI files.</li>
+              <li>Added <code class="text-zinc-300">logs</code> command to fetch and display on-chain event logs for any contract with optional topic filtering.</li>
+              <li>Added <code class="text-zinc-300">gashistory</code> command to display historical gas price trends over configurable time windows.</li>
+              <li>Added <code class="text-zinc-300">alert</code> command to set threshold-based on-chain price, gas, and balance alerts that notify in real-time.</li>
+              <li>Added <code class="text-zinc-300">swap</code> command for direct token swaps via Uniswap V3 router from the terminal.</li>
+              <li>Added <code class="text-zinc-300">risk</code> command for rapid smart contract risk scoring — liquidity, supply concentration, proxy upgradability.</li>
+            </ul>
+          </div>
+        </div>
+
         <div class="glass-card p-8">
           <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
             <h2 class="text-2xl font-bold text-white">v0.4.0</h2>

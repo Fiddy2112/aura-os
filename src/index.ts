@@ -38,6 +38,15 @@ import { nftCommand } from './commands/nft.js';
 import { simulateCommand } from './commands/simulate.js';
 import { bridgeCommand } from './commands/bridge.js';
 import { summarizeCommand } from './commands/summarize.js';
+import { swapCommand } from './commands/swap.js';
+import { decodeCommand } from './commands/decode.js';
+import { pnlCommand } from './commands/pnl.js';
+import { alertCommand } from './commands/alert.js';
+import { logsCommand } from './commands/logs.js';
+import { gashistoryCommand } from './commands/gashistory.js';
+import { multicallCommand } from './commands/multicall.js';
+import { stakeCommand } from './commands/stake.js';
+import { exportCommand } from './commands/export.js';
 
 
 const args        = process.argv.slice(2);
@@ -363,6 +372,42 @@ async function main() {
 
     case 'summarize': 
       await summarizeCommand(commandArgs); 
+      break;
+
+    case 'swap':        
+      await swapCommand(commandArgs); 
+      break;
+    
+    case 'decode':      
+      await decodeCommand(commandArgs); 
+      break;
+
+    case 'pnl':         
+      await pnlCommand(commandArgs); 
+      break;
+
+    case 'alert':       
+      await alertCommand(commandArgs); 
+      break;
+
+    case 'logs':        
+      await logsCommand(commandArgs); 
+      break;
+
+    case 'gashistory':  
+      await gashistoryCommand(commandArgs); 
+      break;
+
+    case 'multicall':   
+      await multicallCommand(commandArgs); 
+      break;
+
+    case 'stake':       
+      await stakeCommand(commandArgs); 
+      break;
+
+    case 'export':      
+      await exportCommand(commandArgs); 
       break;
 
     case undefined:
