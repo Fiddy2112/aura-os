@@ -1,4 +1,4 @@
-import chalk from "chalk/index.js";
+import chalk from "chalk";
 import { getPublicClient } from "../core/blockchain/chains.js";
 import ora from "ora";
 import { getAddress, isAddress } from "viem";
